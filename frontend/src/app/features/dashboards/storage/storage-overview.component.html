@@ -1,0 +1,221 @@
+<div class="storage-overview">
+
+  <!-- KPI Banner -->
+  <div class="kpi-banner">
+    <div class="kpi-card">
+      <div class="kpi-icon kpi-emerald">
+        <ng-icon name="lucideBox" size="20" />
+      </div>
+      <div class="kpi-info">
+        <span class="kpi-value">{{ globalOccupancyRate }}%</span>
+        <span class="kpi-label">Taux d'occupation global</span>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon kpi-green">
+        <ng-icon name="lucideDollarSign" size="20" />
+      </div>
+      <div class="kpi-info">
+        <span class="kpi-value">{{ revenue()?.monthly_revenue | number:'1.0-0' }} TND</span>
+        <span class="kpi-label">CA Mensuel Brut</span>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon kpi-amber">
+        <ng-icon name="lucideZap" size="20" />
+      </div>
+      <div class="kpi-info">
+        <span class="kpi-value">{{ revenue()?.monthly_electricity_cost | number:'1.0-0' }} TND</span>
+        <span class="kpi-label">Coût STEG Mensuel</span>
+      </div>
+    </div>
+    <div class="kpi-card" [class.danger]="revenue()?.net_profit_tnd < 0">
+      <div class="kpi-icon kpi-blue">
+        <ng-icon name="lucideTrendingUp" size="20" />
+      </div>
+      <div class="kpi-info">
+        <span class="kpi-value">{{ revenue()?.net_profit_tnd | number:'1.0-0' }} TND</span>
+        <span class="kpi-label">Bénéfice Net Mensuel</span>
+      </div>
+    </div>
+    <div class="kpi-card" [class.overdue-alert]="overdueCount > 0">
+      <div class="kpi-icon kpi-purple">
+        <ng-icon name="lucideUsers" size="20" />
+      </div>
+      <div class="kpi-info">
+        <span class="kpi-value">{{ overdueCount }}</span>
+        <span class="kpi-label">Clients en Retard</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Smart Advice -->
+  @if (revenue()?.smart_advice?.length) {
+    <div class="advice-strip">
+      @for (advice of revenue()!.smart_advice; track advice.message) {
+        <div class="advice-item" [class]="'advice-' + advice.type.toLowerCase()">
+          <ng-icon name="lucideAlertTriangle" size="18" class="advice-icon" />
+          <span class="advice-text">{{ advice.message }}</span>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Overdue Clients Quick Access -->
+  @if (overdueCount > 0) {
+    <div class="overdue-banner">
+      <div class="banner-title">
+        <ng-icon name="lucideAlertCircle" size="20" />
+        <span><strong>{{ overdueCount }} client(s)</strong> avec des impayés</span>
+      </div>
+      <a routerLink="/dashboard/storage/clients" class="btn-link">
+        Voir Mes Clients & Impayés
+        <ng-icon name="lucideChevronRight" size="16" />
+      </a>
+    </div>
+  }
+
+  <!-- Header with Design Mode Toggle -->
+  <div class="section-header">
+    <div>
+      <h2 class="section-title">Mon Dépôt Frigorifique</h2>
+      <p class="section-sub">{{ rooms().length }} salle(s) • {{ facilities()[0]?.name || 'Site non configuré' }}</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn-secondary" (click)="loadData()">
+        <ng-icon name="lucideRefreshCw" size="14" />
+        Actualiser
+      </button>
+      <button class="btn-design" [class.active]="designMode()" (click)="toggleDesignMode()">
+        <ng-icon name="lucidePalette" size="16" />
+        {{ designMode() ? 'Terminer Design' : 'Mode Design' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  @if (loading()) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Chargement de votre dépôt...</p>
+    </div>
+  }
+
+  <!-- Rooms Grid -->
+  @if (!loading()) {
+    @if (rooms().length === 0) {
+      <div class="empty-state">
+        <ng-icon name="lucideBuilding2" size="48" class="empty-icon" />
+        <h3>Aucune salle configurée</h3>
+        <p>Commencez par ajouter vos salles dans "Mes Salles"</p>
+        <a routerLink="/dashboard/storage/rooms" class="btn-primary">Configurer mes salles →</a>
+      </div>
+    } @else {
+      <div class="rooms-grid">
+        @for (room of rooms(); track room.id) {
+          <div class="room-card" [style.border-top-color]="room.color_hex">
+
+            <!-- Room Header -->
+            <div class="room-header">
+              <div class="room-color-dot" [style.background]="room.color_hex"></div>
+              <div class="room-name-info">
+                <h3 class="room-name">{{ room.name }}</h3>
+                <span class="room-type">{{ room.room_type }}</span>
+              </div>
+              <div class="room-status" [class.active]="room.is_active" [class.inactive]="!room.is_active">
+                {{ room.is_active ? 'Active' : 'Maintenance' }}
+              </div>
+            </div>
+
+            <!-- Fill Gauge -->
+            <div class="fill-section">
+              <div class="fill-label">
+                <span>Remplissage</span>
+                <span class="fill-pct" [style.color]="room.color_hex">{{ getRoomFillPercent(room) }}%</span>
+              </div>
+              <div class="fill-bar">
+                <div class="fill-progress" [style.width.%]="getRoomFillPercent(room)" [style.background]="room.color_hex"></div>
+              </div>
+              <div class="fill-numbers">
+                <span>{{ room.occupied_capacity | number:'1.0-1' }} {{ getUnitLabel(room.pricing_unit) }} occupés</span>
+                <span>/ {{ room.total_capacity | number:'1.0-0' }} {{ getUnitLabel(room.pricing_unit) }} total</span>
+              </div>
+            </div>
+
+            <!-- Metrics Row -->
+            <div class="room-metrics">
+              <div class="metric">
+                <ng-icon name="lucideUsers" size="14" />
+                <span>{{ room.active_renters_count || 0 }} locataire(s)</span>
+              </div>
+              <div class="metric">
+                <ng-icon name="lucideZap" size="14" />
+                <span>{{ room.monthly_elec_cost_tnd | number:'1.0-0' }} TND/mois</span>
+              </div>
+              <div class="metric" [class.profit]="room.net_profit_tnd > 0" [class.loss]="room.net_profit_tnd < 0">
+                <ng-icon name="lucideTrendingUp" size="14" />
+                <span>{{ room.net_profit_tnd | number:'1.0-0' }} TND net</span>
+              </div>
+            </div>
+
+            <!-- Equipment Badges -->
+            @if (room.equipment_badges?.length > 0) {
+              <div class="badges-row">
+                @for (badge of room.equipment_badges; track badge) {
+                  <span class="badge">{{ badge }}</span>
+                }
+              </div>
+            }
+
+            <!-- Design Mode Panel -->
+            @if (designMode()) {
+              <div class="design-panel">
+                <div class="design-section">
+                  <label class="design-label">Couleur de la Salle</label>
+                  <div class="color-picker">
+                    @for (color of ROOM_COLORS; track color.hex) {
+                      <button
+                        class="color-swatch"
+                        [style.background]="color.hex"
+                        [class.selected]="room.color_hex === color.hex"
+                        [title]="color.label"
+                        (click)="updateRoomColor(room, color.hex)">
+                        @if (room.color_hex === color.hex) {
+                          <ng-icon name="lucideCheck" size="14" />
+                        }
+                      </button>
+                    }
+                  </div>
+                </div>
+                <div class="design-section">
+                  <label class="design-label">Équipements</label>
+                  <div class="badges-selector">
+                    @for (badge of BADGES; track badge) {
+                      <button
+                        class="badge-toggle"
+                        [class.selected]="room.equipment_badges?.includes(badge)"
+                        (click)="toggleBadge(room, badge)">
+                        {{ badge }}
+                      </button>
+                    }
+                  </div>
+                </div>
+                <div class="design-section order-controls">
+                  <label class="design-label">Ordre dans le Dépôt</label>
+                  <div class="order-btns">
+                    <button class="btn-order" (click)="moveRoom(room, -1)">
+                      <ng-icon name="lucideArrowUp" size="14" /> Monter
+                    </button>
+                    <button class="btn-order" (click)="moveRoom(room, 1)">
+                      <ng-icon name="lucideArrowDown" size="14" /> Descendre
+                    </button>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+  }
+</div>

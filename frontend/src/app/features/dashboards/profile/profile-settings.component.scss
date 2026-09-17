@@ -1,0 +1,112 @@
+.glass-card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 24px;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
+  transition: all 0.3s ease;
+}
+
+:host-context(.dark) .glass-card {
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+}
+
+// Tab styling
+.nav-tab-btn {
+  color: #64748b;
+  background: transparent;
+  
+  &:hover {
+    color: #10b981;
+    background: rgba(16, 185, 129, 0.05);
+  }
+  
+  &.active {
+    color: #10b981;
+    background: rgba(16, 185, 129, 0.08);
+    border-color: rgba(16, 185, 129, 0.2);
+    box-shadow: inset 0 0 12px rgba(16, 185, 129, 0.04);
+  }
+}
+
+:host-context(.dark) .nav-tab-btn {
+  color: #94a3b8;
+  
+  &:hover {
+    color: #34d399;
+    background: rgba(52, 211, 153, 0.04);
+  }
+  
+  &.active {
+    color: #34d399;
+    background: rgba(52, 211, 153, 0.08);
+    border-color: rgba(52, 211, 153, 0.2);
+  }
+}
+
+// Inputs styling
+.input-field {
+  width: 100%;
+  padding: 12px 16px 12px 48px;
+  border-radius: 14px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.8);
+  color: #1e293b;
+  font-size: 14px;
+  outline: none;
+  transition: all 0.3s ease;
+  
+  &:focus {
+    border-color: #10b981;
+    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15);
+  }
+}
+
+:host-context(.dark) .input-field {
+  background: rgba(30, 41, 59, 0.4);
+  border-color: rgba(255, 255, 255, 0.08);
+  color: #f8fafc;
+  
+  &:focus {
+    border-color: #34d399;
+    box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.15);
+  }
+}
+
+.select-field {
+  appearance: none;
+  cursor: pointer;
+}
+
+// Skills custom checkbox
+.skill-checkbox {
+  &.selected {
+    background: rgba(16, 185, 129, 0.08) !important;
+    border-color: rgba(16, 185, 129, 0.3) !important;
+  }
+}
+
+:host-context(.dark) .skill-checkbox {
+  &.selected {
+    background: rgba(52, 211, 153, 0.08) !important;
+    border-color: rgba(52, 211, 153, 0.3) !important;
+  }
+}
+
+// Direction helpers for RTL translations
+.dir-rtl {
+  direction: rtl;
+}
+
+// Animations
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}

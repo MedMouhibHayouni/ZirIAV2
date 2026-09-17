@@ -1,0 +1,289 @@
+<div class="fr-page zir-animate-in">
+
+  <!-- =============== SUCCESS STATE =============== -->
+  @if (submitted(); as s) {
+    <div class="success-card zir-card">
+      <div class="success-icon">✅</div>
+      <h2>Rapport Envoyé !</h2>
+      <p class="success-experts">
+        <strong>{{ s.notifiedExperts }}</strong> expert{{ s.notifiedExperts > 1 ? 's' : '' }} CRDA ont été notifiés
+      </p>
+      <div class="success-summary">
+        <div class="summary-row">
+          <span class="label">Sévérité</span>
+          <span class="sev-chip sev-{{ s.severity.toLowerCase() }}">{{ getSevLabel(s.severity) }}</span>
+        </div>
+      </div>
+      <button class="zir-btn zir-btn--primary reset-btn" (click)="resetForm()">
+        <ng-icon name="lucidePlus"></ng-icon> Nouveau Rapport
+      </button>
+    </div>
+  }
+
+  <!-- =============== MAIN LAYOUT =============== -->
+  @if (!submitted()) {
+  <div class="fr-layout">
+
+    <!-- ── LEFT: History list ── -->
+    <div class="fr-history zir-card">
+      <div class="history-header">
+        <h3><ng-icon name="lucideFileText"></ng-icon> Mes Rapports</h3>
+        @if (isLoading()) {
+          <ng-icon name="lucideLoader" class="spin"></ng-icon>
+        } @else {
+          <span class="count-badge">{{ reports().length }}</span>
+        }
+      </div>
+      <div class="history-list">
+        @for (r of reports(); track r.id) {
+          <div class="hist-row">
+            <div class="hist-sev sev-dot sev-{{ r.severity.toLowerCase() }}"></div>
+            <div class="hist-body">
+              <div class="hist-desc">{{ r.observations || r.description | slice:0:55 }}...</div>
+              <div class="hist-meta">
+                <span>{{ r.created_at | date:'dd/MM/yyyy' }}</span>
+                @if (r.crop_type || r.affected_crop_type) {
+                  <span>· {{ r.crop_type || r.affected_crop_type }}</span>
+                }
+              </div>
+            </div>
+            <div class="hist-status status-{{ (r.status || 'PENDING').toLowerCase() }}">
+              {{ r.status === 'PENDING' ? 'En attente' : r.status === 'EXPERT_REVIEWING' ? 'En cours' : 'Résolu' }}
+            </div>
+          </div>
+        }
+        @if (!reports().length && !isLoading()) {
+          <div class="empty-history">Aucun rapport soumis.</div>
+        }
+      </div>
+    </div>
+
+    <!-- ── RIGHT: Form ── -->
+    <div class="fr-form-wrap">
+      <div class="form-card zir-card">
+
+        <!-- Form Header -->
+        <div class="form-header">
+          <div class="form-title-group">
+            <h2>📋 Nouveau Rapport de Terrain</h2>
+          </div>
+          <div class="form-today">{{ today }}</div>
+        </div>
+
+        <div class="form-divider"></div>
+
+        <!-- ── SECTION 1: Severity ── -->
+        <div class="form-section">
+          <div class="section-heading">Situation</div>
+          <div class="severity-grid">
+            @for (sev of severities; track sev.value) {
+              <button
+                class="sev-btn"
+                [class.active]="form.severity === sev.value"
+                [style.--sev-color]="sev.color"
+                [style.--sev-bg]="sev.bg"
+                [style.--sev-glow]="sev.glow"
+                (click)="setSeverity(sev.value)"
+                type="button"
+              >
+                <div class="sev-emoji">{{ sev.emoji }}</div>
+                <div class="sev-label">{{ sev.label }}</div>
+                <div class="sev-desc">{{ sev.desc }}</div>
+              </button>
+            }
+          </div>
+        </div>
+
+        <div class="form-divider"></div>
+
+        <!-- ── SECTION 2: Parcelle ── -->
+        <div class="form-section">
+          <div class="section-heading">Parcelle Concernée</div>
+
+          <!-- Farmer Searchable Select -->
+          <div class="form-group">
+            <label>Lier à un agriculteur <span class="optional">(optionnel)</span></label>
+            <div class="farmer-search-wrap">
+              @if (selectedFarmer(); as farmer) {
+                <div class="farmer-selected">
+                  <div class="farmer-avatar">{{ farmer.display_name.charAt(0) }}</div>
+                  <span>{{ farmer.display_name }}</span>
+                  <ng-icon name="lucideCheckCircle" class="check-icon"></ng-icon>
+                  <button class="clear-btn" (click)="clearFarmer()" type="button">
+                    <ng-icon name="lucideX"></ng-icon>
+                  </button>
+                </div>
+              } @else {
+                <div class="farmer-input-wrap">
+                  <ng-icon name="lucideUser" class="farmer-icon"></ng-icon>
+                  <input
+                    class="farmer-input"
+                    type="text"
+                    placeholder="Rechercher un agriculteur..."
+                    [value]="farmerSearch()"
+                    (input)="onFarmerSearchChange($any($event.target).value)"
+                    (focus)="showFarmerDropdown.set(true)"
+                    (blur)="$any($event)&&setTimeout(()=>showFarmerDropdown.set(false), 200)"
+                  >
+                </div>
+                @if (showFarmerDropdown() && filteredFarmers().length > 0) {
+                  <div class="farmer-dropdown">
+                    @for (f of filteredFarmers(); track f.id) {
+                      <button class="farmer-option" (mousedown)="selectFarmer(f)" type="button">
+                        <div class="farmer-avatar sm">{{ f.display_name.charAt(0) }}</div>
+                        <div>
+                          <div class="fo-name">{{ f.display_name }}</div>
+                          <div class="fo-meta">{{ f.delegation }} · {{ f.parcel_count }} parcelle{{ f.parcel_count !== 1 ? 's' : '' }}</div>
+                        </div>
+                      </button>
+                    }
+                  </div>
+                }
+              }
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label><ng-icon name="lucideSprout"></ng-icon> Type de culture</label>
+              <input class="zir-input" type="text" [(ngModel)]="form.crop_type" placeholder="ex: Tomate, Blé, Olivier...">
+            </div>
+            <div class="form-group">
+              <label><ng-icon name="lucideRuler"></ng-icon> Surface affectée (ha)</label>
+              <input class="zir-input" type="number" [(ngModel)]="form.affected_area_ha" placeholder="ex: 2.5" min="0" step="0.1">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-divider"></div>
+
+        <!-- ── SECTION 3: Observations ── -->
+        <div class="form-section">
+          <div class="section-heading">Observations Terrain</div>
+          <div class="form-group">
+            <label>Observations *</label>
+            <textarea
+              class="zir-input obs-textarea"
+              rows="5"
+              [(ngModel)]="form.observations"
+              placeholder="Décrivez ce que vous observez sur le terrain — symptômes, étendue, évolution..."
+              (input)="$any($event.target).style.height = 'auto'; $any($event.target).style.height = $any($event.target).scrollHeight + 'px'"
+            ></textarea>
+          </div>
+          <div class="form-group">
+            <label>Recommandations <span class="optional">(optionnel)</span></label>
+            <textarea
+              class="zir-input rec-textarea"
+              rows="3"
+              [(ngModel)]="form.recommendations"
+              placeholder="Mesures préconisées, traitement suggéré..."
+            ></textarea>
+          </div>
+        </div>
+
+        <div class="form-divider"></div>
+
+        <!-- ── SECTION 4: GPS ── -->
+        <div class="form-section">
+          <div class="section-heading">Localisation GPS</div>
+          @if (gpsStatus() === 'captured' && gpsCoords(); as c) {
+            <div class="gps-captured">
+              <ng-icon name="lucideMapPin" class="gps-icon-ok"></ng-icon>
+              <span class="gps-coords">Position : {{ c.lat | number:'1.4-4' }}, {{ c.lng | number:'1.4-4' }}</span>
+              <button class="gps-reset" (click)="gpsStatus.set('idle'); gpsCoords.set(null);" type="button">
+                <ng-icon name="lucideRefreshCw"></ng-icon>
+              </button>
+            </div>
+          } @else if (gpsStatus() === 'loading') {
+            <div class="gps-loading">
+              <ng-icon name="lucideLoader" class="spin"></ng-icon> Acquisition GPS...
+            </div>
+          } @else {
+            <button class="gps-btn" (click)="captureGps()" type="button">
+              <ng-icon name="lucideMapPin"></ng-icon> 📍 Récupérer ma position
+            </button>
+          }
+
+          @if (manualGps()) {
+            <div class="manual-gps">
+              <p class="gps-fail-note">⚠️ Géolocalisation indisponible. Saisie manuelle :</p>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Latitude</label>
+                  <input class="zir-input" type="number" [(ngModel)]="manualLat" placeholder="35.1676" step="0.0001">
+                </div>
+                <div class="form-group">
+                  <label>Longitude</label>
+                  <input class="zir-input" type="number" [(ngModel)]="manualLng" placeholder="8.8365" step="0.0001">
+                </div>
+              </div>
+              <button class="zir-btn zir-btn--ghost" (click)="applyManualGps()" type="button">Valider les coordonnées</button>
+            </div>
+          }
+        </div>
+
+        <div class="form-divider"></div>
+
+        <!-- ── SECTION 5: Photos ── -->
+        <div class="form-section">
+          <div class="section-heading">Photos <span class="optional">(max 4)</span></div>
+
+          @if (photoPreviewUrls().length < 4) {
+            <div
+              class="photo-drop-zone"
+              [class.drag-over]="isDragOver()"
+              (dragover)="$event.preventDefault(); isDragOver.set(true)"
+              (dragleave)="isDragOver.set(false)"
+              (drop)="onPhotoDrop($event)"
+              (click)="triggerPhotoUpload()"
+            >
+              <ng-icon name="lucideCamera" class="drop-icon"></ng-icon>
+              <p>Glissez vos photos ici ou cliquez pour choisir</p>
+              <span class="drop-hint">JPG, PNG — max 4 photos</span>
+            </div>
+          }
+
+          <input
+            #photoInput
+            type="file"
+            accept="image/*"
+            multiple
+            hidden
+            (change)="onPhotoSelect($event)"
+          >
+
+          @if (photoPreviewUrls().length > 0) {
+            <div class="photo-grid">
+              @for (url of photoPreviewUrls(); track $index; let i = $index) {
+                <div class="photo-thumb">
+                  <img [src]="url" alt="Photo {{ i + 1 }}">
+                  <button class="photo-remove" (click)="removePhoto(i)" type="button">
+                    <ng-icon name="lucideX"></ng-icon>
+                  </button>
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="form-divider"></div>
+
+        <!-- Submit -->
+        <button
+          class="submit-btn zir-btn zir-btn--primary"
+          (click)="submit()"
+          [disabled]="isSubmitting() || !form.observations.trim()"
+        >
+          @if (isSubmitting()) {
+            <ng-icon name="lucideLoader" class="spin"></ng-icon> Envoi en cours...
+          } @else {
+            <ng-icon name="lucideSend"></ng-icon> Envoyer le rapport aux experts
+          }
+        </button>
+
+      </div>
+    </div>
+  </div>
+  }
+
+</div>

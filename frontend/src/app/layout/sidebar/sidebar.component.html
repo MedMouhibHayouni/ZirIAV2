@@ -1,0 +1,153 @@
+<aside class="zir-sidebar" [class.zir-sidebar--open]="navOpen"
+       [class.sidebar--farmer-crop]="authService.currentUser()?.role === 'FARMER' && authService.currentUser()?.activity_type === 'CROP'"
+       [class.sidebar--farmer-livestock]="authService.currentUser()?.role === 'FARMER' && authService.currentUser()?.activity_type === 'LIVESTOCK'"
+       [class.sidebar--farmer-mixed]="authService.currentUser()?.role === 'FARMER' && authService.currentUser()?.activity_type === 'MIXED'">
+
+  <!-- Mobile close button -->
+  <button class="zir-sidebar__close-btn" (click)="closeRequest.emit()" aria-label="Fermer menu">
+    <ng-icon name="lucideX" style="font-size:20px"></ng-icon>
+  </button>
+
+  <!-- Brand Logo -->
+  <div class="zir-sidebar__brand">
+    <div class="zir-sidebar__logo">
+      <img src="assets/ziria-logo-main.png" alt="ZirIA" class="zir-sidebar__logo-img" />
+    </div>
+  </div>
+
+  <!-- User Badge -->
+  @if (authService.currentUser(); as user) {
+    <div class="zir-sidebar__user"
+         [style.background]="(expertIdentity()?.bg) || (activityTypeIdentity()?.bg) || null"
+         [style.border-color]="expertIdentity() ? expertIdentity()!.color + '33' : activityTypeIdentity() ? activityTypeIdentity()!.color + '33' : null">
+      <div class="zir-sidebar__user-avatar"
+           [style.background]="expertIdentity()
+             ? 'linear-gradient(135deg, ' + expertIdentity()!.color + 'cc, ' + expertIdentity()!.color + ')'
+             : activityTypeIdentity()
+             ? 'linear-gradient(135deg, ' + activityTypeIdentity()!.color + 'cc, ' + activityTypeIdentity()!.color + ')'
+             : null">
+        {{ user.name.charAt(0).toUpperCase() || 'U' }}
+      </div>
+      <div class="zir-sidebar__user-info">
+        <div class="zir-sidebar__user-name">{{ user.name }}</div>
+        <div class="zir-sidebar__user-role"
+             [style.color]="expertIdentity()?.color || activityTypeIdentity()?.color || null">
+          @if (expertIdentity(); as id) {
+            <ng-icon [name]="id.icon" style="font-size:10px; margin-right:4px; vertical-align:middle"></ng-icon>
+          }
+          @if (!expertIdentity() && activityTypeIdentity(); as aid) {
+            <ng-icon [name]="aid.icon" style="font-size:10px; margin-right:4px; vertical-align:middle"></ng-icon>
+          }
+          {{ roleLabel() }}
+        </div>
+        <!-- Activity type pill for farmers -->
+        @if (user.role === 'FARMER' && user.plan) {
+          <div class="zir-sidebar__plan-pill"
+               [class.pill--free]="user.plan === 'FREE'"
+               [class.pill--starter]="user.plan === 'STARTER'"
+               [class.pill--pro]="user.plan === 'PRO'">
+            @if (user.plan === 'FREE') { 🌱 Gratuit }
+            @else if (user.plan === 'STARTER') { ⚡ Starter }
+            @else { 👑 Pro }
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <div class="zir-sidebar__divider"></div>
+
+  <!-- Navigation -->
+  <nav class="zir-sidebar__nav">
+    @for (item of menuItems(); track item.route) {
+      <a
+        [routerLink]="(hasFeature(item.requiredFeature) && hasPlan(item.requiredPlan)) ? item.route : null"
+        routerLinkActive="active"
+        class="zir-nav-item flex items-center justify-between"
+        (click)="(hasFeature(item.requiredFeature) && hasPlan(item.requiredPlan)) ? onNavClick() : onNavItemClick(item)">
+        <div class="flex items-center gap-3">
+          <ng-icon [name]="item.icon" class="zir-nav-item__icon"></ng-icon>
+          <span class="zir-nav-item__label">{{ item.label }}</span>
+        </div>
+        <div class="flex items-center gap-2">
+          @if (!hasFeature(item.requiredFeature) || !hasPlan(item.requiredPlan)) {
+            <ng-icon name="lucideLock" class="text-yellow-500/80 text-sm"></ng-icon>
+          }
+          @if (getBadgeText(item.badge)) {
+            <span class="zir-nav-item__badge"
+                  [class.pulse]="item.badge === 'unreadCount'"
+                  [class.read]="getBadgeIsRead(item.badge)">{{ getBadgeText(item.badge) }}</span>
+          }
+        </div>
+      </a>
+    }
+
+    @if (menuItems().length === 0) {
+      <div class="zir-sidebar__empty">
+        Aucun menu disponible
+      </div>
+    }
+  </nav>
+
+  <div class="zir-sidebar__spacer"></div>
+
+  <!-- Subscription CTA (Desktop Only) -->
+  @if (subscriptionCta().show) {
+    <div class="zir-sidebar__premium-cta hidden-mobile"
+         [class.cta--farmer]="authService.currentUser()?.role === 'FARMER'"
+         [style.--cta-accent]="subscriptionCta().ctaColor || 'var(--zir-emerald)'">
+      <div class="cta-icon-wrapper">
+        <ng-icon [name]="subscriptionCta().icon" [size]="'24'"></ng-icon>
+      </div>
+      <div class="cta-content">
+        <div class="cta-title">{{ subscriptionCta().title }}</div>
+        <div class="cta-subtitle">{{ subscriptionCta().subtitle }}</div>
+      </div>
+      <a [routerLink]="[subscriptionCta().route]" [queryParams]="subscriptionCta().queryParams"
+         class="cta-button" (click)="onNavClick()">
+        {{ subscriptionCta().btnText }}
+      </a>
+    </div>
+  }
+
+  <!-- Footer Actions -->
+  <div class="zir-sidebar__footer">
+    <div class="zir-sidebar__divider"></div>
+    <div class="zir-sidebar__footer-row">
+      <!-- Dark/Light mode toggle -->
+      <button class="zir-theme-toggle" (click)="toggleTheme()" [title]="themeService.isDark() ? 'Mode Clair' : 'Mode Sombre'">
+        @if (themeService.isDark()) {
+          <ng-icon name="lucideSun" style="font-size:16px"></ng-icon>
+        } @else {
+          <ng-icon name="lucideMoon" style="font-size:16px"></ng-icon>
+        }
+      </button>
+      <button class="zir-nav-item zir-nav-item--logout" (click)="logout()">
+        <ng-icon name="lucideLogOut" class="zir-nav-item__icon"></ng-icon>
+        <span class="zir-nav-item__label">Déconnexion</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Upgrade Gating Modal -->
+  @if (showUpgradeModal()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+      <div class="zir-card w-full max-w-md p-6 relative text-center border border-yellow-500/30 bg-gray-900 rounded-xl">
+        <div class="w-16 h-16 bg-yellow-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+          <ng-icon name="lucideLock" class="text-3xl text-yellow-500"></ng-icon>
+        </div>
+        <h3 class="text-2xl font-bold text-white mb-2 font-bold">Fonctionnalité Limitée</h3>
+        <p class="text-gray-300 mb-6 text-sm">
+          Le module <strong class="text-[var(--zir-emerald)]">{{ upgradeFeatureName() }}</strong> nécessite un abonnement actif (ERP Starter ou Full ERP).
+        </p>
+        <div class="flex gap-3 justify-center">
+          <button (click)="showUpgradeModal.set(false)" class="px-5 py-2 text-gray-400 hover:text-white font-medium text-sm">Fermer</button>
+          <a routerLink="/dashboard/supplier/subscription" (click)="showUpgradeModal.set(false)" class="bg-[var(--zir-emerald)] text-black px-6 py-2 rounded-lg font-bold text-sm hover:opacity-90">
+            Voir les Plans
+          </a>
+        </div>
+      </div>
+    </div>
+  }
+
+</aside>

@@ -1,0 +1,856 @@
+<div class="farmer-marketplace zir-animate-in">
+
+  <!-- =================== SUCCESS TOAST =================== -->
+  @if (showSuccessToast()) {
+    <div class="fm-toast">
+      <span class="fm-toast__icon">✅</span>
+      <div>
+        <strong>Demande envoyée !</strong>
+        <span>Le vendeur a été notifié instantanément.</span>
+      </div>
+    </div>
+  }
+
+  <!-- =================== B2B CONTACT DRAWER =================== -->
+  @if (drawerOpen()) {
+    <div class="fm-drawer-overlay" (click)="closeDrawer()"></div>
+    <div class="fm-drawer">
+      <div class="fm-drawer__header">
+        <div class="fm-drawer__product">
+          <span class="fm-drawer__emoji">🌾</span>
+          <div>
+            <h3>{{ drawerListing()?.title }}</h3>
+            <p>{{ drawerListing()?.quantity_value }} {{ drawerListing()?.quantity_unit }} · {{ drawerListing()?.price_tnd }} TND</p>
+          </div>
+        </div>
+        <button class="zir-btn zir-btn--ghost zir-btn--icon-only" (click)="closeDrawer()">
+          <ng-icon name="lucideX"></ng-icon>
+        </button>
+      </div>
+
+      <div class="fm-drawer__body">
+        <label class="zir-label">Votre message pour l'agriculteur</label>
+        <textarea
+          class="zir-input fm-drawer__textarea"
+          rows="4"
+          [value]="drawerMessage()"
+          (input)="drawerMessage.set($any($event.target).value)"
+          placeholder="Bonjour, je suis intéressé par votre annonce...">
+        </textarea>
+
+        <label class="zir-label" style="margin-top: 16px;">Quantité souhaitée</label>
+        <input
+          type="number"
+          class="zir-input"
+          [value]="drawerQuantity()"
+          (input)="drawerQuantity.set(+$any($event.target).value)"
+          min="1" max="{{ drawerListing()?.quantity_value }}">
+      </div>
+
+      <div class="fm-drawer__footer">
+        <button class="zir-btn zir-btn--ghost" (click)="closeDrawer()">Annuler</button>
+        <button class="zir-btn zir-btn--primary" (click)="sendB2BRequest()" [disabled]="isSendingRequest()">
+          @if (isSendingRequest()) { <ng-icon name="lucideLoader" class="spin"></ng-icon> Envoi... }
+          @else { <ng-icon name="lucideSend"></ng-icon> Envoyer la demande }
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- =================== ZIRPULSE AUTOFILL MODAL =================== -->
+  @if (showPulseAutofillModal()) {
+    <div class="fm-drawer-overlay" (click)="showPulseAutofillModal.set(false)"></div>
+    <div class="zirpulse-modal">
+      <div class="pulse-modal-header">
+        <h3><ng-icon name="lucideSparkles" class="spark-icon"/> Vos messages ZirPulse</h3>
+        <button class="zir-btn zir-btn--ghost zir-btn--icon-only" (click)="showPulseAutofillModal.set(false)">
+          <ng-icon name="lucideX"/>
+        </button>
+      </div>
+      <div class="pulse-modal-body">
+        <p class="pulse-desc">Sélectionnez une note vocale analysée par l'IA pour pré-remplir instantanément les détails de l'annonce.</p>
+        
+        @if (isLoadingPulse()) {
+          <div class="pulse-loader"><ng-icon name="lucideLoader" class="spin"/> Chargement de vos vocaux...</div>
+        } @else if (zirpulsePosts().length === 0) {
+          <div class="pulse-empty">
+            <ng-icon name="lucideMic" class="mic-empty-icon"/>
+            <p>Aucune note vocale de vente trouvée. Enregistrez un message dans ZirPulse d'abord !</p>
+          </div>
+        } @else {
+          <div class="pulse-list">
+            @for (post of zirpulsePosts(); track post.id) {
+              <div class="pulse-item" (click)="autofillFromPulse(post)">
+                <div class="pulse-item-header">
+                  <span class="pulse-tag">Vente détectée</span>
+                  <span class="pulse-date">{{ post.created_at | date:'dd/MM/yyyy HH:mm' }}</span>
+                </div>
+                <p class="pulse-transcript">"{{ post.transcript || 'Audio sans transcription...' }}"</p>
+                <div class="pulse-extracted">
+                  <strong>Extrait :</strong> 
+                  {{ post.pre_filled_listing_dto?.crop_type || post.intent_json?.crop }} · 
+                  {{ post.pre_filled_listing_dto?.quantity_tonnes || post.intent_json?.qty }} tonnes · 
+                  {{ post.pre_filled_listing_dto?.price_per_kg || post.intent_json?.price_per_kg }} TND/kg
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- =================== EDIT LISTING MODAL =================== -->
+  @if (editModalOpen()) {
+    <div class="fm-drawer-overlay" (click)="closeEditModal()"></div>
+    <div class="zirpulse-modal" style="width: min(560px, 96vw);">
+      <div class="pulse-modal-header">
+        <h3>✏️ Modifier l'annonce</h3>
+        <button class="zir-btn zir-btn--ghost zir-btn--icon-only" (click)="closeEditModal()">
+          <ng-icon name="lucideX"/>
+        </button>
+      </div>
+      <div class="pulse-modal-body" style="display:flex; flex-direction:column; gap:12px;">
+        <div class="zir-input-group">
+          <label class="zir-label">Titre de l'annonce</label>
+          <input type="text" class="zir-input" [(ngModel)]="editTitle" placeholder="Titre de l'annonce">
+        </div>
+        <div class="zir-input-group">
+          <label class="zir-label">Description</label>
+          <textarea class="zir-input" [(ngModel)]="editDescription" rows="3" placeholder="Description..."></textarea>
+        </div>
+        <div style="display:flex; gap:12px;">
+          <div class="zir-input-group" style="flex:2;">
+            <label class="zir-label">Quantité</label>
+            <input type="number" class="zir-input" [(ngModel)]="editQuantityValue" min="0" step="0.1">
+          </div>
+          <div class="zir-input-group" style="flex:1;">
+            <label class="zir-label">Unité</label>
+            <input type="text" class="zir-input" [(ngModel)]="editQuantityUnit" placeholder="tonnes, kg...">
+          </div>
+        </div>
+        <div style="display:flex; gap:12px; align-items:flex-end;">
+          <div class="zir-input-group" style="flex:2;">
+            <label class="zir-label">Prix (TND)</label>
+            <input type="number" class="zir-input" [(ngModel)]="editPriceTnd" [disabled]="editPriceOnRequest" min="0">
+          </div>
+          <div class="zir-input-group" style="flex:1; margin-bottom:12px;">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="editPriceOnRequest"> Prix sur demande
+            </label>
+          </div>
+        </div>
+        <div style="display:flex; gap:12px;">
+          <div class="zir-input-group" style="flex:1;">
+            <label class="zir-label">Téléphone</label>
+            <input type="text" class="zir-input" [(ngModel)]="editContactPhone">
+          </div>
+          <div class="zir-input-group" style="flex:1;">
+            <label class="zir-label">Email</label>
+            <input type="email" class="zir-input" [(ngModel)]="editContactEmail">
+          </div>
+        </div>
+        <div class="zir-input-group">
+          <label class="zir-label">Localisation</label>
+          <input type="text" class="zir-input" [(ngModel)]="editLocationLabel" placeholder="Ex: Kasserine, Tunisie">
+        </div>
+
+        <!-- Traceability Fields Edit (Sprint 5) -->
+        @if (editingListing()?.category === 'LIVESTOCK' || editingListing()?.category === 'PROCESSED') {
+          <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:4px;">
+            @if (editingListing()?.category === 'PROCESSED') {
+              <div class="zir-input-group" style="flex:1; min-width:200px;">
+                <label class="zir-label">Origine florale (ex: Thym, Romarin)</label>
+                <input type="text" class="zir-input" [(ngModel)]="editFloralOrigin" placeholder="Ex: Miel de thym">
+              </div>
+            }
+            @if (editingListing()?.category === 'LIVESTOCK') {
+              <div class="zir-input-group" style="flex:1; min-width:200px;">
+                <label class="zir-label">Méthode d'élevage</label>
+                <input type="text" class="zir-input" [(ngModel)]="editBreedingMethod" placeholder="Ex: Plein air">
+              </div>
+              <div class="zir-input-group" style="flex:1; min-width:200px; display:flex; align-items:center; margin-top:24px;">
+                <label class="checkbox-label">
+                  <input type="checkbox" [(ngModel)]="editSanitaryCert">
+                  Conformité sanitaire (Vaccins à jour)
+                </label>
+              </div>
+            }
+            <div class="zir-input-group" style="flex:1; min-width:200px;">
+              <label class="zir-label">ID de traçabilité</label>
+              <input type="text" class="zir-input" [(ngModel)]="editTraceabilityRefId" placeholder="ID de référence">
+            </div>
+          </div>
+        }
+
+        <!-- Sprint 6: Edit Modal Media Manager -->
+        <div class="zir-input-group media-upload-section">
+          <label class="zir-label">Médias de l'annonce</label>
+          <p class="media-hint">Gérez les photos et vidéos de cette annonce en temps réel.</p>
+          
+          <div class="media-preview-grid">
+            @for (item of editMedia(); track item.url; let idx = $index) {
+              <div class="preview-item" [class.preview-item--primary]="idx === 0">
+                @if (item.type === 'photo') {
+                  <img [src]="item.url" alt="Media item"/>
+                } @else {
+                  <div class="video-preview-placeholder">
+                    <ng-icon name="lucideVideo" class="video-icon"></ng-icon>
+                    <span>Vidéo</span>
+                  </div>
+                }
+                
+                <div class="preview-actions">
+                  <button type="button" class="action-btn action-btn--primary" (click)="setEditPrimary(editingListing()?.id, idx)" title="Définir comme principale">
+                    <ng-icon name="lucideStar"></ng-icon>
+                  </button>
+                  <button type="button" class="action-btn" (click)="moveEditMediaUp(editingListing()?.id, idx)" [disabled]="idx === 0" title="Déplacer vers la gauche">
+                    <ng-icon name="lucideArrowUp"></ng-icon>
+                  </button>
+                  <button type="button" class="action-btn" (click)="moveEditMediaDown(editingListing()?.id, idx)" [disabled]="idx === editMedia().length - 1" title="Déplacer vers la droite">
+                    <ng-icon name="lucideArrowDown"></ng-icon>
+                  </button>
+                  <button type="button" class="action-btn action-btn--danger" (click)="removeEditMedia(editingListing()?.id, idx)" title="Supprimer">
+                    <ng-icon name="lucideTrash2"></ng-icon>
+                  </button>
+                </div>
+
+                @if (idx === 0) {
+                  <span class="primary-badge">Principale</span>
+                }
+              </div>
+            }
+            
+            @if (editMedia().length < 8) {
+              <label class="upload-trigger-card" [class.upload-trigger-card--loading]="isUploadingEditMedia()">
+                @if (isUploadingEditMedia()) {
+                  <ng-icon name="lucideLoader" class="spin upload-icon"></ng-icon>
+                  <span>Envoi...</span>
+                } @else {
+                  <input type="file" (change)="onEditFileSelected($event, editingListing()?.id)" accept="image/*,video/*" multiple style="display:none;"/>
+                  <ng-icon name="lucidePlusCircle" class="upload-icon"></ng-icon>
+                  <span>Ajouter</span>
+                }
+              </label>
+            }
+          </div>
+        </div>
+      </div>
+      <div class="fm-drawer__footer">
+        <button class="zir-btn zir-btn--ghost" (click)="closeEditModal()">Annuler</button>
+        <button class="zir-btn zir-btn--primary" (click)="saveEdit()" [disabled]="isSavingEdit()">
+          @if (isSavingEdit()) { <ng-icon name="lucideLoader" class="spin"/> Enregistrement... }
+          @else { <ng-icon name="lucideCheck"/> Enregistrer les modifications }
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- =================== HEADER & TABS =================== -->
+  <header class="fm-page-header">
+    <div class="fm-page-header__glow" aria-hidden="true"></div>
+    <div class="fm-page-header__top">
+      <div class="fm-page-header__intro">
+        <span class="fm-page-header__eyebrow">
+          <ng-icon name="lucideShoppingCart"/>
+          Marketplace ZirIA
+        </span>
+        <h2>Marché Agricole Public</h2>
+        <p>Gérez vos annonces et répondez aux demandes d'acheteurs professionnels ou de visiteurs.</p>
+      </div>
+      <button type="button" class="fm-publish-btn" (click)="activeTab.set('CREATE')">
+        <ng-icon name="lucidePlusCircle"/>
+        <span>Publier une annonce</span>
+      </button>
+    </div>
+
+    <nav class="fm-tab-nav" role="tablist" aria-label="Sections marketplace">
+      <button
+        type="button"
+        role="tab"
+        class="fm-tab"
+        [class.fm-tab--active]="activeTab() === 'BROWSE'"
+        [attr.aria-selected]="activeTab() === 'BROWSE'"
+        (click)="activeTab.set('BROWSE')">
+        <span class="fm-tab__icon"><ng-icon name="lucidePackage"/></span>
+        <span class="fm-tab__text">
+          <span class="fm-tab__label">Explorer les annonces</span>
+          <span class="fm-tab__hint">Catalogue public</span>
+        </span>
+        <span class="fm-tab__badge">{{ browseListings().length }}</span>
+      </button>
+
+      <button
+        type="button"
+        role="tab"
+        class="fm-tab"
+        [class.fm-tab--active]="activeTab() === 'MY_LISTINGS'"
+        [attr.aria-selected]="activeTab() === 'MY_LISTINGS'"
+        (click)="activeTab.set('MY_LISTINGS')">
+        <span class="fm-tab__icon"><ng-icon name="lucideTag"/></span>
+        <span class="fm-tab__text">
+          <span class="fm-tab__label">Mes annonces</span>
+          <span class="fm-tab__hint">Vos publications</span>
+        </span>
+        <span class="fm-tab__badge" [class.fm-tab__badge--accent]="myListings().length > 0">{{ myListings().length }}</span>
+      </button>
+
+      <button
+        type="button"
+        role="tab"
+        class="fm-tab"
+        [class.fm-tab--active]="activeTab() === 'B2B_REQUESTS'"
+        [attr.aria-selected]="activeTab() === 'B2B_REQUESTS'"
+        (click)="activeTab.set('B2B_REQUESTS')">
+        <span class="fm-tab__icon"><ng-icon name="lucideHandshake"/></span>
+        <span class="fm-tab__text">
+          <span class="fm-tab__label">Demandes reçues</span>
+          <span class="fm-tab__hint">Contacts B2B</span>
+        </span>
+        <span class="fm-tab__badge" [class.fm-tab__badge--warn]="connections().length > 0">{{ connections().length }}</span>
+      </button>
+    </nav>
+  </header>
+
+  <div class="fm-tab-panel">
+
+    <!-- =================== TAB: BROWSE =================== -->
+    @if (activeTab() === 'BROWSE') {
+      <div class="fm-filter-bar">
+        <div class="fm-filter-bar__search">
+          <ng-icon name="lucideSearch"></ng-icon>
+          <input
+            type="text"
+            class="zir-input fm-filter-bar__input"
+            placeholder="Rechercher..."
+            [value]="browseSearch()"
+            (input)="onSearchInput($any($event.target).value)">
+        </div>
+
+        @if (activeGovernorate()) {
+          <div class="fm-filter-bar__region">
+            <ng-icon name="lucideMapPin"></ng-icon>
+            <span class="fm-region-badge">{{ activeGovernorate() }}</span>
+            <button class="zir-btn zir-btn--ghost fm-filter-bar__change" (click)="clearRegionFilter()">
+              <ng-icon name="lucideX"></ng-icon> Toutes régions
+            </button>
+          </div>
+        } @else {
+          <div class="fm-filter-bar__region">
+            <ng-icon name="lucideMapPin"></ng-icon>
+            <span class="fm-region-badge fm-region-badge--all">Toutes régions</span>
+          </div>
+        }
+
+        <button class="zir-btn zir-btn--ghost" (click)="loadBrowseListings()">
+          <ng-icon name="lucideRefreshCw"></ng-icon>
+        </button>
+      </div>
+
+      @if (isBrowseLoading()) {
+        <div class="fm-product-grid">
+          @for (_ of [1,2,3]; track $index) {
+            <div class="fm-skeleton-card">
+              <div class="fm-skeleton-card__icon"></div>
+              <div class="fm-skeleton-card__text"></div>
+              <div class="fm-skeleton-card__text fm-skeleton-card__text--short"></div>
+              <div class="fm-skeleton-card__price"></div>
+              <div class="fm-skeleton-card__btn"></div>
+            </div>
+          }
+        </div>
+      } @else if (filteredBrowseListings().length === 0) {
+        <div class="fm-empty-state">
+          <div class="fm-empty-state__icon"><ng-icon name="lucideLeaf"/></div>
+          <h3>Aucune annonce disponible</h3>
+          <p>Aucune annonce ne correspond à vos critères de recherche.</p>
+        </div>
+      } @else {
+        <div class="fm-product-grid">
+          @for (listing of filteredBrowseListings(); track listing.id) {
+            <div class="fm-product-card zir-card" [class.fm-product-card--sent]="hasSentRequest(listing.id)">
+              <div class="card-image-header" [class.card-image-header--fallback]="listing._photoUrls.length === 0">
+                @if (listing._photoUrls.length > 0) {
+                  <img [src]="listing._photoUrls[0]" [alt]="listing._displayTitle" class="card-img-cover" (error)="onListingImageError($event)"/>
+                }
+                @if (listing._hasVideo) {
+                  <div class="video-play-overlay" title="Cette annonce contient une vidéo">
+                    <ng-icon name="lucidePlay" class="play-icon"></ng-icon>
+                  </div>
+                }
+                <div class="card-img-placeholder"><ng-icon name="lucideLeaf"/></div>
+
+                <!-- Traceability Trust Badges (Sprint 5) -->
+                <div class="traceability-badges">
+                  @if (listing.sanitary_cert) {
+                    <span class="tbadge tbadge--sanitary" title="Santé animale certifiée par un vétérinaire">🛡️ Conforme</span>
+                  }
+                  @if (listing.traceability_ref_id) {
+                    <span class="tbadge tbadge--traceable" title="Origine tracée sur ZirIA">🔍 Tracé</span>
+                  }
+                </div>
+              </div>
+              <h3 class="fm-product-card__name">{{ listing._displayTitle }}</h3>
+
+              <!-- Traceability parameters details (Sprint 5) -->
+              @if (listing.floral_origin || listing.breeding_method) {
+                <div class="fm-product-card__trace-details">
+                  @if (listing.floral_origin) {
+                    <span class="trace-detail-tag">🪻 {{ listing.floral_origin }}</span>
+                  }
+                  @if (listing.breeding_method) {
+                    <span class="trace-detail-tag">🏡 {{ listing.breeding_method }}</span>
+                  }
+                </div>
+              }
+
+              <p class="fm-product-card__qty">
+                <ng-icon name="lucidePackage"></ng-icon>
+                {{ listing._formattedQuantity }}
+              </p>
+              <div class="fm-product-card__price-row">
+                <span class="fm-product-card__price">{{ listing._formattedPrice }}</span>
+              </div>
+              <p class="fm-product-card__seller">
+                <ng-icon name="lucideMapPin"></ng-icon>
+                @if (listing.location_label) {
+                  {{ listing.location_label }}
+                } @else {
+                  {{ listing.seller_name }}
+                }
+              </p>
+
+              @if (isMyListing(listing)) {
+                <span class="fm-product-card__own-badge">Votre annonce</span>
+              } @else if (hasSentRequest(listing.id)) {
+                <span class="fm-product-card__sent-badge">
+                  <ng-icon name="lucideCheckCircle"></ng-icon> Demande envoyée
+                </span>
+              } @else {
+                <button class="zir-btn zir-btn--primary fm-product-card__cta" (click)="openContactDrawer(listing)">
+                  <ng-icon name="lucideHandshake"></ng-icon> Contacter
+                </button>
+              }
+            </div>
+          }
+        </div>
+      }
+    }
+
+    <!-- =================== TAB: MY LISTINGS =================== -->
+    @if (activeTab() === 'MY_LISTINGS') {
+      <div class="fm-my-listings-wrap">
+        <p class="fm-my-listings-hint">
+          Ces annonces sont identiques à celles visibles sur le <strong>Marketplace public</strong> (photos, prix, lieu).
+        </p>
+
+        @if (isLoading()) {
+          <div class="fm-product-grid">
+            @for (_ of [1,2,3]; track $index) {
+              <div class="fm-skeleton-card">
+                <div class="fm-skeleton-card__icon"></div>
+                <div class="fm-skeleton-card__text"></div>
+                <div class="fm-skeleton-card__price"></div>
+              </div>
+            }
+          </div>
+        } @else if (myListings().length > 0) {
+          <div class="fm-my-listings-grid">
+            @for (item of myListings(); track item.id) {
+              <article class="fm-listing-card zir-card">
+                <div class="fm-listing-card__photo" [class.fm-listing-card__photo--fallback]="item._photoUrls.length === 0">
+                  @if (item._photoUrls.length > 0) {
+                    <img
+                      [src]="item._photoUrls[0]"
+                      [alt]="item._displayTitle"
+                      loading="lazy"
+                      (error)="onListingImageError($event)"/>
+                  }
+                  @if (item._hasVideo) {
+                    <div class="video-play-overlay" title="Cette annonce contient une vidéo">
+                      <ng-icon name="lucidePlay" class="play-icon"></ng-icon>
+                    </div>
+                  }
+                  <div class="fm-listing-card__photo-placeholder">
+                    <ng-icon name="lucideImage"/>
+                  </div>
+                  <span class="fm-listing-card__status" [class.fm-listing-card__status--active]="item.status === 'ACTIVE'">
+                    {{ item._statusLabel }}
+                  </span>
+                  @if (item.category) {
+                    <span class="fm-listing-card__category">{{ item._categoryLabel }}</span>
+                  }
+                </div>
+
+                <div class="fm-listing-card__body">
+                  <h4 class="fm-listing-card__title">{{ item._displayTitle }}</h4>
+                  @if (item.location_label) {
+                    <p class="fm-listing-card__location">
+                      <ng-icon name="lucideMapPin"/>
+                      {{ item.location_label }}
+                    </p>
+                  }
+                  @if (item.description) {
+                    <p class="fm-listing-card__desc">{{ item.description }}</p>
+                  }
+                  <div class="fm-listing-card__meta">
+                    <span class="fm-listing-card__qty">
+                      <ng-icon name="lucidePackage"/>
+                      {{ item._formattedQuantity }}
+                    </span>
+                    <span class="fm-listing-card__price">{{ item._formattedPrice }}</span>
+                  </div>
+                  <p class="fm-listing-card__date">Publié le {{ item.created_at | date:'d MMM yyyy' }}</p>
+                </div>
+
+                <div class="fm-listing-card__actions">
+                  <button class="zir-btn zir-btn--ghost zir-btn--sm" (click)="openEditModal(item)">
+                    <ng-icon name="lucideInfo"/> Modifier
+                  </button>
+                  @if (item.status === 'ACTIVE') {
+                    <button class="zir-btn zir-btn--ghost zir-btn--sm" (click)="updateListingStatus(item.id, 'CANCELLED')">Désactiver</button>
+                    <button class="zir-btn zir-btn--ghost zir-btn--sm" style="color:var(--success)" (click)="updateListingStatus(item.id, 'SOLD')">Vendu</button>
+                  } @else if (item.status === 'CANCELLED' || item.status === 'INACTIVE') {
+                    <button class="zir-btn zir-btn--ghost zir-btn--sm" (click)="updateListingStatus(item.id, 'ACTIVE')">Réactiver</button>
+                  }
+                  <button class="zir-btn zir-btn--ghost zir-btn--icon-only" style="color:var(--error);" (click)="deleteListing(item.id)" title="Supprimer">
+                    <ng-icon name="lucideTrash2"/>
+                  </button>
+                </div>
+              </article>
+            }
+          </div>
+        } @else {
+          <div class="zir-empty" style="padding: 40px;">
+            <div class="zir-empty__icon"><ng-icon name="lucideShoppingCart"/></div>
+            <div class="zir-empty__title">Aucune annonce</div>
+            <div class="zir-empty__desc">Connectez-vous avec <strong>farmer1@ziria.tn</strong> (Ahmed Ben Salah) après le seed, ou publiez votre première annonce.</div>
+            <button class="zir-btn zir-btn--primary" style="margin-top:16px;" (click)="activeTab.set('CREATE')">
+              <ng-icon name="lucidePlusCircle"/> Publier une annonce
+            </button>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- =================== TAB: B2B REQUESTS =================== -->
+    @if (activeTab() === 'B2B_REQUESTS') {
+      <div class="zir-card fm-panel-card">
+        @if (isLoading()) {
+          <div style="padding: 24px;"><div class="zir-skeleton--text" style="height: 60px;"></div></div>
+        } @else if (connections().length > 0) {
+          <div class="farmer-marketplace__list">
+            @for (conn of connections(); track conn.id) {
+              <div class="farmer-marketplace__item">
+                <div class="farmer-marketplace__item-left">
+                  <div class="farmer-marketplace__item-info">
+                    <h4>{{ conn.buyer?.name || 'Acheteur professionnel' }}</h4>
+                    <p>{{ conn.created_at | date:'dd/MM/yyyy HH:mm' }}</p>
+                  </div>
+                </div>
+                <div class="farmer-marketplace__item-stats">
+                  <div>
+                    <div class="stat-label">Annonce</div>
+                    <div class="stat-value">{{ conn.listing?.title }}</div>
+                  </div>
+                  <div>
+                    <div class="stat-label">Message</div>
+                    <div class="stat-value text-truncate" style="max-width:200px;">"{{ conn.message }}"</div>
+                  </div>
+                  <div>
+                    <div class="stat-label">Statut</div>
+                    <span class="zir-badge" [ngClass]="{
+                      'zir-badge--success': conn.status === 'CONFIRMED',
+                      'zir-badge--warning': conn.status === 'PENDING',
+                      'zir-badge--danger': conn.status === 'REJECTED'
+                    }">{{ conn.status }}</span>
+                  </div>
+                </div>
+                <div class="farmer-marketplace__item-actions">
+                  @if (conn.status === 'PENDING') {
+                    <button class="zir-btn zir-btn--ghost" style="color:var(--success)" (click)="respondConnection(conn.id, 'CONFIRM')">
+                      <ng-icon name="lucideCheckCircle"></ng-icon> Accepter
+                    </button>
+                    <button class="zir-btn zir-btn--ghost" style="color:var(--error)" (click)="respondConnection(conn.id, 'REJECT')">
+                      <ng-icon name="lucideXCircle"></ng-icon> Refuser
+                    </button>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="zir-empty" style="padding: 40px;">
+            <div class="zir-empty__icon"><ng-icon name="lucideHandshake"></ng-icon></div>
+            <div class="zir-empty__title">Aucune demande</div>
+            <div class="zir-empty__desc">Vous n'avez pas de demandes de contact ou de mise en relation B2B pour le moment.</div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- =================== TAB: CREATE =================== -->
+    @if (activeTab() === 'CREATE') {
+      <div class="zir-card fm-create-form">
+        <div class="create-header">
+          <h3 style="font-size:18px; font-weight:700; margin:0;">Nouvelle Annonce</h3>
+          <button type="button" class="pulse-autofill-btn" (click)="showPulseAutofillModal.set(true)">
+            <ng-icon name="lucideSparkles"/>
+            Pré-remplir via ZirPulse (IA)
+          </button>
+        </div>
+
+        <form (ngSubmit)="createListing()">
+          <!-- Category Selector -->
+          <div class="zir-input-group">
+            <label class="zir-label">Catégorie *</label>
+            <select class="zir-input" [ngModel]="formCategory()" (ngModelChange)="formCategory.set($event)" name="category" required>
+              <option value="FRESH_PRODUCE">🥬 Produits Frais (Légumes, Fruits)</option>
+              <option value="LIVESTOCK">🐄 Bétail & Animaux</option>
+              <option value="FORAGE_FEED">🌾 Fourrage & Aliments de bétail</option>
+              <option value="EQUIPMENT">🚜 Matériel & Équipements agricoles</option>
+              <option value="LAND">📐 Terrains agricoles & Parcelles</option>
+              <option value="PROCESSED">🫙 Produits transformés (Huiles, Miels...)</option>
+              <option value="SEEDS">🌱 Semences & Plants</option>
+              <option value="GENERAL">📦 Autre / Général</option>
+            </select>
+          </div>
+
+          <!-- Title -->
+          <div class="zir-input-group">
+            <label class="zir-label">Titre de l'annonce *</label>
+            <input type="text" class="zir-input" [(ngModel)]="formTitle" name="title" required placeholder="Ex: Lot de pommes de terre Kasserine">
+          </div>
+
+          <!-- Description -->
+          <div class="zir-input-group">
+            <label class="zir-label">Description détaillée</label>
+            <textarea class="zir-input" [(ngModel)]="formDescription" name="description" rows="4" placeholder="Décrivez votre produit, variété, mode de culture..."></textarea>
+          </div>
+
+          <div style="display:flex; gap:16px;">
+            <!-- Crop Type (if fresh produce/seeds) -->
+            @if (formCategory() === 'FRESH_PRODUCE' || formCategory() === 'SEEDS' || formCategory() === 'PROCESSED') {
+              <div class="zir-input-group" style="flex:1;">
+                <label class="zir-label">Type de culture (ex: Pomme de terre, Olive)</label>
+                <input type="text" class="zir-input" [(ngModel)]="formCropType" name="crop_type" placeholder="Ex: Olive">
+              </div>
+            }
+            <!-- Livestock Type -->
+            @if (formCategory() === 'LIVESTOCK') {
+              <div class="zir-input-group" style="flex:1;">
+                <label class="zir-label">Type de bétail (ex: Mouton, Vache)</label>
+                <input type="text" class="zir-input" [(ngModel)]="formLivestockType" name="livestock_type" placeholder="Ex: Mouton de race">
+              </div>
+            }
+            <!-- Equipment Condition -->
+            @if (formCategory() === 'EQUIPMENT') {
+              <div class="zir-input-group" style="flex:1;">
+                <label class="zir-label">État du matériel</label>
+                <select class="zir-input" [(ngModel)]="formEquipmentCondition" name="equipment_condition">
+                  <option value="NEW">Neuf</option>
+                  <option value="USED">Occasion</option>
+                </select>
+              </div>
+            }
+          </div>
+
+          <!-- Traceability Fields (Sprint 5) -->
+          @if (formCategory() === 'LIVESTOCK' || formCategory() === 'PROCESSED') {
+            <div style="display:flex; gap:16px; margin-bottom:12px; flex-wrap:wrap;">
+              @if (formCategory() === 'PROCESSED') {
+                <div class="zir-input-group" style="flex:1; min-width:200px;">
+                  <label class="zir-label">Origine florale (ex: Thym, Eucalyptus pour le Miel)</label>
+                  <input type="text" class="zir-input" [(ngModel)]="formFloralOrigin" name="floral_origin" placeholder="Ex: Thym sauvage">
+                </div>
+              }
+              @if (formCategory() === 'LIVESTOCK') {
+                <div class="zir-input-group" style="flex:1; min-width:200px;">
+                  <label class="zir-label">Méthode d'élevage (ex: Plein air, Bergerie)</label>
+                  <input type="text" class="zir-input" [(ngModel)]="formBreedingMethod" name="breeding_method" placeholder="Ex: Plein air">
+                </div>
+                <div class="zir-input-group" style="flex:1; min-width:200px; display:flex; align-items:center; margin-top:28px;">
+                  <label class="checkbox-label">
+                    <input type="checkbox" [(ngModel)]="formSanitaryCert" name="sanitary_cert">
+                    Conformité sanitaire (Vaccins à jour)
+                  </label>
+                </div>
+              }
+              <div class="zir-input-group" style="flex:1; min-width:200px;">
+                <label class="zir-label">ID de traçabilité (ex: ID Ruche, Fiche Élevage)</label>
+                <input type="text" class="zir-input" [(ngModel)]="formTraceabilityRefId" name="traceability_ref_id" placeholder="Optionnel : ID de référence">
+              </div>
+            </div>
+          }
+
+          <!-- Land specific fields -->
+          @if (formCategory() === 'LAND') {
+            <div style="display:flex; gap:16px; margin-bottom:12px;">
+              <div class="zir-input-group" style="flex:1;">
+                <label class="zir-label">Surface (Hectares)</label>
+                <input type="number" class="zir-input" [(ngModel)]="formLandSizeHa" name="land_size_ha" min="0.1" step="0.1">
+              </div>
+              <div class="zir-input-group" style="flex:1;">
+                <label class="zir-label">Type de sol</label>
+                <input type="text" class="zir-input" [(ngModel)]="formLandSoilType" name="land_soil_type" placeholder="Sableux, Argileux...">
+              </div>
+            </div>
+            <div style="display:flex; gap:24px; margin-bottom:16px;">
+              <label class="checkbox-label">
+                <input type="checkbox" [(ngModel)]="formLandWaterAccess" name="land_water_access">
+                Accès à l'eau disponible
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" [(ngModel)]="formLandOpenForBidding" name="land_open_for_bidding">
+                Ouvert aux enchères / offres
+              </label>
+            </div>
+          }
+
+          <!-- Quantity -->
+          <div style="display:flex; gap:16px;">
+            <div class="zir-input-group" style="flex:2;">
+              <label class="zir-label">Quantité *</label>
+              <input type="number" class="zir-input" [(ngModel)]="formQuantityValue" name="qty_value" required min="0.1" step="0.1">
+            </div>
+            <div class="zir-input-group" style="flex:1;">
+              <label class="zir-label">Unité *</label>
+              <input type="text" class="zir-input" [(ngModel)]="formQuantityUnit" name="qty_unit" required placeholder="ex: tonnes, kg, têtes">
+            </div>
+          </div>
+
+          <!-- Price -->
+          <div style="display:flex; gap:16px; align-items:flex-end;">
+            <div class="zir-input-group" style="flex:2;">
+              <label class="zir-label">Prix Total (TND)</label>
+              <input type="number" class="zir-input" [(ngModel)]="formPriceTnd" name="price_tnd" [disabled]="formPriceOnRequest" min="0">
+            </div>
+            <div class="zir-input-group" style="flex:1; margin-bottom:12px;">
+              <label class="checkbox-label">
+                <input type="checkbox" [(ngModel)]="formPriceOnRequest" name="price_on_request">
+                Prix sur demande
+              </label>
+            </div>
+          </div>
+
+          <!-- Parcel selection & linked to stock (for fresh produce/forage) -->
+          @if (formCategory() === 'FRESH_PRODUCE' || formCategory() === 'FORAGE_FEED') {
+            <div style="display:flex; gap:16px; margin-bottom:16px; flex-wrap:wrap;">
+              <div class="zir-input-group" style="flex:1; min-width:200px;">
+                <label class="zir-label">Parcelle d'origine (Traçabilité)</label>
+                <select class="zir-input" [(ngModel)]="formParcelId" name="parcel_id">
+                  <option value="">— Non spécifiée —</option>
+                  @for (p of parcels(); track p.id) {
+                    <option [value]="p.id">{{ p.name || 'Parcelle ' + p.id.substring(0,6) }}</option>
+                  }
+                </select>
+              </div>
+              <div class="zir-input-group" style="flex:1; min-width:200px; display:flex; align-items:center; margin-top:28px;">
+                <label class="checkbox-label">
+                  <input type="checkbox" [(ngModel)]="formLinkedToStock" name="linked_to_stock">
+                  Synchroniser avec mon stock ZirIA
+                </label>
+              </div>
+            </div>
+          }
+
+          <!-- Contact info (Denormalized on Listing) -->
+          <div style="display:flex; gap:16px;">
+            <div class="zir-input-group" style="flex:1;">
+              <label class="zir-label">Téléphone de contact *</label>
+              <input type="text" class="zir-input" [(ngModel)]="formContactPhone" name="contact_phone" required>
+            </div>
+            <div class="zir-input-group" style="flex:1;">
+              <label class="zir-label">Email de contact *</label>
+              <input type="email" class="zir-input" [(ngModel)]="formContactEmail" name="contact_email" required>
+            </div>
+          </div>
+
+          <div class="zir-input-group">
+            <label class="zir-label">Localisation (Région, Ville) *</label>
+            <input type="text" class="zir-input" [(ngModel)]="formLocationLabel" name="location_label" required placeholder="Ex: Kasserine, Tunisie">
+          </div>
+
+          <!-- Quality Score Card & Checklist -->
+          <div class="quality-score-dashboard zir-card">
+            <div class="score-header">
+              <span class="score-title">Score de Qualité de l'Annonce</span>
+              <div class="score-badge" [style.background-color]="formQualityTier().color">
+                {{ formQualityTier().label }} ({{ formQualityScore() }}/100)
+              </div>
+            </div>
+            <div class="score-bar-bg">
+              <div class="score-bar-fill" [style.width.%]="formQualityScore()" [style.background-color]="formQualityTier().color"></div>
+            </div>
+            <ul class="score-checklist">
+              @for (item of formChecklist(); track item.text) {
+                <li class="checklist-item" [class.checklist-item--met]="item.met">
+                  <ng-icon [name]="item.met ? 'lucideCheck' : 'lucideInfo'" class="checklist-icon"></ng-icon>
+                  <span>{{ item.text }}</span>
+                </li>
+              }
+            </ul>
+          </div>
+
+          <!-- Media Upload Section -->
+          <div class="zir-input-group media-upload-section">
+            <label class="zir-label">Médias de l'annonce (Max 5 photos, 1 vidéo, 8 total) *</label>
+            <p class="media-hint">Ajoutez des photos réelles et une vidéo de présentation pour optimiser la vente.</p>
+            
+            <div class="media-preview-grid">
+              @for (item of selectedMedia(); track item.preview; let idx = $index) {
+                <div class="preview-item" [class.preview-item--primary]="idx === 0">
+                  @if (item.type === 'photo') {
+                    <img [src]="item.preview" alt="Preview"/>
+                  } @else {
+                    <div class="video-preview-placeholder">
+                      <ng-icon name="lucideVideo" class="video-icon"></ng-icon>
+                      <span>Vidéo</span>
+                    </div>
+                  }
+                  
+                  <div class="preview-actions">
+                    <button type="button" class="action-btn action-btn--primary" (click)="setFormPrimary(idx)" title="Définir comme principale">
+                      <ng-icon name="lucideStar"></ng-icon>
+                    </button>
+                    <button type="button" class="action-btn" (click)="moveFormMediaUp(idx)" [disabled]="idx === 0" title="Déplacer vers la gauche">
+                      <ng-icon name="lucideArrowUp"></ng-icon>
+                    </button>
+                    <button type="button" class="action-btn" (click)="moveFormMediaDown(idx)" [disabled]="idx === selectedMedia().length - 1" title="Déplacer vers la droite">
+                      <ng-icon name="lucideArrowDown"></ng-icon>
+                    </button>
+                    <button type="button" class="action-btn action-btn--danger" (click)="removePhoto(idx)" title="Supprimer">
+                      <ng-icon name="lucideTrash2"></ng-icon>
+                    </button>
+                  </div>
+
+                  @if (idx === 0) {
+                    <span class="primary-badge">Principale</span>
+                  }
+                </div>
+              }
+              
+              @if (selectedMedia().length < 8) {
+                <label class="upload-trigger-card">
+                  <input type="file" (change)="onFileSelected($event)" accept="image/*,video/*" multiple style="display:none;"/>
+                  <ng-icon name="lucidePlusCircle" class="upload-icon"></ng-icon>
+                  <span>Ajouter média</span>
+                </label>
+              }
+            </div>
+          </div>
+
+          <div style="display:flex; justify-content:flex-end; gap: 12px; margin-top:24px;">
+            <button type="button" class="zir-btn zir-btn--ghost" (click)="activeTab.set('BROWSE')">Annuler</button>
+            <button type="submit" class="zir-btn zir-btn--primary" [disabled]="isSubmitting() || selectedMedia().length === 0">
+              @if (isSubmitting()) { <ng-icon name="lucideLoader" class="spin"></ng-icon> }
+              @else { <ng-icon name="lucideCheckCircle"></ng-icon> }
+              Publier sur le marché public
+            </button>
+          </div>
+        </form>
+      </div>
+    }
+
+  </div>
+</div>

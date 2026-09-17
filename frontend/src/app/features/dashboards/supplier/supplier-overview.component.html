@@ -1,0 +1,108 @@
+<div class="sup-page">
+
+  @if (isLoading()) {
+    <div class="sup-loading">
+      <ng-icon name="lucideLoader" class="spin"></ng-icon>
+      <span>Chargement du tableau de bord...</span>
+    </div>
+  } @else if (stats(); as s) {
+
+    <!-- KPI Strip -->
+    <div class="kpi-grid">
+      <div class="kpi-card kpi-card--emerald">
+        <div class="kpi-icon"><ng-icon name="lucideCircleDollarSign"></ng-icon></div>
+        <div class="kpi-body">
+          <span class="kpi-label">Revenus livrés</span>
+          <span class="kpi-value">{{ s.totalRevenueTnd | number:'1.0-0' }} <small>TND</small></span>
+        </div>
+      </div>
+      <div class="kpi-card kpi-card--amber">
+        <div class="kpi-icon"><ng-icon name="lucideClock"></ng-icon></div>
+        <div class="kpi-body">
+          <span class="kpi-label">En attente</span>
+          <span class="kpi-value">{{ s.pendingOrders }}</span>
+        </div>
+      </div>
+      <div class="kpi-card kpi-card--blue">
+        <div class="kpi-icon"><ng-icon name="lucidePackage"></ng-icon></div>
+        <div class="kpi-body">
+          <span class="kpi-label">Produits actifs</span>
+          <span class="kpi-value">{{ s.activeProducts }} <small>/ {{ s.totalProducts }}</small></span>
+        </div>
+      </div>
+      <div class="kpi-card" [class.kpi-card--red]="s.lowStockCount > 0" [class.kpi-card--slate]="s.lowStockCount === 0">
+        <div class="kpi-icon"><ng-icon name="lucideAlertTriangle"></ng-icon></div>
+        <div class="kpi-body">
+          <span class="kpi-label">Stock critique</span>
+          <span class="kpi-value">{{ s.lowStockCount }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Two-column layout -->
+    <div class="sup-columns">
+
+      <!-- Recent Orders -->
+      <div class="sup-card">
+        <div class="sup-card__header">
+          <div class="sup-card__title">
+            <ng-icon name="lucideShoppingBag"></ng-icon>
+            Dernières commandes
+          </div>
+          <a routerLink="/dashboard/supplier/orders" class="sup-link">
+            Tout voir <ng-icon name="lucideArrowRight"></ng-icon>
+          </a>
+        </div>
+        <div class="order-list">
+          @if (s.recentOrders.length === 0) {
+            <div class="sup-empty">Aucune commande pour le moment.</div>
+          }
+          @for (order of s.recentOrders; track order.id) {
+            <div class="order-row">
+              <div class="order-buyer">
+                <div class="order-avatar">{{ order.buyer.name.charAt(0).toUpperCase() }}</div>
+                <div>
+                  <div class="order-buyer-name">{{ order.buyer.name }}</div>
+                  <div class="order-product">{{ order.product.name }}</div>
+                </div>
+              </div>
+              <div class="order-meta">
+                <span class="sup-badge {{ statusClass(order.status) }}">{{ statusLabel(order.status) }}</span>
+                <span class="order-amount">{{ order.total_tnd | number:'1.0-0' }} TND</span>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Top Products by Revenue -->
+      <div class="sup-card">
+        <div class="sup-card__header">
+          <div class="sup-card__title">
+            <ng-icon name="lucideTrendingUp"></ng-icon>
+            Top produits (CA)
+          </div>
+          <a routerLink="/dashboard/supplier/catalog" class="sup-link">
+            Catalogue <ng-icon name="lucideArrowRight"></ng-icon>
+          </a>
+        </div>
+        @if (s.topProducts.length === 0) {
+          <div class="sup-empty">Pas encore de données de vente.</div>
+        }
+        @for (prod of s.topProducts; track $index) {
+          <div class="top-product-row">
+            <div class="top-product-rank">{{ $index + 1 }}</div>
+            <div class="top-product-name">{{ prod.name }}</div>
+            <div class="top-product-revenue">{{ prod.total | number:'1.0-0' }} TND</div>
+          </div>
+        }
+      </div>
+
+    </div>
+  } @else {
+    <div class="sup-empty" style="padding: 80px; text-align:center;">
+      Impossible de charger les données. Vérifiez votre connexion.
+    </div>
+  }
+
+</div>

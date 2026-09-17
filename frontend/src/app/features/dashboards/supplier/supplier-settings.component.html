@@ -1,0 +1,119 @@
+<div class="p-6 max-w-4xl mx-auto">
+  <h1 class="text-2xl font-bold text-white mb-8">Paramètres du Compte</h1>
+
+  <div *ngIf="loading" class="flex justify-center py-20">
+    <div class="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-[var(--zir-emerald)]"></div>
+  </div>
+
+  <ng-container *ngIf="!loading">
+    
+    <!-- Profil Perso -->
+    <div class="zir-card p-6 mb-6">
+      <h3 class="text-white font-medium flex items-center gap-2 mb-6">
+        <ng-icon name="lucideUser" class="text-[var(--zir-emerald)]"></ng-icon> Informations Personnelles
+      </h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div>
+          <label class="block text-gray-400 text-sm mb-1">Nom Complet</label>
+          <input type="text" [(ngModel)]="profile.name" class="zir-input w-full">
+        </div>
+        <div>
+          <label class="block text-gray-400 text-sm mb-1">Email (Non modifiable)</label>
+          <input type="email" [value]="profile.email" disabled class="zir-input w-full bg-gray-800 text-gray-500 cursor-not-allowed border-0">
+        </div>
+        <div>
+          <label class="block text-gray-400 text-sm mb-1">Téléphone</label>
+          <input type="text" [(ngModel)]="profile.phone" class="zir-input w-full">
+        </div>
+      </div>
+
+      <h3 class="text-white font-medium flex items-center gap-2 mb-4 mt-8">
+        <ng-icon name="lucideMapPin" class="text-[var(--zir-emerald)]"></ng-icon> Localisation & Adresse de l'entreprise
+      </h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div>
+          <label class="block text-gray-400 text-sm mb-1">Gouvernorat</label>
+          <input type="text" [(ngModel)]="profile.governorate" (change)="centerMapOnLocation()" placeholder="Ex: Kasserine" class="zir-input w-full">
+        </div>
+        <div>
+          <label class="block text-gray-400 text-sm mb-1">Délégation</label>
+          <input type="text" [(ngModel)]="profile.delegation" (change)="centerMapOnLocation()" placeholder="Ex: Sbeitla" class="zir-input w-full">
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div>
+          <label class="block text-gray-400 text-sm mb-1">Latitude</label>
+          <input type="number" step="any" [(ngModel)]="profile.lat" placeholder="Sélectionnée sur la carte" class="zir-input w-full">
+        </div>
+        <div>
+          <label class="block text-gray-400 text-sm mb-1">Longitude</label>
+          <input type="number" step="any" [(ngModel)]="profile.lng" placeholder="Sélectionnée sur la carte" class="zir-input w-full">
+        </div>
+      </div>
+
+      <div class="mb-6">
+        <div class="flex items-center justify-between mb-2">
+          <label class="block text-gray-400 text-sm">Sélectionner sur la carte (Glisser le marqueur)</label>
+          <div class="flex gap-2">
+            <button type="button" (click)="centerMapOnLocation()" class="text-xs text-[var(--zir-emerald)] hover:underline flex items-center gap-1">
+              Centrer sur la délégation
+            </button>
+            <span class="text-gray-600">|</span>
+            <button type="button" (click)="getLocation()" class="text-xs text-[var(--zir-emerald)] hover:underline flex items-center gap-1">
+              Utiliser ma position actuelle
+            </button>
+          </div>
+        </div>
+        <div class="w-full h-80 rounded-xl overflow-hidden border border-[var(--border)] relative z-0">
+          <div #settingsMap class="w-full h-full"></div>
+        </div>
+        <span class="text-xs text-gray-500 mt-2 block">
+          * Astuce : Vous pouvez faire glisser le marqueur ou cliquer directement n'importe où sur la carte pour définir l'emplacement précis de votre entreprise.
+        </span>
+      </div>
+      
+      <div class="flex justify-end">
+        <button (click)="saveProfile()" [disabled]="saving" class="btn-theme-primary px-6 py-2 rounded-lg font-bold">
+          {{ saving ? 'Sauvegarde...' : 'Enregistrer' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Sécurité -->
+    <div class="zir-card p-6 mb-6">
+      <h3 class="text-white font-medium flex items-center gap-2 mb-6">
+        <ng-icon name="lucideLock" class="text-[var(--zir-emerald)]"></ng-icon> Sécurité
+      </h3>
+      <div class="space-y-4 max-w-md">
+        <div>
+          <label class="block text-gray-400 text-sm mb-1">Mot de passe actuel</label>
+          <input type="password" [(ngModel)]="passwords.current" class="zir-input w-full">
+        </div>
+        <div>
+          <label class="block text-gray-400 text-sm mb-1">Nouveau mot de passe</label>
+          <input type="password" [(ngModel)]="passwords.new" class="zir-input w-full">
+        </div>
+        <div>
+          <label class="block text-gray-400 text-sm mb-1">Confirmer</label>
+          <input type="password" [(ngModel)]="passwords.confirm" class="zir-input w-full">
+        </div>
+        <button (click)="changePassword()" class="border border-[var(--border-accent)] text-white hover:bg-gray-800 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+          Modifier le mot de passe
+        </button>
+      </div>
+    </div>
+
+    <!-- Danger -->
+    <div class="zir-card border border-red-500/20 p-6 bg-red-500/5">
+      <h3 class="text-red-400 font-bold flex items-center gap-2 mb-2">
+        <ng-icon name="lucideAlertTriangle"></ng-icon> Zone de Danger
+      </h3>
+      <p class="text-gray-400 text-sm mb-4">La suppression de votre compte effacera toutes vos données, votre vitrine, vos factures et votre abonnement. Cette action est irréversible.</p>
+      <button (click)="deleteAccount()" class="bg-red-500/10 text-red-400 border border-red-500/50 hover:bg-red-500 hover:text-white px-4 py-2 rounded-lg font-medium transition-colors">
+        Supprimer mon compte
+      </button>
+    </div>
+
+  </ng-container>
+</div>

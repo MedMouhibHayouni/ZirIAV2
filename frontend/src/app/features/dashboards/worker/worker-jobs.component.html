@@ -1,0 +1,322 @@
+<div class="worker-page zir-animate-in">
+
+  <!-- =================== PREMIUM HEADER =================== -->
+  <div class="page-header-premium">
+    <div class="header-content">
+      <h2>
+        <div class="icon-box"><ng-icon name="lucideBriefcase"></ng-icon></div>
+        Plateforme d'Emploi Agricole
+      </h2>
+      <p>Découvrez les missions agricoles disponibles dans votre région. Postulez en un clic et suivez vos candidatures en temps réel.</p>
+    </div>
+  </div>
+
+  <!-- =================== MODERN TAB BAR =================== -->
+  <div class="premium-tabs">
+    <button class="pt-tab" [class.active]="activeTab() === 'OFFERS'" (click)="activeTab.set('OFFERS')">
+      <ng-icon name="lucideBriefcase"></ng-icon>
+      Toutes les offres
+      <span class="pt-badge">{{ jobs().length }}</span>
+    </button>
+    <button class="pt-tab" [class.active]="activeTab() === 'MY_APPS'" (click)="activeTab.set('MY_APPS')">
+      <ng-icon name="lucideCheckCircle"></ng-icon>
+      Mes candidatures
+      @if (pendingAppCount() > 0) {
+        <span class="pt-badge">{{ pendingAppCount() }}</span>
+      }
+    </button>
+  </div>
+
+  <!-- =================== OFFERS TAB =================== -->
+  @if (activeTab() === 'OFFERS') {
+
+    <!-- Filter Bar (Glass) -->
+    <div class="premium-filters">
+      <ng-icon name="lucideFilter" class="filter-icon"></ng-icon>
+
+      <div class="wj-skill-pills">
+        <button class="wj-pill" [class.active]="skillFilter === ''" (click)="skillFilter=''; applyFilters()">Toutes les tâches</button>
+        @for (s of skills; track s) {
+          <button class="wj-pill" [class.active]="skillFilter === s" (click)="skillFilter=s; applyFilters()">{{ s }}</button>
+        }
+      </div>
+
+      <div class="filter-inputs">
+        <select class="zir-input" [(ngModel)]="govFilter" (change)="applyFilters()" style="min-width: 160px;">
+          <option value="">Région : Toutes</option>
+          @for (g of governorates; track g) { <option [value]="g">{{ g }}</option> }
+        </select>
+        <input type="date" class="zir-input" [(ngModel)]="fromDate" (change)="applyFilters()" title="À partir du">
+      </div>
+    </div>
+
+    <!-- State: Loading -->
+    @if (isLoading()) {
+      <div class="loading-state">
+        <div class="icon-wrapper"><ng-icon name="lucideLoader" class="spin"></ng-icon></div>
+        <h3>Recherche des offres...</h3>
+        <p>Veuillez patienter pendant que nous récupérons les meilleures missions pour vous.</p>
+      </div>
+    } 
+    <!-- State: Empty -->
+    @else if (jobs().length === 0) {
+      <div class="empty-state">
+        <div class="icon-wrapper"><ng-icon name="lucideBriefcase"></ng-icon></div>
+        <h3>Aucune offre trouvée</h3>
+        <p>Il n'y a actuellement aucune offre correspondant à vos critères de recherche.</p>
+        <button class="zir-btn zir-btn--primary" style="border-radius: 20px; margin-top: 10px;" (click)="govFilter=''; skillFilter=''; fromDate=''; applyFilters()">
+          Réinitialiser les filtres
+        </button>
+      </div>
+    } 
+    <!-- Jobs Grid -->
+    @else {
+      <div class="jobs-grid">
+        @for (job of jobs(); track job.id) {
+          <div class="premium-job-card" [class.applied]="job._applied" (click)="toggleJobDetails(job.id)" style="cursor: pointer;">
+            
+            <!-- Urgency Ribbon -->
+            @if (urgencyClass(job) === 'urgent') {
+              <div class="urgency-ribbon">Urgent</div>
+            }
+
+            <!-- Card Top -->
+            <div class="card-top">
+              <div class="employer-avatar">
+                {{ job.employer?.name ? job.employer?.name?.charAt(0)?.toUpperCase() : 'A' }}
+              </div>
+              <div class="job-titles">
+                <h4>{{ job.task_type }}</h4>
+                <span class="employer-name">
+                  <ng-icon name="lucideCheckCircle"></ng-icon> Exploitation de {{ job.employer?.name || 'Agriculteur' }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Wage Display -->
+            <div class="wage-display">
+              <span class="wage-val">{{ job.daily_pay_tnd }}</span>
+              <span class="wage-unit">TND / jour</span>
+            </div>
+
+            <!-- Tags -->
+            <div class="job-tags">
+              <span class="p-tag"><ng-icon name="lucideMapPin"></ng-icon> {{ job.governorate }}</span>
+              <span class="p-tag highlight"><ng-icon name="lucideCalendar"></ng-icon> {{ job.start_date | date:'dd MMM yyyy' }}</span>
+              <span class="p-tag"><ng-icon name="lucideClock"></ng-icon> {{ job.duration_days }} jours</span>
+            </div>
+
+            @if (expandedJobId() === job.id) {
+              <!-- Description -->
+              @if (job.description) {
+                <p class="job-desc">{{ job.description }}</p>
+              }
+
+              <!-- Card Actions -->
+              <div class="card-actions">
+                <button 
+                  class="premium-btn" 
+                  [ngClass]="job._applied ? 'applied-state' : 'apply-active'"
+                  [disabled]="job._applying || job._applied"
+                  (click)="$event.stopPropagation(); applyForJob(job)">
+                  @if (job._applying) {
+                    <ng-icon name="lucideLoader" class="spin"></ng-icon> Envoi de la candidature...
+                  } @else if (job._applied) {
+                    <ng-icon name="lucideCheckCircle"></ng-icon> Candidature envoyée
+                  } @else {
+                    Postuler maintenant
+                  }
+                </button>
+              </div>
+            }
+
+          </div>
+        }
+      </div>
+      
+      <!-- Numeric Pagination -->
+      @if (totalPages() > 1) {
+        <div style="display: flex; justify-content: center; gap: 8px; margin-top: 24px; padding: 10px; background: var(--bg-primary); border-radius: var(--radius-lg); width: max-content; margin-left: auto; margin-right: auto; border: 1px solid var(--border);">
+          @for (page of getPages(); track page) {
+            <button 
+              class="zir-btn" 
+              [ngClass]="currentPage === page ? 'zir-btn--primary' : 'zir-btn--ghost'"
+              style="min-width: 40px; justify-content: center; border-radius: 8px;"
+              (click)="goToPage(page)">
+              {{ page }}
+            </button>
+          }
+        </div>
+      }
+    }
+  }
+
+  <!-- =================== MY APPLICATIONS TAB =================== -->
+  @if (activeTab() === 'MY_APPS') {
+    @if (isLoadingApps()) {
+      <div class="loading-state">
+        <div class="icon-wrapper"><ng-icon name="lucideLoader" class="spin"></ng-icon></div>
+        <h3>Chargement de vos candidatures...</h3>
+      </div>
+    } @else if (applications().length === 0) {
+      <div class="empty-state">
+        <div class="icon-wrapper"><ng-icon name="lucideCheckCircle"></ng-icon></div>
+        <h3>Aucune candidature</h3>
+        <p>Vous n'avez postulé à aucune offre d'emploi pour le moment.</p>
+        <button class="zir-btn zir-btn--primary" style="border-radius: 20px; margin-top: 10px;" (click)="activeTab.set('OFFERS')">
+          Explorer les offres
+        </button>
+      </div>
+    } @else {
+      <!-- Kanban Layout -->
+      <div class="apps-kanban">
+        @for (app of applications(); track app.id) {
+          <div class="kanban-card" [ngClass]="'status-' + app.status" (click)="toggleAppDetails(app.id)">
+            
+            <div class="k-left">
+              <span class="k-month">{{ (app.mission_context_snapshot?.start_date || app.jobOffer?.start_date) | date:'MMM' }}</span>
+              <span class="k-day">{{ (app.mission_context_snapshot?.start_date || app.jobOffer?.start_date) | date:'dd' }}</span>
+              <span class="k-status" [ngClass]="'s-' + app.status.toLowerCase()">
+                {{ statusLabel(app.status) }}
+              </span>
+            </div>
+
+            <div class="k-content">
+              <h4>{{ app.mission_context_snapshot?.task_type || app.jobOffer?.task_type || 'Mission Agricole' }}</h4>
+              <div class="k-meta">
+                <span style="font-weight: 600; color: var(--text-primary);">
+                  Chez {{ app.mission_context_snapshot?.employer_name || app.jobOffer?.employer?.name || 'Agriculteur' }}
+                </span>
+                <span><ng-icon name="lucideMapPin"></ng-icon> {{ app.mission_context_snapshot?.parcel_name || app.jobOffer?.governorate || 'N/A' }}</span>
+                <span><ng-icon name="lucideClock"></ng-icon> Postulé le {{ app.applied_at | date:'dd/MM/yyyy' }}</span>
+                @if (app.mission_context_snapshot?.surface_ha) {
+                  <span><ng-icon name="lucideMapPin"></ng-icon> {{ app.mission_context_snapshot?.surface_ha | number:'1.2-2' }} ha</span>
+                }
+              </div>
+            </div>
+
+            <div class="k-actions" (click)="$event.stopPropagation()">
+              @if (app.mission_context_snapshot?.daily_pay_tnd || app.jobOffer?.daily_pay_tnd; as pay) {
+                <div class="wage-tag">{{ pay }} TND/j</div>
+              }
+
+              <!-- Navigation CTA for accepted applications with GPS -->
+              @if (app.status === 'ACCEPTED' && app.navigation_deep_link) {
+                <a [href]="app.navigation_deep_link" class="nav-deep-btn" title="Naviguer vers la parcelle">
+                  <ng-icon name="lucideMapPin"></ng-icon> Naviguer
+                </a>
+              }
+              
+              <!-- Employer phone contact -->
+              @if (app.status === 'ACCEPTED') {
+                @if (app.mission_context_snapshot?.employer_phone || app.jobOffer?.employer?.phone; as phone) {
+                  <a [href]="'tel:' + phone" class="contact-btn" (click)="$event.stopPropagation()">
+                    <ng-icon name="lucidePhone"></ng-icon> {{ phone }}
+                  </a>
+                }
+              }
+
+              @if (getContractForApplication(app.id); as contract) {
+                <div class="contract-tag-wrapper" style="margin-top: 8px; display: flex; flex-direction: column; gap: 6px;">
+                  <span class="zir-badge" [ngClass]="getContractStatusClass(contract.status)" style="font-size: 11px; padding: 4px 8px; border-radius: 6px; font-weight: 700; width: max-content;">
+                    Contrat : {{ getContractStatusLabel(contract.status) }}
+                  </span>
+                  @if (contract.status === 'PENDING_ACCEPTANCE') {
+                    <button class="zir-btn zir-btn--xs zir-btn--primary" style="font-size: 11px; border-radius: 6px; padding: 4px 8px; width: max-content;" routerLink="/dashboard/worker/contrats">
+                      Signer le contrat
+                    </button>
+                  }
+                </div>
+              }
+            </div>
+
+          </div>
+
+          <!-- Expandable Mission Context Panel -->
+          @if (expandedAppId() === app.id && app.status === 'ACCEPTED') {
+            <div class="mission-context-panel" (click)="$event.stopPropagation()">
+              @if (app.mission_context_snapshot) {
+                <div class="mcp-header">
+                  <ng-icon name="lucideMapPin"></ng-icon>
+                  <strong>Contexte de la mission — {{ app.mission_context_snapshot.parcel_name }}</strong>
+                </div>
+                <div class="mcp-body">
+                  <div class="mcp-stats">
+                    <div class="mcp-stat">
+                      <span class="mcp-stat-label">Culture</span>
+                      <span class="mcp-stat-val">{{ app.mission_context_snapshot.crop_type || '—' }}</span>
+                    </div>
+                    <div class="mcp-stat">
+                      <span class="mcp-stat-label">Durée</span>
+                      <span class="mcp-stat-val">{{ app.mission_context_snapshot.duration_days }} jours</span>
+                    </div>
+                    <div class="mcp-stat">
+                      <span class="mcp-stat-label">Début</span>
+                      <span class="mcp-stat-val">{{ app.mission_context_snapshot.start_date | date:'dd/MM/yyyy' }}</span>
+                    </div>
+                    <div class="mcp-stat">
+                      <span class="mcp-stat-label">Gains estimés</span>
+                      <span class="mcp-stat-val accent">{{ app.mission_context_snapshot.estimated_total_earnings_tnd | number:'1.0-0' }} TND</span>
+                    </div>
+                  </div>
+
+                  @if (app.mission_context_snapshot.description) {
+                    <p class="mcp-desc">{{ app.mission_context_snapshot.description }}</p>
+                  }
+
+                  <!-- Leaflet Map Preview -->
+                  @if (app.mission_context_snapshot.center_gps) {
+                    <div class="mcp-map-wrapper">
+                      <div [id]="'worker-map-' + app.id" class="mcp-map-canvas"></div>
+                      @if (app.navigation_deep_link) {
+                        <a [href]="app.navigation_deep_link" class="mcp-map-overlay-btn" target="_blank" rel="noopener">
+                          <ng-icon name="lucideMapPin"></ng-icon> Ouvrir dans Maps
+                        </a>
+                      }
+                    </div>
+                  }
+                </div>
+              } @else {
+                <div class="mcp-no-context">
+                  <ng-icon name="lucideAlertCircle"></ng-icon>
+                  <span>Le contexte de navigation sera disponible après confirmation de l'employeur.</span>
+                </div>
+              }
+            </div>
+          }
+        }
+      </div>
+    }
+  }
+
+  <!-- Chat Modal -->
+  @if (chatRecipient()) {
+    <div class="modal-overlay" (click)="closeChatModal()">
+      <div class="chat-modal" (click)="$event.stopPropagation()">
+        <div class="chat-modal-header">
+          <span>Message à {{ chatRecipient()?.name }}</span>
+          <button class="chat-close-btn" (click)="closeChatModal()"><ng-icon name="lucideX"></ng-icon></button>
+        </div>
+        <div class="chat-modal-body">
+          <textarea class="zir-input chat-textarea" rows="4" placeholder="Votre message..."
+            [(ngModel)]="chatMessageText" [value]="chatMessageText()"></textarea>
+        </div>
+        <div class="chat-modal-footer">
+          <button class="zir-btn zir-btn--ghost" (click)="closeChatModal()">Annuler</button>
+          <button class="zir-btn zir-btn--primary" [disabled]="isSendingChat() || !chatMessageText().trim()" (click)="sendChatMessage()">
+            @if (isSendingChat()) { <ng-icon name="lucideLoader" class="spin"></ng-icon> } Envoyer
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Toast Notification -->
+  @if (toast()) {
+    <div class="toast-notification" [class.toast-error]="toast()?.type === 'error'">
+      <strong>{{ toast()?.title }}</strong>
+      <span>{{ toast()?.desc }}</span>
+    </div>
+  }
+
+</div>

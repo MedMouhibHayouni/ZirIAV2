@@ -1,0 +1,86 @@
+{
+  "GLOBAL": {
+    "ZIRIA_TITLE": "ZirIA",
+    "THEME_LIGHT": "Mode Clair",
+    "THEME_DARK": "Mode Sombre"
+  },
+  "LANDING": {
+    "TITLE": "L'Intelligence au service de la Terre de Kasserine",
+    "SUBTITLE": "Anticipez le climat. Maîtrisez vos cultures. Accédez au marché B2B national en temps réel.",
+    "CTA_PORTAL": "Accéder au Portail",
+    "CTA_DISCOVER": "Découvrir le projet"
+  },
+  "SIDEBAR": {
+    "OVERVIEW": "Vue d'ensemble",
+    "B2B_SOURCING": "Sourcing B2B",
+    "SENTINEL_EXPERT": "Sentinel Expert",
+    "SMSA": "Centre de Commandes SMSA",
+    "EQUIPMENT": "Équipements",
+    "AMBASSADOR": "Diagnostiquer Maladie",
+    "ADMIN": "Supervision Globale",
+    "LOGOUT": "Se déconnecter"
+  },
+  "ROLE": {
+    "ADMIN": "Super Administrateur",
+    "COOP_PRESIDENT": "Président SMSA",
+    "B2B_BUYER": "Acheteur B2B",
+    "EQUIP_OWNER": "Propriétaire Matériel",
+    "FARMER_AMBASSADOR": "Ambassadeur Terrain"
+  },
+  "DASHBOARD": {
+    "ADMIN": {
+      "TITLE": "Centre de Commandement",
+      "KPIS_FARMERS": "Agriculteurs Actifs",
+      "KPIS_TRANSACTIONS": "Transactions B2B",
+      "KPIS_EQUIPMENT": "Équipements",
+      "KPIS_DISEASES": "Foyers Actifs",
+      "PENDING_VALIDATION": "Validation Comptes SMSA",
+      "SYSTEM_HEALTH": "Santé Système",
+      "TRANSACTIONS": "Journal des Transactions"
+    },
+    "SMSA": {
+      "TITLE": "Centre de Commandes SMSA",
+      "MEMBERS": "Membres Actifs",
+      "PARCELS": "Parcelles",
+      "LISTINGS": "Annonces B2B",
+      "ALERTS": "Alertes Actives",
+      "BROADCAST": "Diffuser une Alerte",
+      "WEATHER": "Météo Kasserine"
+    },
+    "B2B": {
+      "TITLE": "Marketplace B2B",
+      "FILTER_CROP": "Culture",
+      "FILTER_QTY": "Quantité min. (T)",
+      "EXPRESS_INTEREST": "Exprimer mon intérêt",
+      "MY_INTERESTS": "Mes Mises en Relation",
+      "PRICE_TRENDS": "Tendances Prix"
+    },
+    "EQUIPMENT": {
+      "TITLE": "Gestion de la Flotte",
+      "MY_MACHINES": "Mes Machines",
+      "CALENDAR": "Calendrier Réservations",
+      "REQUESTS": "Demandes Entrantes",
+      "AVAILABLE": "Disponible",
+      "RENTED": "Loué"
+    },
+    "EXPERT": {
+      "TITLE": "Sentinel Expert",
+      "HEATMAP": "Carte de Chaleur Maladies",
+      "VALIDATION_QUEUE": "File de Validation",
+      "VALIDATE": "Valider",
+      "REJECT": "Rejeter",
+      "WSS_CONNECTED": "WSS Connecté"
+    },
+    "AMBASSADOR": {
+      "TITLE": "Diagnostiquer",
+      "FAB_LABEL": "DIAGNOSTIQUER",
+      "RESULT_DISEASE": "Maladie Détectée",
+      "RESULT_CONFIDENCE": "Confiance",
+      "RESULT_SEVERITY": "Sévérité",
+      "RECOMMENDATION_FR": "Recommandation",
+      "RECOMMENDATION_AR": "بالدارجة",
+      "MY_PARCELS": "Mes Parcelles",
+      "NEW_DIAGNOSIS": "Nouveau Diagnostic"
+    }
+  }
+}

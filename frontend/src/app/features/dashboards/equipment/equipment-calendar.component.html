@@ -1,0 +1,113 @@
+<div class="equipment-calendar zir-animate-in">
+  
+  <header class="page-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 32px;">
+    <div>
+      <h2 style="display:flex; align-items:center; gap: 12px;">
+        <ng-icon name="lucideCalendar" style="color:var(--zir-emerald);"></ng-icon>
+        Calendrier de la Flotte
+      </h2>
+      <p style="color:var(--text-secondary); margin-top: 4px;">Disponibilité de vos machines sur 3 mois (incluant mois en cours).</p>
+    </div>
+  </header>
+
+  <div class="calendar-layout">
+    <!-- Main Grid: 3 Months -->
+    <div class="months-container">
+      @for (month of months(); track month.name) {
+        <div class="month-block zir-card">
+          <h3 class="month-title">{{ month.name }}</h3>
+          
+          <div class="month-grid">
+            <!-- Weekday Headers -->
+            <div class="weekday-header">Lu</div>
+            <div class="weekday-header">Ma</div>
+            <div class="weekday-header">Me</div>
+            <div class="weekday-header">Je</div>
+            <div class="weekday-header">Ve</div>
+            <div class="weekday-header">Sa</div>
+            <div class="weekday-header">Di</div>
+
+            <!-- Days -->
+            @for (date of month.days; track $index) {
+              @if (date) {
+                <div class="day-cell" [class.is-today]="isToday(date)">
+                  <span class="day-num">{{ date.getDate() }}</span>
+                  <div class="day-events">
+                    @for (item of getResForDay(date); track item.id) {
+                      <div class="reservation-dot" 
+                           [style.background]="getMachineColor($any(item.equipment).type)"
+                           [class.selected]="selectedRes()?.id === item.id"
+                           (click)="selectReservation(item)"
+                           title="{{ $any(item.equipment).model }} - {{ item.lessee.name }}">
+                      </div>
+                    }
+                  </div>
+                </div>
+              } @else {
+                <div class="day-cell empty-cell"></div>
+              }
+            }
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Side Panel -->
+    <aside class="details-sidebar" [class.open]="selectedRes()">
+      @if (selectedRes(); as item) {
+        <div class="sidebar-header">
+          <div class="status-badge" [class.approved]="item.status === 'APPROVED'">
+            <ng-icon name="lucideCheckCircle"></ng-icon>
+            {{ item.status }}
+          </div>
+          <button class="zir-btn zir-btn--ghost zir-btn--icon-only" (click)="selectedRes.set(null)">
+            <ng-icon name="lucideX"></ng-icon>
+          </button>
+        </div>
+
+        <div class="sidebar-body">
+          <div class="machine-profile">
+            <div class="machine-icon" [style.background]="getMachineColor($any(item.equipment).type) + '15'" [style.color]="getMachineColor($any(item.equipment).type)">
+              <ng-icon name="lucideInfo"></ng-icon>
+            </div>
+            <h3>{{ $any(item.equipment).brand }} {{ $any(item.equipment).model }}</h3>
+            <p>{{ $any(item.equipment).type }}</p>
+          </div>
+
+          <div class="detail-group">
+            <label><ng-icon name="lucideUser"></ng-icon> Client / Agriculteur</label>
+            <div class="detail-value">{{ item.lessee.name }}</div>
+          </div>
+
+          <div class="detail-group">
+            <label><ng-icon name="lucideClock"></ng-icon> Période de location</label>
+            <div class="detail-value">
+              {{ item.start_date | date:'dd MMM yyyy' }} au {{ item.end_date | date:'dd MMM yyyy' }}
+            </div>
+          </div>
+
+          <div class="detail-group">
+            <label><ng-icon name="lucidePhone"></ng-icon> Contact</label>
+            <div class="detail-value">{{ item.lessee.phone || 'Non renseigné' }}</div>
+          </div>
+
+          <div class="detail-group">
+            <label><ng-icon name="lucideMapPin"></ng-icon> Destination</label>
+            <div class="detail-value">GPS: {{ $any(item.equipment).lat }}, {{ $any(item.equipment).lng }}</div>
+          </div>
+
+          <button class="zir-btn zir-btn--primary" style="width: 100%; margin-top: 24px;" (click)="openNavigation($any(item.equipment).lat, $any(item.equipment).lng)">
+            <ng-icon name="lucideExternalLink"></ng-icon>
+            Lancer Navigation Maps
+          </button>
+        </div>
+      } @else {
+        <div class="empty-sidebar">
+          <ng-icon name="lucideCalendar" style="font-size: 32px; color: var(--text-muted);"></ng-icon>
+          <p>Sélectionnez un indicateur sur le calendrier pour voir les détails de la réservation.</p>
+        </div>
+      }
+    </aside>
+  </div>
+
+</div>

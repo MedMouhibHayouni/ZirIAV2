@@ -1,0 +1,341 @@
+<div class="worker-profile zir-animate-in">
+
+  <!-- Header / Premium Banner style LinkedIn -->
+  <div class="profile-hero-card">
+    <div class="hero-cover"></div>
+    <div class="hero-content">
+      <div class="avatar-wrapper">
+        <div class="avatar-circle">
+          <ng-icon name="lucideUser"></ng-icon>
+        </div>
+        <div class="status-badge" [class.active]="profile().is_available"></div>
+      </div>
+      
+      <div class="profile-info-main">
+        <div class="name-row">
+          <h1>{{ profile().user?.name || 'Saisonnier Agricole' }}</h1>
+          <span class="governorate-badge">
+            <ng-icon name="lucideMapPin"></ng-icon>
+            {{ profile().governorate || 'Toute la Tunisie' }}
+          </span>
+        </div>
+        
+        <p class="role-subtitle">Travailleur Agricole Qualifié</p>
+        
+        <div class="stats-row">
+          <div class="stat-pill rating">
+            <ng-icon name="lucideStar" class="star-icon"></ng-icon>
+            <span class="bold">{{ profile().rating || '5.0' }}</span>
+            <span class="count">/ 5</span>
+          </div>
+          <div class="stat-pill missions">
+            <ng-icon name="lucideCheckCircle" class="check-icon"></ng-icon>
+            <span class="bold">{{ profile().total_jobs_done || 0 }}</span>
+            <span>Missions accomplies</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Disponibilité Switcher -->
+      <div class="availability-switcher-card">
+        <span class="switch-label">Disponible pour travailler</span>
+        <button class="avail-switch-btn" [class.active]="profile().is_available" (click)="toggleAvailability()">
+          <span class="switch-handle"></span>
+        </button>
+        <span class="switch-status-text" [class.active]="profile().is_available">
+          {{ profile().is_available ? 'Disponible immédiatement' : 'Non disponible' }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div class="profile-grid">
+    
+    <!-- Left Column: About & Skills & Feedback -->
+    <div class="main-column">
+      
+      <!-- Bio section -->
+      <section class="zir-card profile-section">
+        <h2 class="section-title">
+          <ng-icon name="lucideInfo"></ng-icon>
+          Présentation & Parcours
+        </h2>
+        <p class="section-desc">Présentez-vous aux agriculteurs et décrivez vos expériences passées.</p>
+        <textarea class="zir-input bio-textarea" [ngModel]="profile().bio" (ngModelChange)="updateBio($event)"
+                  rows="4" placeholder="Ex: Saisonnier avec 5 ans d'expérience dans la récolte des olives et des agrumes au Cap Bon. Sérieux et ponctuel..."></textarea>
+      </section>
+
+      <!-- Skills section -->
+      <section class="zir-card profile-section">
+        <h2 class="section-title">
+          <ng-icon name="lucideWrench"></ng-icon>
+          Compétences & Spécialités
+        </h2>
+        <p class="section-desc">Ajoutez vos expertises pour correspondre aux offres d'emploi.</p>
+        
+        <div class="skills-container">
+          @for (skill of profile().skills; track skill) {
+            <span class="skill-tag">
+              {{ skill }}
+              <button class="remove-skill-btn" (click)="removeSkill(skill)">
+                <ng-icon name="lucideX"></ng-icon>
+              </button>
+            </span>
+          } @empty {
+            <div class="empty-placeholder">
+              <ng-icon name="lucideAlertTriangle"></ng-icon>
+              <span>Aucune compétence ajoutée. Ajoutez-en ci-dessous !</span>
+            </div>
+          }
+        </div>
+
+        <div class="add-skill-bar">
+          <div class="input-wrapper">
+            <input type="text" [ngModel]="newSkill()" (ngModelChange)="newSkill.set($event)" 
+                   (keyup.enter)="addSkill()" placeholder="Ex: Récolte des olives, Conduite de tracteur, Élagage...">
+          </div>
+          <button class="zir-btn zir-btn--primary" (click)="addSkill()">
+            <ng-icon name="lucidePlus"></ng-icon>
+            Ajouter
+          </button>
+        </div>
+      </section>
+
+      <!-- Feedback / Ratings section -->
+      <section class="zir-card profile-section">
+        <h2 class="section-title">
+          <ng-icon name="lucideStar"></ng-icon>
+          Avis et Évaluations des Agriculteurs
+        </h2>
+        <p class="section-desc">Retours d'expérience et notes rédigés après vos missions complétées.</p>
+
+        <div class="ratings-list">
+          @for (rate of ratings(); track rate.id) {
+            <div class="rating-item-card">
+              <div class="rating-item-header">
+                <div class="author-info">
+                  <span class="author-name">{{ rate.employer_name || 'Agriculteur' }}</span>
+                  <span class="rating-date">{{ rate.completed_at | date:'dd MMM yyyy' }}</span>
+                </div>
+                <div class="stars-badge">
+                  @for (star of getStarsArray(rate.employer_rating); track $index) {
+                    <ng-icon name="lucideStar" class="gold-star"></ng-icon>
+                  }
+                  @for (star of getEmptyStarsArray(rate.employer_rating); track $index) {
+                    <ng-icon name="lucideStar" class="empty-star"></ng-icon>
+                  }
+                </div>
+              </div>
+              <div class="rating-task-info">
+                <span class="task-badge">{{ rate.task_type }}</span>
+                <span class="duration-badge">{{ rate.duration_days }} jours</span>
+              </div>
+              @if (rate.employer_notes) {
+                <p class="rating-text">" {{ rate.employer_notes }} "</p>
+              } @else {
+                <p class="rating-text italic text-muted">Aucun commentaire textuel laissé, note parfaite.</p>
+              }
+            </div>
+          } @empty {
+            <div class="empty-state-placeholder">
+              <ng-icon name="lucideClock"></ng-icon>
+              <h3>Aucune évaluation disponible</h3>
+              <p>Vos évaluations s'afficheront ici une fois que vous aurez complété vos premières missions.</p>
+            </div>
+          }
+        </div>
+      </section>
+    </div>
+
+    <!-- Right Column: Settings & Certifications -->
+    <div class="side-column">
+      
+      <!-- Settings Panel -->
+      <section class="zir-card profile-section">
+        <h2 class="section-title">
+          <ng-icon name="lucideSettings"></ng-icon>
+          Paramètres d'Activité
+        </h2>
+        <p class="section-desc">Gérez vos critères de recherche d'offres et vos informations personnelles.</p>
+
+        <div class="form-group">
+          <label class="zir-label">Nom complet</label>
+          <input type="text" class="zir-input" [ngModel]="profile().user?.name" 
+                 (ngModelChange)="updateUserName($event)" placeholder="Ex: Mouhib Hayouni">
+        </div>
+
+        <div class="form-group">
+          <label class="zir-label">Numéro de téléphone</label>
+          <input type="text" class="zir-input" [ngModel]="profile().user?.phone" 
+                 (ngModelChange)="updateUserPhone($event)" placeholder="Ex: +216 55 123 456">
+        </div>
+
+        <div class="form-group">
+          <label class="zir-label">Gouvernorat principal</label>
+          <select class="zir-input" [ngModel]="profile().governorate"
+                  (ngModelChange)="updateGovernorate($event)">
+            <option [ngValue]="null" disabled>Sélectionner un gouvernorat…</option>
+            @for (g of governorates; track g) {
+              <option [value]="g">{{ g }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-group">
+          <div class="range-labels">
+            <label class="zir-label">Rayon d'action</label>
+            <span class="range-val">{{ profile().radius_km || 30 }} km</span>
+          </div>
+          <input type="range" class="zir-range" [ngModel]="profile().radius_km" 
+                 (ngModelChange)="updateRadius($event)" min="5" max="100" step="5">
+          <span class="range-help">Distance maximale autour de votre localisation</span>
+        </div>
+
+        <div class="form-group">
+          <label class="zir-label">Tarif journalier souhaité (TND)</label>
+          <div class="input-prefix-wrapper">
+            <input type="number" class="zir-input text-right" [ngModel]="profile().daily_rate_tnd" 
+                   (ngModelChange)="updateDailyRate($event)">
+            <span class="input-suffix">TND/jour</span>
+          </div>
+        </div>
+
+        <button class="zir-btn zir-btn--primary zir-btn--large w-full mt-4" 
+                [disabled]="isSaving()" (click)="save()">
+          @if (isSaving()) {
+            <div class="zir-spinner zir-spinner--white"></div>
+          } @else {
+            <ng-icon name="lucideSave"></ng-icon>
+            Enregistrer les Paramètres
+          }
+        </button>
+      </section>
+
+      <!-- Certifications Panel -->
+      <section class="zir-card profile-section">
+        <div class="certifications-header">
+          <h2 class="section-title mb-0">
+            <ng-icon name="lucideAward" class="award-icon"></ng-icon>
+            Diplômes & Certificats
+          </h2>
+          <button class="add-cert-icon-btn" (click)="openCertModal()">
+            <ng-icon name="lucidePlus"></ng-icon>
+          </button>
+        </div>
+        <p class="section-desc">Faites certifier vos compétences par nos ambassadeurs pour gagner en crédibilité.</p>
+
+        <div class="certifications-list">
+          @for (cert of certifications(); track cert.id) {
+            <div class="cert-card">
+              <div class="cert-info">
+                <h3>{{ cert.certification_name }}</h3>
+                <span class="issuer">{{ cert.issuing_organization || 'Organisme émetteur non renseigné' }}</span>
+                
+                @if (cert.issued_date) {
+                  <span class="date">
+                    <ng-icon name="lucideCalendar"></ng-icon>
+                    Obtenu le : {{ cert.issued_date | date:'dd/MM/yyyy' }}
+                  </span>
+                }
+
+                @if (cert.verification_status === 'PENDING') {
+                  <span class="status-tag pending">
+                    <ng-icon name="lucideClock"></ng-icon>
+                    En attente de vérification
+                  </span>
+                } @else if (cert.verification_status === 'VERIFIED') {
+                  <span class="status-tag verified">
+                    <ng-icon name="lucideCheckCircle"></ng-icon>
+                    Vérifié par l'Ambassadeur
+                  </span>
+                } @else {
+                  <span class="status-tag rejected">
+                    <ng-icon name="lucideAlertTriangle"></ng-icon>
+                    Rejeté
+                  </span>
+                  @if (cert.rejection_reason) {
+                    <p class="rejection-reason">Raison : {{ cert.rejection_reason }}</p>
+                  }
+                }
+              </div>
+
+              <!-- Delete cert ONLY if it is pending -->
+              @if (cert.verification_status === 'PENDING') {
+                <button class="delete-cert-btn" (click)="deleteCert(cert.id)">
+                  <ng-icon name="lucideTrash2"></ng-icon>
+                </button>
+              }
+            </div>
+          } @empty {
+            <div class="empty-certs">
+              <p>Aucune certification déclarée. Soumettez votre premier diplôme ou certificat !</p>
+              <button class="zir-btn zir-btn--secondary mt-2 w-full" (click)="openCertModal()">
+                Lancer ma première certification
+              </button>
+            </div>
+          }
+        </div>
+      </section>
+
+    </div>
+
+  </div>
+
+  <!-- Certification Submission Modal -->
+  @if (showCertModal()) {
+    <div class="zir-modal-overlay">
+      <div class="zir-modal cert-modal zir-animate-scale">
+        <div class="modal-header">
+          <h2>
+            <ng-icon name="lucideAward"></ng-icon>
+            Soumettre une certification
+          </h2>
+          <button class="close-modal-btn" (click)="closeCertModal()">
+            <ng-icon name="lucideX"></ng-icon>
+          </button>
+        </div>
+        
+        <div class="modal-body">
+          <p class="modal-intro">Notre équipe d'ambassadeurs régionaux vérifiera votre document pour accorder le badge vérifié sur votre profil public.</p>
+          
+          <div class="form-group">
+            <label class="zir-label">Nom du diplôme ou de la certification *</label>
+            <input type="text" class="zir-input" [(ngModel)]="certForm.certification_name" placeholder="Ex: CAP Conduite d'engins, Certificat élagage..." required>
+          </div>
+
+          <div class="form-group">
+            <label class="zir-label">Organisme de délivrance</label>
+            <input type="text" class="zir-input" [(ngModel)]="certForm.issuing_organization" placeholder="Ex: Ministère de l'Agriculture, Centre de Formation Béja...">
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="zir-label">Date d'obtention</label>
+              <input type="date" class="zir-input" [(ngModel)]="certForm.issued_date">
+            </div>
+            <div class="form-group">
+              <label class="zir-label">Date d'expiration</label>
+              <input type="date" class="zir-input" [(ngModel)]="certForm.expiry_date">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="zir-label">Description du certificat</label>
+            <textarea class="zir-input" [(ngModel)]="certForm.description" rows="3" placeholder="Qu'avez-vous appris ou démontré lors de cette certification ?"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="zir-label">Lien vers le justificatif / Justificatif PDF URL</label>
+            <input type="url" class="zir-input" [(ngModel)]="certForm.document_url" placeholder="https://drive.google.com/file/d/...">
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="zir-btn zir-btn--secondary" (click)="closeCertModal()">Annuler</button>
+          <button class="zir-btn zir-btn--primary" (click)="submitCertification()">Soumettre la validation</button>
+        </div>
+      </div>
+    </div>
+  }
+
+</div>

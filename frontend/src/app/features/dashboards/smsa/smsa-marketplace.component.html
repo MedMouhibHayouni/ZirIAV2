@@ -1,0 +1,200 @@
+<div class="smsa-marketplace zir-animate-in">
+
+  <!-- Header -->
+  <header class="page-header" style="display:flex; justify-content:space-between; align-items:flex-start;">
+    <div>
+      <h2>Marketplace B2B</h2>
+      <p>Gérez vos annonces groupées, requêtes acheteurs et négociations en cours.</p>
+    </div>
+    <button class="zir-btn zir-btn--primary" (click)="showCreateModal = true">
+       <ng-icon name="lucidePlus"></ng-icon>
+       Nouvelle Annonce Groupée
+    </button>
+  </header>
+
+  <!-- Tabs -->
+  <div class="smsa-marketplace__tabs">
+    <button class="smsa-marketplace__tab" [class.active]="activeTab === 'LISTINGS'" (click)="switchTab('LISTINGS')">
+      Mes Annonces
+    </button>
+    <button class="smsa-marketplace__tab" [class.active]="activeTab === 'REQUESTS'" (click)="switchTab('REQUESTS')">
+      Demandes Reçues
+      @if (getPendingConnections().length > 0) {
+        <span class="smsa-marketplace__badge">{{ getPendingConnections().length }}</span>
+      }
+    </button>
+    <button class="smsa-marketplace__tab" [class.active]="activeTab === 'NEGOTIATIONS'" (click)="switchTab('NEGOTIATIONS')">
+      Négociations
+    </button>
+  </div>
+
+  <div class="smsa-marketplace__content">
+
+    <!-- TAB: LISTINGS -->
+    @if (activeTab === 'LISTINGS') {
+      @if (isLoading()) {
+        <div class="smsa-marketplace__grid">
+          @for (_ of [1,2,3,4]; track $index) {
+            <div class="zir-skeleton--text" style="height: 200px; border-radius: 12px;"></div>
+          }
+        </div>
+      } @else if (hasError()) {
+        <div class="zir-alert zir-alert--danger">
+          <span>Erreur lors du chargement des annonces.</span>
+          <button class="zir-btn zir-btn--ghost" style="margin-left:auto;" (click)="loadData()">Réessayer</button>
+        </div>
+      } @else if (listings().length > 0) {
+        <div class="smsa-marketplace__grid">
+          @for (l of listings(); track l.id) {
+            <div class="zir-card smsa-marketplace__card">
+              <div class="smsa-marketplace__card-header">
+                <h4>{{ l.crop_type }}</h4>
+                <span class="zir-badge" [ngClass]="l.status === 'ACTIVE' ? 'zir-badge--success' : 'zir-badge--warning'">
+                  {{ l.status || 'ACTIVE' }}
+                </span>
+              </div>
+              <div class="smsa-marketplace__card-body">
+                <div class="smsa-marketplace__stat">
+                  <ng-icon name="lucideScale"></ng-icon>
+                  <div>
+                    <label>Quantité</label>
+                    <p>{{ l.quantity_tonnes }} Tonnes</p>
+                  </div>
+                </div>
+                <div class="smsa-marketplace__stat">
+                  <ng-icon name="lucideTag"></ng-icon>
+                  <div>
+                    <label>Prix</label>
+                    <p style="color: var(--zir-emerald); font-weight: 700;">{{ l.price_per_kg | number:'1.3-3' }} TND/kg</p>
+                  </div>
+                </div>
+              </div>
+              <div class="smsa-marketplace__card-footer">
+                <span>Dispo. prévue : {{ (l.harvest_prediction_date | date:'dd MMM yyyy':'':'fr') || 'N/A' }}</span>
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="zir-empty" style="padding: 40px;">
+          <div class="zir-empty__icon"><ng-icon name="lucidePackage"></ng-icon></div>
+          <div class="zir-empty__desc">Aucune annonce groupée. Créez-en une pour attirer les acheteurs B2B.</div>
+        </div>
+      }
+    }
+
+    <!-- TAB: REQUESTS -->
+    @if (activeTab === 'REQUESTS') {
+      @if (isLoadingConnections()) {
+        <div class="zir-skeleton--text" style="height: 100px; border-radius: 8px;"></div>
+      } @else if (getPendingConnections().length > 0) {
+        <div class="smsa-marketplace__requests">
+          @for (c of getPendingConnections(); track c.id) {
+            <div class="zir-card smsa-marketplace__request-card">
+              <div class="smsa-marketplace__request-info">
+                <h4>Acheteur: {{ c.buyer?.name || 'Acheteur Anonyme' }}</h4>
+                <p>Souhaite acheter <b>{{ c.listing?.crop_type || 'Produit' }}</b> pour le prix affiché.</p>
+                <div class="smsa-marketplace__request-msg" *ngIf="c.buyer_message">
+                  "{{ c.buyer_message }}"
+                </div>
+              </div>
+              <div class="smsa-marketplace__request-actions">
+                <button class="zir-btn zir-btn--ghost" style="color:var(--error);" (click)="respond(c.id, 'REJECT')">
+                  <ng-icon name="lucideX"></ng-icon> Rejeter
+                </button>
+                <button class="zir-btn zir-btn--primary" (click)="respond(c.id, 'CONFIRM')">
+                  <ng-icon name="lucideCheck"></ng-icon> Confirmer
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="zir-empty" style="padding: 40px;">
+          <div class="zir-empty__icon"><ng-icon name="lucideHandshake"></ng-icon></div>
+          <div class="zir-empty__desc">Aucune demande en attente.</div>
+        </div>
+      }
+    }
+
+    <!-- TAB: NEGOTIATIONS -->
+    @if (activeTab === 'NEGOTIATIONS') {
+      <div class="smsa-marketplace__kanban">
+        <div class="smsa-marketplace__kanban-col">
+          <div class="smsa-marketplace__kanban-header">CONFIRMED</div>
+          <div class="smsa-marketplace__kanban-body">
+            @for (c of getNegotiationsByStatus('CONFIRMED'); track c.id) {
+              <div class="zir-card smsa-marketplace__kanban-card">
+                <b>{{ c.listing?.crop_type }}</b>
+                <p>{{ c.buyer?.name }}</p>
+              </div>
+            }
+          </div>
+        </div>
+        <div class="smsa-marketplace__kanban-col">
+          <div class="smsa-marketplace__kanban-header">TRANSPORT</div>
+          <div class="smsa-marketplace__kanban-body">
+            @for (c of getNegotiationsByStatus('TRANSPORT'); track c.id) {
+               <div class="zir-card smsa-marketplace__kanban-card">
+                <b>{{ c.listing?.crop_type }}</b>
+                <p>{{ c.buyer?.name }}</p>
+              </div>
+            }
+          </div>
+        </div>
+        <div class="smsa-marketplace__kanban-col">
+          <div class="smsa-marketplace__kanban-header" style="color:var(--zir-emerald);">DONE</div>
+          <div class="smsa-marketplace__kanban-body">
+            @for (c of getNegotiationsByStatus('COMPLETED'); track c.id) {
+               <div class="zir-card smsa-marketplace__kanban-card" style="opacity: 0.7;">
+                <b>{{ c.listing?.crop_type }}</b>
+                <p>{{ c.buyer?.name }}</p>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    }
+
+  </div>
+
+</div>
+
+<!-- Create Modal -->
+@if (showCreateModal) {
+  <div class="zir-modal">
+    <div class="zir-modal__backdrop" (click)="showCreateModal = false"></div>
+    <div class="zir-modal__content zir-card">
+      <div class="zir-modal__header">
+        <h3>Nouvelle Annonce Groupée</h3>
+        <button class="zir-btn zir-btn--ghost zir-btn--icon-only" (click)="showCreateModal = false">
+          <ng-icon name="lucideX"></ng-icon>
+        </button>
+      </div>
+      <div class="zir-modal__body" style="display:flex; flex-direction:column; gap:16px;">
+        <div class="zir-input-group">
+          <label class="zir-label">Culture</label>
+          <input type="text" class="zir-input" [(ngModel)]="newListing.crop_type" placeholder="Ex: Tomates Sérielles">
+        </div>
+        <div style="display:flex; gap:16px;">
+          <div class="zir-input-group" style="flex:1;">
+            <label class="zir-label">Quantité (Tonnes)</label>
+            <input type="number" class="zir-input" [(ngModel)]="newListing.quantity_tonnes">
+          </div>
+          <div class="zir-input-group" style="flex:1;">
+            <label class="zir-label">Prix (TND/kg)</label>
+            <input type="number" step="0.001" class="zir-input" [(ngModel)]="newListing.price_per_kg">
+          </div>
+        </div>
+        <div class="zir-input-group">
+          <label class="zir-label">Date disponibilité prévisionnelle</label>
+          <input type="date" class="zir-input" [(ngModel)]="newListing.harvest_prediction_date">
+        </div>
+      </div>
+      <div class="zir-modal__footer" style="display:flex; justify-content:flex-end; gap:12px; margin-top:24px;">
+        <button class="zir-btn zir-btn--ghost" (click)="showCreateModal = false">Annuler</button>
+        <button class="zir-btn zir-btn--primary" (click)="createListing()" [disabled]="!newListing.crop_type || newListing.quantity_tonnes <= 0">Publier</button>
+      </div>
+    </div>
+  </div>
+}

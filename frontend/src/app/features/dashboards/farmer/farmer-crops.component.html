@@ -1,0 +1,405 @@
+<div class="analytics-page">
+
+  <!-- ═══ Hero Header ═══ -->
+  <header class="hero">
+    <div class="hero-left">
+      <h1><ng-icon name="lucideBarChart3"></ng-icon> Tableau de bord</h1>
+      <p>Suivez vos parcelles, cultures et performances en temps réel</p>
+    </div>
+    <div class="hero-right">
+      <button class="btn-refresh" (click)="refresh()">
+        <ng-icon name="lucideRefreshCcw"></ng-icon> Actualiser
+      </button>
+      <div class="toggle-group">
+        <button [class.active]="viewMode === 'LIST'" (click)="toggleView('LIST')"><ng-icon name="lucideList"></ng-icon> Liste</button>
+        <button [class.active]="viewMode === 'MAP'" (click)="toggleView('MAP')"><ng-icon name="lucideMap"></ng-icon> Carte</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ═══ KPI Row ═══ -->
+  <section class="kpi-row">
+    <div class="kpi-card">
+      <div class="kpi-icon kpi-icon--parcels"><ng-icon name="lucideSprout"></ng-icon></div>
+      <div class="kpi-data">
+        <span class="kpi-value">{{ totalParcels() }}</span>
+        <span class="kpi-label">Parcelles</span>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon kpi-icon--zones"><ng-icon name="lucideLeaf"></ng-icon></div>
+      <div class="kpi-data">
+        <span class="kpi-value">{{ totalZones() }}</span>
+        <span class="kpi-label">Zones actives</span>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon kpi-icon--surface"><ng-icon name="lucideMapPin"></ng-icon></div>
+      <div class="kpi-data">
+        <span class="kpi-value">{{ totalSurface() | number:'1.1-1' }}</span>
+        <span class="kpi-label">Hectares</span>
+      </div>
+    </div>
+    <div class="kpi-card" [class.kpi-card--alert]="alertCount() > 0">
+      <div class="kpi-icon" [class.kpi-icon--alert]="alertCount() > 0" [class.kpi-icon--ok]="alertCount() === 0">
+        @if (alertCount() > 0) { <ng-icon name="lucideTriangleAlert"></ng-icon> } @else { <ng-icon name="lucideCheckCircle2"></ng-icon> }
+      </div>
+      <div class="kpi-data">
+        <span class="kpi-value">{{ alertCount() }}</span>
+        <span class="kpi-label">Alertes</span>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon kpi-icon--gdd"><ng-icon name="lucideTrendingUp"></ng-icon></div>
+      <div class="kpi-data">
+        <span class="kpi-value">{{ avgGdd() }}%</span>
+        <span class="kpi-label">GDD moyen</span>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon kpi-icon--harvest"><ng-icon name="lucideCalendarDays"></ng-icon></div>
+      <div class="kpi-data">
+        <span class="kpi-value">{{ harvestReadyCount() }}</span>
+        <span class="kpi-label">Prêts à récolter</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ Main Content ═══ -->
+  @if (viewMode === 'LIST') {
+
+    <div class="main-grid">
+
+      <!-- ─── Left: Parcel Cards ─── -->
+      <div class="grid-left">
+        <div class="section-header">
+          <h2><ng-icon name="lucideSprout"></ng-icon> Mes Parcelles</h2>
+          <span class="section-count">{{ totalParcels() }}</span>
+        </div>
+
+        @if (farmerApi.isLoading()) {
+          <div class="skeleton-cards">
+            @for (i of [1,2]; track i) {
+              <div class="skeleton-card">
+                <div class="sk sk--h20 sk--w60"></div>
+                <div class="sk sk--h14 sk--w40" style="margin-top:8px;"></div>
+                <div class="sk sk--h8 sk--full" style="margin-top:16px;"></div>
+              </div>
+            }
+          </div>
+        } @else if (farmerApi.parcels().length === 0) {
+          <div class="empty-state">
+            <ng-icon name="lucideLeaf" class="empty-icon"></ng-icon>
+            <h3>Aucune parcelle</h3>
+            <p>Commencez par ajouter votre première parcelle</p>
+          </div>
+        } @else {
+          <div class="parcel-list">
+            @for (p of farmerApi.parcels(); track p.id) {
+              <div class="parcel-card" [class.parcel-card--alert]="p.status === 'disease_alert' || p.alert_level === 'CRITICAL'">
+
+                <!-- Card Header -->
+                <div class="parcel-header">
+                  <div class="parcel-header-left">
+                    <div class="parcel-dot" [style.background]="p.color_hex || '#22c55e'"></div>
+                    <div>
+                      <h3>{{ p.name || 'Parcelle ' + p.id.substring(0,6) }}</h3>
+                      <span class="parcel-meta">
+                        <ng-icon name="lucideMapPin"></ng-icon>
+                        {{ (p.area_ha ?? p.surface_ha ?? 0) | number:'1.2-2' }} ha
+                        @if (p.zones?.length) {
+                          <span class="meta-sep">·</span> {{ p.zones!.length }} culture(s)
+                        }
+                      </span>
+                    </div>
+                  </div>
+                  <div class="parcel-status" [class]="'status-' + (p.status || 'ok')">
+                    @if (p.status === 'disease_alert' || p.alert_level === 'CRITICAL') {
+                      <ng-icon name="lucideAlertTriangle"></ng-icon> Alerte
+                    } @else if (p.status === 'weather_risk' || p.alert_level === 'WARNING') {
+                      <ng-icon name="lucideCloud"></ng-icon> Météo
+                    } @else {
+                      <ng-icon name="lucideCheckCircle2"></ng-icon> OK
+                    }
+                  </div>
+                </div>
+
+                <!-- Crop Zones -->
+                @if (p.zones && p.zones.length > 0) {
+                  <div class="zones-section">
+                    @for (cz of p.zones; track cz.id) {
+                      <div class="zone-item">
+                        <div class="zone-top">
+                          <span class="zone-tag" [style.color]="getCropColor(cz.crop_type)" [style.background]="getCropColor(cz.crop_type) + '18'">
+                            {{ cz.crop_type }}
+                          </span>
+                          <span class="zone-harvest" [class.harvest-ready]="getGddProgress(cz) >= 85">
+                            <ng-icon name="lucideCalendarDays"></ng-icon>
+                            {{ getHarvestDays(cz) }}
+                          </span>
+                        </div>
+                        <div class="zone-gdd">
+                          <div class="gdd-header">
+                            <span class="gdd-label">{{ getGddLabel(getGddProgress(cz)) }}</span>
+                            <span class="gdd-values">{{ cz.gdd_accumulated }} / {{ cz.gdd_target }} GDD</span>
+                          </div>
+                          <div class="progress-track">
+                            <div class="progress-fill" [ngStyle]="{'width': getGddProgress(cz) + '%', 'background': getGddColor(getGddProgress(cz))}"></div>
+                          </div>
+                          <div class="gdd-footer">
+                            <span class="gdd-pct" [style.color]="getGddColor(getGddProgress(cz))">{{ getGddProgress(cz) }}%</span>
+                            @if (cz.plant_count > 0) {
+                              <span class="zone-plants"><ng-icon name="lucideSprout"></ng-icon> {{ cz.plant_count }} plants</span>
+                            }
+                          </div>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                } @else {
+                  <div class="zone-empty">
+                    <ng-icon name="lucideInfo"></ng-icon>
+                    Aucune culture définie
+                  </div>
+                }
+
+                <!-- Card Actions -->
+                <div class="parcel-actions">
+                  <button class="btn-action btn-action--primary" (click)="openZoneModal(p.id)">
+                    <ng-icon name="lucidePlus"></ng-icon> Ajouter Zone
+                  </button>
+                  <button class="btn-action btn-action--outline" (click)="goToDiagnostic(p.id)">
+                    <ng-icon name="lucideCamera"></ng-icon> Diagnostic IA
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- ─── Right: Weather + Finance + Detections ─── -->
+      <div class="grid-right">
+
+        <!-- Weather Card -->
+        <div class="info-card">
+          <div class="info-card-header">
+            <h3><ng-icon name="lucideCloud"></ng-icon> Météo locale</h3>
+            <span class="info-card-badge">En direct</span>
+          </div>
+          @if (loadingWeather()) {
+            <div class="sk sk--h60 sk--full"></div>
+          } @else if (weather()) {
+            <div class="weather-main">
+              <div class="weather-temp">
+                <ng-icon [name]="getWeatherIcon(weather()!.weather_code)" class="weather-icon"></ng-icon>
+                <span class="temp-value">{{ weather()!.temperature_c }}°</span>
+              </div>
+              <span class="weather-desc">{{ getWeatherDesc(weather()!.weather_code) }}</span>
+            </div>
+            <div class="weather-details">
+              <div class="weather-detail">
+                <ng-icon name="lucideDroplets"></ng-icon>
+                <div>
+                  <span class="wd-value">{{ weather()!.humidity_pct }}%</span>
+                  <span class="wd-label">Humidité</span>
+                </div>
+              </div>
+              <div class="weather-detail">
+                <ng-icon name="lucideWind"></ng-icon>
+                <div>
+                  <span class="wd-value">{{ weather()!.wind_speed_kmh }} km/h</span>
+                  <span class="wd-label">Vent</span>
+                </div>
+              </div>
+              @if (weather()!.precipitation_mm != null) {
+                <div class="weather-detail">
+                  <ng-icon name="lucideDroplets"></ng-icon>
+                  <div>
+                    <span class="wd-value">{{ weather()!.precipitation_mm }} mm</span>
+                    <span class="wd-label">Précipitations</span>
+                  </div>
+                </div>
+              }
+            </div>
+          } @else {
+            <div class="weather-fallback">
+              <ng-icon name="lucideCloud"></ng-icon>
+              <span>Données météo indisponibles</span>
+            </div>
+          }
+        </div>
+
+        <!-- Finance Card -->
+        <div class="info-card">
+          <div class="info-card-header">
+            <h3><ng-icon name="lucideWallet"></ng-icon> Résumé financier</h3>
+            <span class="info-card-badge">Ce mois</span>
+          </div>
+          @if (loadingFinance()) {
+            <div class="sk sk--h40 sk--full"></div>
+          } @else if (finance()) {
+            <div class="finance-grid">
+              <div class="finance-item finance-item--income">
+                <div class="fi-icon"><ng-icon name="lucideArrowUpRight"></ng-icon></div>
+                <div>
+                  <span class="fi-value">{{ formatMoney(finance()!.income) }} TND</span>
+                  <span class="fi-label">Revenus</span>
+                </div>
+              </div>
+              <div class="finance-item finance-item--expense">
+                <div class="fi-icon"><ng-icon name="lucideArrowDownRight"></ng-icon></div>
+                <div>
+                  <span class="fi-value">{{ formatMoney(finance()!.expense) }} TND</span>
+                  <span class="fi-label">Dépenses</span>
+                </div>
+              </div>
+              <div class="finance-item finance-item--balance" [class.negative]="finance()!.balance < 0">
+                <div class="fi-icon"><ng-icon name="lucideTrendingUp"></ng-icon></div>
+                <div>
+                  <span class="fi-value">{{ formatMoney(finance()!.balance) }} TND</span>
+                  <span class="fi-label">Solde net</span>
+                </div>
+              </div>
+            </div>
+          } @else {
+            <p class="no-data">Aucune donnée financière</p>
+          }
+        </div>
+
+        <!-- Disease Detections -->
+        <div class="info-card">
+          <div class="info-card-header">
+            <h3><ng-icon name="lucideActivity"></ng-icon> Détections récentes</h3>
+            @if (detections().length > 0) {
+              <span class="info-card-count">{{ detections().length }}</span>
+            }
+          </div>
+          @if (loadingDetections()) {
+            <div class="sk sk--h80 sk--full"></div>
+          } @else if (detections().length > 0) {
+            <div class="detections-list">
+              @for (d of detections().slice(0, 4); track d.id) {
+                <div class="detection-item">
+                  <div class="detection-icon" [class.critical]="d.confidence_score > 0.7">
+                    <ng-icon name="lucideAlertTriangle"></ng-icon>
+                  </div>
+                  <div class="detection-info">
+                    <span class="detection-name">{{ d.disease_name || 'Maladie détectée' }}</span>
+                    <span class="detection-meta">{{ d.confidence_score ? (d.confidence_score * 100 | number:'1.0-0') + '% confiance' : '' }} · {{ d.detected_at | date:'dd/MM' }}</span>
+                  </div>
+                </div>
+              }
+            </div>
+          } @else {
+            <div class="detection-empty">
+              <ng-icon name="lucideCheckCircle2"></ng-icon>
+              <span>Aucune détection récente</span>
+            </div>
+          }
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="info-card info-card--actions">
+          <div class="info-card-header">
+            <h3><ng-icon name="lucideZap"></ng-icon> Actions rapides</h3>
+          </div>
+          <div class="quick-actions">
+            <button class="quick-btn" (click)="router.navigate(['/dashboard/farmer/diagnostic'])">
+              <ng-icon name="lucideCamera"></ng-icon>
+              <span>Diagnostic IA</span>
+            </button>
+            <button class="quick-btn" (click)="router.navigate(['/dashboard/farmer/alerts'])">
+              <ng-icon name="lucideBell"></ng-icon>
+              <span>Alertes</span>
+            </button>
+            <button class="quick-btn" (click)="router.navigate(['/dashboard/farmer/experts'])">
+              <ng-icon name="lucideUsers"></ng-icon>
+              <span>Experts</span>
+            </button>
+            <button class="quick-btn" (click)="router.navigate(['/dashboard/farmer/finance'])">
+              <ng-icon name="lucideDollarSign"></ng-icon>
+              <span>Finances</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  }
+
+  <!-- ═══ Map View ═══ -->
+  @if (viewMode === 'MAP') {
+    <div class="map-wrapper">
+      @if (loadingMapData()) {
+        <div class="map-loading">
+          <div class="sk sk--h400 sk--full" style="border-radius:16px;"></div>
+        </div>
+      } @else {
+        <div class="map-container">
+          <div #mapContainer class="map-el"></div>
+          <!-- Map Legend -->
+          <div class="map-legend">
+            <div class="legend-item"><span class="legend-dot" style="background:#22c55e;"></span> OK</div>
+            <div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span> Alerte météo</div>
+            <div class="legend-item"><span class="legend-dot" style="background:#ef4444;"></span> Alerte maladie</div>
+          </div>
+          <!-- Map Stats Overlay -->
+          <div class="map-stats-overlay">
+            <div class="mo-item">
+              <span class="mo-value">{{ mapParcels().length || farmerApi.parcels().length }}</span>
+              <span class="mo-label">Parcelles</span>
+            </div>
+            <div class="mo-item">
+              <span class="mo-value">{{ totalSurface() | number:'1.0-0' }} ha</span>
+              <span class="mo-label">Surface totale</span>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+</div>
+
+<!-- ═══ Add Zone Modal ═══ -->
+@if (showZoneModal) {
+  <div class="modal-backdrop" (click)="showZoneModal = false">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3><ng-icon name="lucidePlus"></ng-icon> Ajouter une culture</h3>
+        <button class="modal-close" (click)="showZoneModal = false"><ng-icon name="lucideX"></ng-icon></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Nom de la zone (optionnel)</label>
+          <input type="text" class="form-input" [(ngModel)]="newZone.name" placeholder="Ex: Côté Ouest">
+        </div>
+        <div class="form-group">
+          <label>Culture plantée</label>
+          <select class="form-input" [(ngModel)]="newZone.crop_type">
+            @for (c of cropTypes; track c) { <option [value]="c">{{ c }}</option> }
+          </select>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Surface (ha)</label>
+            <input type="number" class="form-input" [(ngModel)]="newZone.surface_ha" min="0.1" step="0.1">
+          </div>
+          <div class="form-group">
+            <label>Nb. Plants</label>
+            <input type="number" class="form-input" [(ngModel)]="newZone.plant_count" min="0">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Date de plantation</label>
+          <input type="date" class="form-input" [(ngModel)]="newZone.planted_at">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-modal btn-modal--ghost" (click)="showZoneModal = false">Annuler</button>
+        <button class="btn-modal btn-modal--primary" (click)="submitZone()" [disabled]="!newZone.crop_type || newZone.surface_ha <= 0">Ajouter</button>
+      </div>
+    </div>
+  </div>
+}

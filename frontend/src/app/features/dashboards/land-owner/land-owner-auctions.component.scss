@@ -1,0 +1,67 @@
+.land-page { padding: 24px; max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
+.page-header { h2 { font-size: 26px; font-weight: 800; margin: 0 0 6px; display: flex; align-items: center; gap: 10px; ng-icon { color: #f59e0b; } } p { color: var(--text-muted); margin: 0; } }
+
+.stats-row { display: flex; gap: 16px; flex-wrap: wrap;
+  .stat-pill { flex: 1; min-width: 160px; background: var(--surface-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px 20px; display: flex; flex-direction: column; gap: 4px; transition: box-shadow 0.2s;
+    span { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); }
+    strong { font-size: 20px; font-weight: 900; color: var(--text-primary); }
+    &.emerald strong { color: #10b981; }
+    &.amber strong { color: #f59e0b; }
+    &.blue strong { color: #3b82f6; }
+    &:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.06); } }
+}
+
+.auctions-list { display: flex; flex-direction: column; gap: 16px; }
+
+.auction-card {
+  background: var(--surface-card); border: 1px solid var(--border-color); border-radius: 16px; overflow: hidden; transition: all 0.2s;
+  &:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.08); }
+  &.ended { opacity: 0.75; }
+  &.expanded { border-color: rgba(245,158,11,0.4); }
+}
+
+.auction-header { display: flex; align-items: center; gap: 16px; padding: 20px; cursor: pointer;
+  .auction-info { flex: 1;
+    .auction-tags { display: flex; gap: 8px; margin-bottom: 8px;
+      .status-badge { font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 20px;
+        &.active { background: rgba(16,185,129,0.1); color: #10b981; }
+        &.ended { background: rgba(99,102,241,0.1); color: #6366f1; }
+        &.cancelled { background: rgba(239,68,68,0.1); color: #ef4444; } }
+      .surface-badge { font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 20px; background: var(--surface-ground); color: var(--text-muted); }
+    }
+    h4 { font-size: 18px; font-weight: 800; margin: 0; }
+  }
+  .countdown-box { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 12px 20px; background: rgba(245,158,11,0.08); border-radius: 12px; border: 1px solid rgba(245,158,11,0.2);
+    ng-icon { color: #f59e0b; font-size: 18px; }
+    .countdown-value { font-size: 16px; font-weight: 900; color: #f59e0b; font-variant-numeric: tabular-nums; }
+    .countdown-label { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #f59e0b; opacity: 0.7; }
+  }
+  .auction-actions { display: flex; gap: 8px; }
+}
+
+.auction-body { padding: 0 20px 20px; border-top: 1px solid var(--border-color); }
+.auction-details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; padding-top: 20px;
+  @media (max-width: 768px) { grid-template-columns: 1fr; } }
+
+.detail-section { display: flex; flex-direction: column; gap: 12px;
+  h5 { font-size: 14px; font-weight: 800; margin: 0; display: flex; align-items: center; gap: 8px; color: var(--text-secondary); ng-icon { color: var(--zir-emerald); } } }
+
+.bids-list { display: flex; flex-direction: column; gap: 8px;
+  .bid-row { display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: var(--surface-ground); border-radius: 10px; transition: background 0.2s;
+    &.winning { background: rgba(16,185,129,0.06); border: 1px solid rgba(16,185,129,0.2); }
+    .bid-rank { font-size: 14px; width: 28px; }
+    .bid-amount { flex: 1; font-size: 15px; font-weight: 800; color: var(--text-primary); }
+    .bid-date { font-size: 12px; } } }
+
+.best-bid-display { text-align: right; font-size: 13px; font-weight: 600; color: var(--text-muted); .text-success { color: #10b981; font-size: 16px; font-weight: 900; } }
+
+.qa-list { display: flex; flex-direction: column; gap: 12px; }
+.qa-item { background: var(--surface-ground); border-radius: 10px; padding: 12px;
+  .question-text { margin: 0 0 8px; font-size: 14px; color: var(--text-primary); }
+  .answer-text { margin: 0; font-size: 13px; color: #10b981; font-weight: 600; }
+  .answer-form { display: flex; gap: 8px; .zir-input { flex: 1; } } }
+
+.loading-inline { display: flex; align-items: center; gap: 8px; color: var(--text-muted); font-size: 13px; }
+.loading-state, .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 80px 40px; color: var(--text-muted); p { font-size: 16px; font-weight: 500; margin: 0; } }
+.text-muted { color: var(--text-muted); } .text-sm { font-size: 12px; } .text-success { color: #10b981; }
+.btn-sm { padding: 8px 16px; font-size: 13px; } .btn-xs { padding: 6px 10px; }

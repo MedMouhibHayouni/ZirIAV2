@@ -1,0 +1,327 @@
+{
+  "generated_at": "2026-09-12T23:11:11Z",
+  "method": "live API/page fetch per URL; nothing assumed",
+  "datasets": {
+    "kaggle:khanaamer/wheat-leaf-disease-dataset": {
+      "url": "https://www.kaggle.com/datasets/khanaamer/wheat-leaf-disease-dataset",
+      "reachable": true,
+      "title": "Wheat Leaf Disease Dataset",
+      "desc": "This dataset contains labeled images of wheat leaves for the task of multi-class disease classification using computer vision and deep learning techniques.\n\nThe dataset is organized into standard supervised learning splits: Train, Validation, and Test. Each split contains images belonging to five disease categories commonly observed in wheat crops.\n\nThe dataset is suitable for training and evaluat",
+      "license": [
+        "Attribution 4.0 International (CC BY 4.0)"
+      ],
+      "downloads": 361
+    },
+    "kaggle:techplusmentor/olive-leaf-disease-datasets": {
+      "url": "https://www.kaggle.com/datasets/techplusmentor/olive-leaf-disease-datasets",
+      "reachable": true,
+      "title": "Olive_Leaf_Disease_Datasets",
+      "desc": "",
+      "license": [
+        "unknown"
+      ],
+      "downloads": 260
+    },
+    "kaggle:habibulbasher01644/olive-leaf-image-dataset": {
+      "url": "https://www.kaggle.com/datasets/habibulbasher01644/olive-leaf-image-dataset",
+      "reachable": true,
+      "title": "Olive Leaf Image Dataset",
+      "desc": "This dataset contains 3,400 high-quality images of olive leaves collected from Denizli, Turkey, during the spring and summer seasons. The dataset is designed for image classification tasks related to olive leaf disease detection.\n\nClasses & Distribution\nThe dataset consists of three categories of olive leaves:\n- Healthy \u2013 Leaves without disease symptoms.\n- Olive Peacock Spot \u2013 Leaves infected with",
+      "license": [
+        "CC0-1.0"
+      ],
+      "downloads": 969
+    },
+    "kaggle:projectlzp201910094/applescabfds": {
+      "url": "https://www.kaggle.com/datasets/projectlzp201910094/applescabfds",
+      "reachable": true,
+      "title": "AppleScabFDs",
+      "desc": "### Context\n\nThis dataset is collected during project \"lzp-2019/1-0094 Application of deep learning and datamining for the study of plant-pathogen interaction: the case of apple and pear scab\". The collection of digital images were carried out in different locations of Latvia. Digital images were collected by the Institute of Horticulture (LatHort).\n\n### Content\n\nDataset contains classified images",
+      "license": [
+        "Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)"
+      ],
+      "downloads": 745
+    },
+    "kaggle:mahyeks/almond-damage-detection": {
+      "url": "https://www.kaggle.com/datasets/mahyeks/almond-damage-detection",
+      "reachable": true,
+      "title": "Almond Damage Detection",
+      "desc": "Cite the following article for any usage of dataset: \nhttps://ieeexplore.ieee.org/abstract/document/10481555?casa_token=0DAXHHv-R30AAAAA:wXcbJkfqbi5bl5GOKY45Lvu22VWFW1REDMlwOQOGTKznfJV0HoftybLQ_sY5PF5nYUFMG9M\nYurdakul, M., Ataba\u015f, \u0130., & Ta\u015fdemir, \u015e. (2024, February). \n\nFlower Pollination Algorithm-Optimized Deep CNN Features for Almond (Prunus dulcis) Classification. In 2024 International Conferen",
+      "license": [
+        "apache-2.0"
+      ],
+      "downloads": 23
+    },
+    "kaggle:hadjerhamaidi/date-palm-data": {
+      "url": "https://www.kaggle.com/datasets/hadjerhamaidi/date-palm-data",
+      "reachable": true,
+      "title": "Date Palm data ",
+      "desc": "This dataset contains high-quality images of date palm leaves in three categories: healthy leaves, brown spot disease, and white scale infection. Ideal for plant disease detection and agricultural AI research. Use it to train ML models for early disease diagnosis in date palms.",
+      "license": [
+        "CC-BY-NC-SA-4.0"
+      ],
+      "downloads": 1437
+    },
+    "kaggle:yehiaheshamelgharib/processed-infected-date-palm-leaves-dataset-v1": {
+      "url": "https://www.kaggle.com/datasets/yehiaheshamelgharib/processed-infected-date-palm-leaves-dataset-v1",
+      "reachable": true,
+      "title": "(Processed) Infected Date Palm Leaves Dataset v1",
+      "desc": "",
+      "license": [
+        "unknown"
+      ],
+      "downloads": 7
+    },
+    "zenodo:7573133": {
+      "url": "https://zenodo.org/records/7573133",
+      "reachable": true,
+      "title": "Wheat disease images (small dataset)",
+      "desc": "<p>999 wheat disease images, including yellow rust, brown rust, septoria, mildew and healthy leaves taken in realistic growth conditions. This is a small subset of the full dataset containing 19,172 images over the five categories.</p>\n\n<p>The full dataset is available on request from James Brown, james.brown@jic.ac.uk.</p>",
+      "license": "cc-by-4.0",
+      "files": [
+        [
+          "Long 2023 Plant Path 999 photos.zip",
+          1029380819
+        ]
+      ],
+      "total_bytes": 1029380819
+    },
+    "zenodo:15310826": {
+      "url": "https://zenodo.org/records/15310826",
+      "reachable": true,
+      "title": "Wheat Foliar Diseases in Context",
+      "desc": "",
+      "license": "cc-by-4.0",
+      "files": [
+        [
+          "EFDv2plus_keypoint.zip",
+          1009060948
+        ],
+        [
+          "EFDv2_segmentation.zip",
+          516734692
+        ],
+        [
+          "OSD.zip",
+          348874594
+        ],
+        [
+          "LIAC.zip",
+          644176070
+        ],
+        [
+          "OSDplus.zip",
+          596526406
+        ],
+        [
+          "EFDv2_keypoint.zip",
+          531809843
+        ],
+        [
+          "EFDv2plus_segmentation.zip",
+          1474083417
+        ]
+      ],
+      "total_bytes": 5121265970
+    },
+    "zenodo:14213013": {
+      "url": "https://zenodo.org/records/14213013",
+      "reachable": true,
+      "title": "HyperPistachio: A Hyperspectral Image Dataset of Aflatoxin B1 Contaminated Pistachio Nuts",
+      "desc": "<p>This folder contains a subset of hyperspectral images from the \"HyperPistachio: Hyperspectral images of pistachios with varying aflatoxin levels\" dataset.</p>\n<p>The folder includes three subfolders for 30 hyperspectral images of pistachios with three different level of aflatoxin contamination Less Than 8ug/kg (low), Greater Than 160 ug/kg (medium), and Greater Than 300 ug/kg (high)., each 10 i",
+      "license": "cc-by-4.0",
+      "files": [
+        [
+          "Read_HS_Image.m",
+          3749
+        ]
+      ],
+      "total_bytes": 3749
+    },
+    "zenodo:20027441": {
+      "url": "https://zenodo.org/records/20027441",
+      "reachable": true,
+      "title": "HyperPistachio: A Hyperspectral Image Dataset of Aflatoxin B1 Contaminated Pistachio Nuts",
+      "desc": "<p>&nbsp;</p>\n<h2 class=\"text-text-100 mt-3 -mb-1 text-[1.375rem] font-bold\">HyperPistachio: A Hyperspectral Dataset for Aflatoxin Detection in Pistachios</h2>\n<p class=\"font-claude-response-body break-words whitespace-normal leading-[1.7]\">This dataset contains a curated subset of hyperspectral image cubes of raw pistachio samples contaminated with controlled levels of aflatoxin under laboratory ",
+      "license": "cc-by-nd-4.0",
+      "files": [
+        [
+          "Dataset.zip",
+          2859334911
+        ],
+        [
+          "band_tour.m",
+          4233
+        ],
+        [
+          "explorer.m",
+          5203
+        ],
+        [
+          "rgb_viewer.m",
+          2507
+        ],
+        [
+          "Readme codes.txt",
+          2308
+        ]
+      ],
+      "total_bytes": 2859349162
+    },
+    "mendeley:5gc7hwydwg/1": {
+      "url": "https://data.mendeley.com/datasets/5gc7hwydwg/1",
+      "reachable": true,
+      "title": "Disease Dataset of Wheat: Original, Augmented, and Balanced for Deep Learning",
+      "desc": "",
+      "license": [
+        "CC BY 4.0 International"
+      ],
+      "version": null,
+      "method": "DataCite DOI 10.17632/5gc7hwydwg.1"
+    },
+    "mendeley:9zgkwwv9j8/4": {
+      "url": "https://data.mendeley.com/datasets/9zgkwwv9j8/4",
+      "reachable": true,
+      "title": "Apple Disease Dataset",
+      "desc": "",
+      "license": [
+        "CC BY 4.0 International"
+      ],
+      "version": null,
+      "method": "DataCite DOI 10.17632/9zgkwwv9j8.4"
+    },
+    "mendeley:b6s2rkpmvh/1": {
+      "url": "https://data.mendeley.com/datasets/b6s2rkpmvh/1",
+      "reachable": true,
+      "title": "Pomegranate Fruit Diseases Dataset for Deep Learning Models",
+      "desc": "",
+      "license": [
+        "CC BY 4.0 International"
+      ],
+      "version": null,
+      "method": "DataCite DOI 10.17632/b6s2rkpmvh.1"
+    },
+    "mendeley:f7dk2yknff/2": {
+      "url": "https://data.mendeley.com/datasets/f7dk2yknff/2",
+      "reachable": true,
+      "title": "fig leaves dataset",
+      "desc": "",
+      "license": [
+        "CC BY 4.0 International"
+      ],
+      "version": null,
+      "method": "DataCite DOI 10.17632/f7dk2yknff.2"
+    },
+    "mendeley:g684ghfxvg/2": {
+      "url": "https://data.mendeley.com/datasets/g684ghfxvg/2",
+      "reachable": true,
+      "title": "Diseases of date palm leaves dataset",
+      "desc": "",
+      "license": [
+        "CC BY 4.0 International"
+      ],
+      "version": null,
+      "method": "DataCite DOI 10.17632/g684ghfxvg.2"
+    },
+    "mendeley:8nzpnwkncp/1": {
+      "url": "https://data.mendeley.com/datasets/8nzpnwkncp/1",
+      "reachable": true,
+      "title": "Net Blotch, Leaf Scald and Healthy Malting Barley Leaves",
+      "desc": "",
+      "license": [
+        "CC BY 4.0 International"
+      ],
+      "version": null,
+      "method": "DataCite DOI 10.17632/8nzpnwkncp.1"
+    },
+    "mendeley:4ny92p2r8f/1": {
+      "url": "https://data.mendeley.com/datasets/4ny92p2r8f/1",
+      "reachable": true,
+      "title": "Data for: Deep Learning-Based Identification of Visually Similar Foliar Diseases in Field",
+      "desc": "",
+      "license": [
+        "MIT License"
+      ],
+      "version": null,
+      "method": "DataCite DOI 10.17632/4ny92p2r8f.1"
+    },
+    "mendeley:jgt7ghdmg5/1": {
+      "url": "https://data.mendeley.com/datasets/jgt7ghdmg5/1",
+      "reachable": true,
+      "title": "Cactus dataset (628 imgs: 343 injured / 285 healthy)",
+      "desc": "",
+      "license": [
+        "CC BY 4.0 International"
+      ],
+      "version": null,
+      "method": "DataCite DOI 10.17632/jgt7ghdmg5.1"
+    },
+    "github:grimmlab/BarleyDiseaseSegmentation": {
+      "url": "https://github.com/grimmlab/BarleyDiseaseSegmentation",
+      "reachable": true,
+      "desc": "",
+      "default_branch": "main"
+    },
+    "upv:NEW4ALMOND": {
+      "url": "https://riunet.upv.es/items/cf811d7a-7aae-4a8d-98ec-bd974b938db6/",
+      "head": "200 7469 https://riunet.upv.es/items/cf811d7a-7aae-4a8d-98ec-bd974b938db6/",
+      "reachable": true,
+      "note": "HTTP 200 from handle; file-level content confirmed at download time"
+    },
+    "github:AnasBerka/CactiViT-materials": {
+      "url": "https://github.com/AnasBerka/CactiViT-materials",
+      "reachable": true,
+      "citation_doi": "10.1016/j.aiia.2023.07.002",
+      "classes_counts": {
+        "Confused": 2038,
+        "Damaged": 100,
+        "EarlyStage": 301,
+        "Healthy": 123,
+        "LateStage": 2625,
+        "NoCactus": 668,
+        "Old_Dead": 103
+      },
+      "total": 5958,
+      "license": "see repo licence file (to confirm at download)"
+    },
+    "figshare:OQDS-Insight": {
+      "url": "https://figshare.com/articles/dataset/Diacox_OQDS-Insight/28191245",
+      "reachable": true,
+      "title": "OQDS-Insight",
+      "files": [
+        [
+          "pts_OQDS.cpg",
+          5
+        ],
+        [
+          "pts_OQDS.dbf",
+          2452514
+        ],
+        [
+          "pts_OQDS.prj",
+          401
+        ],
+        [
+          "pts_OQDS.qix",
+          5092488
+        ],
+        [
+          "pts_OQDS.qmd",
+          678
+        ],
+        [
+          "pts_OQDS.shp",
+          2145936
+        ],
+        [
+          "pts_OQDS.shx",
+          613196
+        ],
+        [
+          "2019_WV2_NDVI.tif",
+          562746246
+        ]
+      ]
+    }
+  }
+}

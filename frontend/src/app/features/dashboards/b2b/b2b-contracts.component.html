@@ -1,0 +1,99 @@
+<div class="kanban-page">
+  <div class="page-header">
+    <h2><ng-icon name="lucideKanban"></ng-icon> Tableau de Bord Contrats</h2>
+    <button class="zir-btn zir-btn--ghost" (click)="load()">Actualiser</button>
+  </div>
+
+  @if (isLoading()) {
+    <div class="loading-state"><ng-icon name="lucideLoader" class="spin"></ng-icon> Chargement des contrats...</div>
+  } @else {
+    <div class="kanban-board">
+      @for (stage of stages; track stage.key) {
+        <div class="kanban-col">
+          <div class="col-header" [style.border-left-color]="stage.color">
+            <div class="col-title-wrap">
+              <ng-icon [name]="stage.icon"></ng-icon>
+              <span class="col-title">{{ stage.label }}</span>
+            </div>
+            <span class="col-count" [style.background]="stage.color + '20'" [style.color]="stage.color">{{ getByStatus(stage.key).length }}</span>
+          </div>
+          <div class="cards-container">
+            @for (conn of getByStatus(stage.key); track conn.id) {
+              <div class="kanban-card">
+                <div class="card-crop">{{ conn.listing?.crop_type || 'Produit' }}</div>
+                <div class="card-meta">
+                  @if (conn.listing?.seller?.name) { <span class="seller">{{ conn.listing!.seller!.name }}</span> }
+                  <span class="qty">{{ conn.quantity_tonnes }}T · {{ conn.proposed_price_per_kg | number:'1.2-2' }} TND/kg</span>
+                  @if (conn.listing?.governorate) { <span class="gov"><ng-icon name="lucideMapPin"></ng-icon> {{ conn.listing!.governorate }}</span> }
+                  @if (conn.delivery_deadline) { <span class="deadline"><ng-icon name="lucideCalendar"></ng-icon> {{ conn.delivery_deadline | date:'dd/MM/yyyy' }}</span> }
+                </div>
+                <div class="card-actions">
+                  @if (stage.key !== 'COMPLETED' && getNextStageKey(stage.key)) {
+                    <button class="zir-btn zir-btn--ghost btn-xs" (click)="moveCard(conn, getNextStageKey(stage.key))">
+                      <ng-icon name="lucideArrowRight"></ng-icon>
+                    </button>
+                  }
+                  @if (stage.key === 'CONFIRMED') {
+                    <button class="zir-btn zir-btn--primary btn-xs" (click)="openTransportModal(conn)">
+                      <ng-icon name="lucideTruck"></ng-icon> Transport
+                    </button>
+                  }
+                </div>
+              </div>
+            } @empty {
+              <div class="empty-col">Aucun contrat</div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>
+
+<!-- Transport Request Modal -->
+@if (showTransportModal) {
+  <div class="zir-modal">
+    <div class="zir-modal__backdrop" (click)="showTransportModal = false"></div>
+    <div class="zir-modal__content">
+      <div class="zir-modal__header">
+        <h3><ng-icon name="lucideTruck"></ng-icon> Demander un Transport</h3>
+        <button class="close-btn" (click)="showTransportModal = false"><ng-icon name="lucideXCircle"></ng-icon></button>
+      </div>
+      <div class="zir-modal__body">
+        <div class="form-group">
+          <label>Gouvernorat de départ</label>
+          <input type="text" class="zir-input" [(ngModel)]="transportForm.origin_governorate">
+        </div>
+        <div class="form-group">
+          <label>Gouvernorat de destination</label>
+          <input type="text" class="zir-input" [(ngModel)]="transportForm.destination_governorate" placeholder="Votre entrepôt...">
+        </div>
+        <div class="form-group">
+          <label>Description cargaison</label>
+          <input type="text" class="zir-input" [(ngModel)]="transportForm.cargo_description">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Quantité (T)</label>
+            <input type="number" class="zir-input" [(ngModel)]="transportForm.quantity_tons">
+          </div>
+          <div class="form-group">
+            <label>Date chargement</label>
+            <input type="date" class="zir-input" [(ngModel)]="transportForm.pickup_date">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Budget (TND)</label>
+          <input type="number" class="zir-input" [(ngModel)]="transportForm.budget_tnd" placeholder="Optionnel">
+        </div>
+      </div>
+      <div class="zir-modal__footer">
+        <button class="zir-btn zir-btn--ghost" (click)="showTransportModal = false">Annuler</button>
+        <button class="zir-btn zir-btn--primary" (click)="requestTransport()" [disabled]="isRequestingTransport()">
+          <ng-icon [name]="isRequestingTransport() ? 'lucideLoader' : 'lucideSend'" [class.spin]="isRequestingTransport()"></ng-icon>
+          Diffuser la demande
+        </button>
+      </div>
+    </div>
+  </div>
+}

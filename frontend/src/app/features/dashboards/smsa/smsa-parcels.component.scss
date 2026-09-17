@@ -1,0 +1,74 @@
+.smsa-parcels {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+
+  &__toggle {
+    display: flex;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 4px;
+
+    button {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      padding: 6px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+
+      &.active {
+        background: var(--bg-card-hover);
+        color: var(--text-primary);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      }
+
+      &:hover:not(.active) {
+        color: var(--text-primary);
+      }
+    }
+  }
+
+  &__row {
+    cursor: pointer;
+    transition: background 0.2s;
+
+    &:hover {
+      background: var(--bg-card-hover);
+    }
+  }
+
+  &__crop-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: rgba(34, 197, 94, 0.15);
+    color: var(--zir-emerald);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+  }
+
+  &__map-wrapper {
+    height: 600px;
+    padding: 0;
+    overflow: hidden;
+    position: relative;
+  }
+
+  &__map {
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+  }
+}

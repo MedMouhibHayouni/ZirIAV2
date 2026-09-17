@@ -1,0 +1,180 @@
+<div class="driver-current zir-animate-in">
+
+  <div class="current-header">
+    <h1><ng-icon name="lucideTruck"></ng-icon> Mission en Cours</h1>
+    <p>Gérez votre mission active et mettez à jour son statut en temps réel.</p>
+  </div>
+
+  @if (isLoading()) {
+    <div class="loading-state">
+      <div class="zir-spinner"></div>
+      <p>Chargement de votre mission active...</p>
+    </div>
+  } @else if (mission()) {
+    <div class="active-mission-layout">
+
+      <!-- Status Tracker -->
+      <div class="status-tracker-card">
+        <h3>Progression de la mission</h3>
+        <div class="steps">
+          <div class="step" [class.done]="['ACCEPTED','IN_TRANSIT','DELIVERED'].includes(mission()!.status)">
+            <div class="step-icon"><ng-icon name="lucideCheckCircle"></ng-icon></div>
+            <div class="step-label">Acceptée</div>
+          </div>
+          <div class="step-line" [class.done]="['IN_TRANSIT','DELIVERED'].includes(mission()!.status)"></div>
+          <div class="step" [class.active]="mission()!.status === 'IN_TRANSIT'" [class.done]="mission()!.status === 'DELIVERED'">
+            <div class="step-icon"><ng-icon name="lucideTruck"></ng-icon></div>
+            <div class="step-label">En transit</div>
+          </div>
+          <div class="step-line" [class.done]="mission()!.status === 'DELIVERED'"></div>
+          <div class="step" [class.done]="mission()!.status === 'DELIVERED'">
+            <div class="step-icon"><ng-icon name="lucideCheckCircle"></ng-icon></div>
+            <div class="step-label">Livrée</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mission Detail Card -->
+      <div class="mission-detail-card">
+        @if (activeContract()) {
+          <div class="contract-status-bar">
+            <span class="bar-label">Contrat de mission :</span>
+            <span class="zir-badge" [ngClass]="getContractStatusClass(activeContract()!.status)">
+              {{ getContractStatusLabel(activeContract()!.status) }}
+            </span>
+            @if (activeContract()!.status === 'PENDING_ACCEPTANCE') {
+              <button class="accept-contract-inline-btn" routerLink="/dashboard/driver/contrats">
+                Voir & Accepter
+              </button>
+            }
+          </div>
+        }
+        <!-- Route -->
+        <div class="route-display">
+          <div class="route-node origin">
+            <div class="node-pulse"></div>
+            <div class="node-dot green"></div>
+            <div class="node-info">
+              <label>Point de départ</label>
+              <h3>{{ mission()!.origin_address }}</h3>
+            </div>
+          </div>
+
+          <div class="route-connector">
+            <div class="connector-line"></div>
+            <ng-icon name="lucideTruck" class="truck-on-road"></ng-icon>
+          </div>
+
+          <div class="route-node destination">
+            <div class="node-dot amber"></div>
+            <div class="node-info">
+              <label>Destination finale</label>
+              <h3>{{ mission()!.destination_address }}</h3>
+            </div>
+          </div>
+        </div>
+
+        <!-- Meta Grid -->
+        <div class="detail-grid">
+          <div class="detail-item">
+            <ng-icon name="lucidePackage"></ng-icon>
+            <div>
+              <label>Type de cargaison</label>
+              <span>{{ mission()!.cargo_type || '—' }}</span>
+            </div>
+          </div>
+          <div class="detail-item">
+            <ng-icon name="lucideWeight"></ng-icon>
+            <div>
+              <label>Poids total</label>
+              <span>{{ mission()!.weight_tonnes }} Tonnes</span>
+            </div>
+          </div>
+          <div class="detail-item">
+            <ng-icon name="lucideDollarSign"></ng-icon>
+            <div>
+              <label>Rémunération</label>
+              <span class="highlight">{{ mission()!.accepted_price_tnd || mission()!.proposed_price_tnd || 0 }} TND</span>
+            </div>
+          </div>
+          @if (mission()!.requester?.name) {
+            <div class="detail-item">
+              <ng-icon name="lucidePhone"></ng-icon>
+              <div>
+                <label>Expéditeur</label>
+                <span>{{ mission()!.requester!.name }}</span>
+                @if (mission()!.requester!.phone) {
+                  <a [href]="'tel:' + mission()!.requester!.phone" class="call-link">
+                    <ng-icon name="lucidePhone"></ng-icon>
+                    {{ mission()!.requester!.phone }}
+                  </a>
+                }
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Actions -->
+        @if (mission()!.status !== 'DELIVERED') {
+          <div class="action-row">
+            @if (mission()!.status === 'ACCEPTED') {
+              <button class="action-btn start-btn" (click)="startTransit()" [disabled]="isUpdating()">
+                @if (isUpdating()) { <div class="zir-spinner zir-spinner--white"></div> }
+                @else { <ng-icon name="lucidePlay"></ng-icon> }
+                Démarrer le transit
+              </button>
+            } @else if (mission()!.status === 'IN_TRANSIT') {
+              <button class="action-btn complete-btn" (click)="completeMission()" [disabled]="isUpdating()">
+                @if (isUpdating()) { <div class="zir-spinner zir-spinner--white"></div> }
+                @else { <ng-icon name="lucideCheckCircle"></ng-icon> }
+                Confirmer la livraison
+              </button>
+            }
+
+            <!-- GPS Tracking toggle (visible during IN_TRANSIT) -->
+            @if (mission()!.status === 'IN_TRANSIT') {
+              <button
+                class="action-btn tracking-btn"
+                [class.tracking-active]="gps.isTracking()"
+                (click)="toggleTracking()"
+                [disabled]="isStartingTracking()">
+                @if (isStartingTracking()) {
+                  <div class="zir-spinner zir-spinner--white"></div>
+                } @else if (gps.isTracking()) {
+                  <ng-icon name="lucideNavigationOff"></ng-icon>
+                } @else {
+                  <ng-icon name="lucideNavigation"></ng-icon>
+                }
+                {{ gps.isTracking() ? 'Arrêter le suivi' : 'Partager ma position' }}
+              </button>
+
+              @if (gps.isTracking()) {
+                <div class="tracking-live-badge">
+                  <span class="pulse-dot"></span>
+                  Suivi GPS actif — L'agriculteur vous voit en temps réel
+                </div>
+              }
+            }
+          </div>
+        } @else {
+          <div class="delivered-banner">
+            <ng-icon name="lucideCheckCircle"></ng-icon>
+            <span>Mission complétée ! Paiement en cours de traitement.</span>
+          </div>
+        }
+      </div>
+    </div>
+  } @else {
+    <div class="no-mission-state">
+      <div class="no-mission-icon"><ng-icon name="lucideTruck"></ng-icon></div>
+      <h2>Aucune mission active</h2>
+      <p>Vous n'avez actuellement aucune mission en cours. Consultez les missions disponibles pour en accepter une !</p>
+      <a routerLink="/dashboard/driver/missions" class="zir-btn zir-btn--primary">
+        <ng-icon name="lucidePackage"></ng-icon>
+        Voir les missions disponibles
+      </a>
+    </div>
+  }
+
+</div>
+

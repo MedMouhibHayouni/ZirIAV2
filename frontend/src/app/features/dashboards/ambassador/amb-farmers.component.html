@@ -1,0 +1,178 @@
+<div class="farmers-wrap" [class.panel-open]="selectedFarmer()">
+  <div class="farmers-main">
+    <!-- Header -->
+    <div class="page-header">
+      <div>
+        <h2 class="page-title">Mes Agriculteurs</h2>
+        <p class="page-sub">{{ filteredFarmers().length }} agriculteur{{ filteredFarmers().length > 1 ? 's' : '' }} dans votre zone</p>
+      </div>
+      <div class="header-actions">
+        <!-- View toggle -->
+        <div class="view-toggle">
+          <button [class.active]="viewMode()==='table'" (click)="viewMode.set('table')">
+            <ng-icon name="lucideUsers"></ng-icon> Tableau
+          </button>
+          <button [class.active]="viewMode()==='cards'" (click)="viewMode.set('cards')">
+            <ng-icon name="lucidePackage"></ng-icon> Fiches
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filter-bar">
+      <div class="search-box">
+        <ng-icon name="lucideSearch"></ng-icon>
+        <input type="text" placeholder="Rechercher un agriculteur..." [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)">
+      </div>
+      <div class="filter-chips">
+        @for (f of filters; track f.key) {
+          <button class="chip" [class.active]="activeFilter()===f.key" (click)="activeFilter.set(f.key)">{{ f.label }}</button>
+        }
+      </div>
+    </div>
+
+    <!-- Loading -->
+    @if (isLoading()) {
+      <div class="loading"><ng-icon name="lucideLoader" class="spin"></ng-icon> Chargement...</div>
+    }
+
+    <!-- TABLE VIEW -->
+    @if (!isLoading() && viewMode()==='table') {
+      <div class="table-wrap">
+        <table class="farmer-table">
+          <thead>
+            <tr>
+              <th>Agriculteur</th>
+              <th>Localisation</th>
+              <th>Parcelles</th>
+              <th>Surface</th>
+              <th>Cultures</th>
+              <th>Dernière activité</th>
+              <th>Alerte</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (f of filteredFarmers(); track f.id) {
+              <tr (click)="selectFarmer(f)" class="farmer-row">
+                <td class="td-name">
+                  <ng-icon [name]="privacyIcon(f.privacy_level)" class="privacy-icon"></ng-icon>
+                  {{ f.display_name }}
+                </td>
+                <td>{{ f.delegation ?? f.governorate }}</td>
+                <td>{{ f.parcel_count }}</td>
+                <td>{{ f.total_area_ha.toFixed(1) }} ha</td>
+                <td>
+                  <div class="crop-badges">
+                    @for (c of f.crop_types.slice(0,3); track c) {
+                      <span class="crop-badge">{{ c }}</span>
+                    }
+                  </div>
+                </td>
+                <td class="td-date">{{ f.last_activity | date:'dd/MM/yy' }}</td>
+                <td><span class="alert-dot" [class]="alertClass(f.alert_level)"></span></td>
+                <td>
+                  <button class="action-btn" (click)="selectFarmer(f); $event.stopPropagation()">
+                    Voir <ng-icon name="lucideChevronRight"></ng-icon>
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+        @if (!filteredFarmers().length) {
+          <div class="empty">Aucun agriculteur trouvé</div>
+        }
+      </div>
+    }
+
+    <!-- CARD VIEW -->
+    @if (!isLoading() && viewMode()==='cards') {
+      <div class="cards-grid">
+        @for (f of filteredFarmers(); track f.id) {
+          <div class="farmer-card" (click)="selectFarmer(f)">
+            <div class="fc-top">
+              <div class="fc-avatar">{{ f.display_name.charAt(0) }}</div>
+              <div class="fc-info">
+                <div class="fc-name">{{ f.display_name }}</div>
+                <div class="fc-loc"><ng-icon name="lucideMapPin"></ng-icon> {{ f.delegation ?? f.governorate }}</div>
+              </div>
+              <div class="fc-privacy">
+                <ng-icon [name]="privacyIcon(f.privacy_level)" [title]="privacyLabel(f.privacy_level)"></ng-icon>
+              </div>
+            </div>
+            <div class="fc-stats">
+              <div class="fc-stat"><strong>{{ f.parcel_count }}</strong><span>Parcelles</span></div>
+              <div class="fc-stat"><strong>{{ f.total_area_ha.toFixed(1) }}</strong><span>ha</span></div>
+            </div>
+            <div class="fc-crops">
+              @for (c of f.crop_types.slice(0,4); track c) {
+                <span class="crop-badge">{{ c }}</span>
+              }
+            </div>
+            @if (f.alert_level === 'CRITICAL') {
+              <div class="fc-alert-banner">
+                <ng-icon name="lucideAlertTriangle"></ng-icon> Alerte Critique
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- RIGHT CONTEXT PANEL -->
+  @if (selectedFarmer(); as farmer) {
+    <aside class="context-panel">
+      <div class="panel-header">
+        <div class="panel-avatar">{{ farmer.display_name.charAt(0) }}</div>
+        <div>
+          <div class="panel-name">{{ farmer.display_name }}</div>
+          <div class="panel-privacy-badge">
+            <ng-icon [name]="privacyIcon(farmer.privacy_level)"></ng-icon>
+            {{ privacyLabel(farmer.privacy_level) }}
+          </div>
+        </div>
+        <button class="panel-close" (click)="closePanel()"><ng-icon name="lucideX"></ng-icon></button>
+      </div>
+      <div class="panel-tabs">
+        <button [class.active]="panelTab()==='parcelles'"  (click)="panelTab.set('parcelles')">Parcelles</button>
+        <button [class.active]="panelTab()==='historique'" (click)="panelTab.set('historique')">Historique</button>
+        <button [class.active]="panelTab()==='actions'"    (click)="panelTab.set('actions')">Actions</button>
+      </div>
+      <div class="panel-body">
+        @if (panelTab()==='parcelles') {
+          <div class="tab-content">
+            <div class="info-row"><ng-icon name="lucideMapPin"></ng-icon> {{ farmer.total_area_ha.toFixed(1) }} ha · {{ farmer.parcel_count }} parcelle(s)</div>
+            <div class="info-row"><ng-icon name="lucideCheckCircle"></ng-icon> {{ farmer.crop_types.join(', ') || '—' }}</div>
+          </div>
+        }
+        @if (panelTab()==='historique') {
+          <div class="tab-content empty-state">Historique disponible via le backend</div>
+        }
+        @if (panelTab()==='actions') {
+          <div class="tab-content actions-panel">
+            <button class="panel-action-btn panel-action-btn--primary" (click)="onProxyAction(farmer.id, 'CREATE_LISTING')">
+              <ng-icon name="lucidePackage"></ng-icon> Proxy — Créer annonce
+            </button>
+            <button class="panel-action-btn" (click)="onProxyAction(farmer.id, 'SUBMIT_DIAGNOSTIC')">
+              <ng-icon name="lucideCheckCircle"></ng-icon> Proxy — Soumettre diagnostic
+            </button>
+            <button class="panel-action-btn panel-action-btn--emerald" (click)="onProxyAction(farmer.id, 'ADD_PARCEL')">
+              <ng-icon name="lucideMapPin"></ng-icon> Ajouter Agriculture (Parcelle)
+            </button>
+            @if (farmer.phone) {
+              <a [href]="'tel:' + farmer.phone" class="panel-action-btn panel-action-btn--teal">
+                <ng-icon name="lucidePhone"></ng-icon> Appeler {{ farmer.phone }}
+              </a>
+            }
+            <button class="panel-action-btn" (click)="onProxyAction(farmer.id, 'SEND_MESSAGE')">
+              <ng-icon name="lucideMessageSquare"></ng-icon> Envoyer un message
+            </button>
+          </div>
+        }
+      </div>
+    </aside>
+  }
+</div>

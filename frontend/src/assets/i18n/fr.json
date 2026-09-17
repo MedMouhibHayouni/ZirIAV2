@@ -1,0 +1,23 @@
+{
+  "GLOBAL": {
+    "ZIRIA_TITLE": "ZirIA",
+    "THEME_LIGHT": "Basculer vers le mode clair",
+    "THEME_DARK": "Basculer vers le mode sombre"
+  },
+  "LANDING": {
+    "TITLE": "L'Intelligence au service de la Terre de Kasserine",
+    "SUBTITLE": "Anticipez le climat. Maîtrisez vos cultures. Accédez au marché B2B national en temps réel.",
+    "CTA_PORTAL": "Accéder au Portail",
+    "CTA_DISCOVER": "Découvrir le projet"
+  },
+  "SIDEBAR": {
+    "OVERVIEW": "Vue d'ensemble",
+    "B2B_SOURCING": "Sourcing B2B",
+    "SENTINEL_EXPERT": "Sentinel Expert",
+    "SMSA": "Centre de Commandes SMSA",
+    "EQUIPMENT": "Équipements",
+    "AMBASSADOR": "Diagnostiquer Maladie",
+    "ADMIN": "Supervision Globale",
+    "LOGOUT": "Se déconnecter"
+  }
+}

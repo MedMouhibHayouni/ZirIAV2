@@ -1,0 +1,223 @@
+{
+  "classes": [
+    "Ble_dur_Feuille_Saine",
+    "Cerisier_Feuille_Saine",
+    "Cerisier_Oidium",
+    "Fraise_Brulure_foliaire",
+    "Fraise_Feuille_Saine",
+    "Mais_Brulure_nord",
+    "Mais_Feuille_Saine",
+    "Mais_Rouille_commune",
+    "Mais_Tache_cercospora",
+    "Olivier_Deficience_Nutritionnelle",
+    "Olivier_Fumagine",
+    "Olivier_Virose",
+    "Peche_Feuille_Saine",
+    "Peche_Tache_bacterienne",
+    "Poivron_Feuille_Saine",
+    "Poivron_Tache_bacterienne",
+    "Pomme_Feuille_Saine",
+    "Pomme_Pourriture_noire",
+    "Pomme_Rouille",
+    "Pomme_Tavelure",
+    "Pomme_de_terre_Feuille_Saine",
+    "Pomme_de_terre_Mildiou_precoce",
+    "Pomme_de_terre_Mildiou_tardif",
+    "Raisin_Brulure_isariopsis",
+    "Raisin_Esca",
+    "Raisin_Feuille_Saine",
+    "Raisin_Pourriture_noire",
+    "Tomate_Acarien",
+    "Tomate_Feuille_Saine",
+    "Tomate_Mildiou_precoce",
+    "Tomate_Mildiou_tardif",
+    "Tomate_Moisissure_foliaire",
+    "Tomate_Septoriose",
+    "Tomate_TYLCV",
+    "Tomate_Tache_bacterienne",
+    "Tomate_Virus_mosaique"
+  ],
+  "num_classes": 36,
+  "stats": {
+    "Tomate_Feuille_Saine": {
+      "train": 35,
+      "val": 7,
+      "test": 8
+    },
+    "Tomate_Mildiou_precoce": {
+      "train": 35,
+      "val": 7,
+      "test": 8
+    },
+    "Tomate_Mildiou_tardif": {
+      "train": 35,
+      "val": 7,
+      "test": 8
+    },
+    "Tomate_Septoriose": {
+      "train": 35,
+      "val": 7,
+      "test": 8
+    },
+    "Tomate_Tache_bacterienne": {
+      "train": 35,
+      "val": 7,
+      "test": 8
+    },
+    "Tomate_Acarien": {
+      "train": 35,
+      "val": 7,
+      "test": 8
+    },
+    "Tomate_Moisissure_foliaire": {
+      "train": 35,
+      "val": 7,
+      "test": 8
+    },
+    "Tomate_Virus_mosaique": {
+      "train": 35,
+      "val": 7,
+      "test": 8
+    },
+    "Tomate_TYLCV": {
+      "train": 35,
+      "val": 7,
+      "test": 8
+    },
+    "Pomme_de_terre_Feuille_Saine": {
+      "train": 35,
+      "val": 7,
+      "test": 8
+    },
+    "Pomme_de_terre_Mildiou_precoce": {
+      "train": 35,
+      "val": 7,
+      "test": 8
+    },
+    "Pomme_de_terre_Mildiou_tardif": {
+      "train": 35,
+      "val": 7,
+      "test": 8
+    },
+    "Poivron_Feuille_Saine": {
+      "train": 35,
+      "val": 7,
+      "test": 8
+    },
+    "Poivron_Tache_bacterienne": {
+      "train": 35,
+      "val": 7,
+      "test": 8
+    },
+    "Mais_Feuille_Saine": {
+      "train": 35,
+      "val": 7,
+      "test": 8
+    },
+    "Mais_Rouille_commune": {
+      "train": 35,
+      "val": 7,
+      "test": 8
+    },
+    "Mais_Tache_cercospora": {
+      "train": 35,
+      "val": 7,
+      "test": 8
+    },
+    "Mais_Brulure_nord": {
+      "train": 35,
+      "val": 7,
+      "test": 8
+    },
+    "Olivier_Deficience_Nutritionnelle": {
+      "train": 180,
+      "val": 38,
+      "test": 40
+    },
+    "Olivier_Fumagine": {
+      "train": 179,
+      "val": 38,
+      "test": 40
+    },
+    "Olivier_Virose": {
+      "train": 180,
+      "val": 38,
+      "test": 40
+    },
+    "Pomme_Feuille_Saine": {
+      "train": 35,
+      "val": 7,
+      "test": 8
+    },
+    "Pomme_Tavelure": {
+      "train": 35,
+      "val": 7,
+      "test": 8
+    },
+    "Pomme_Pourriture_noire": {
+      "train": 35,
+      "val": 7,
+      "test": 8
+    },
+    "Pomme_Rouille": {
+      "train": 35,
+      "val": 7,
+      "test": 8
+    },
+    "Raisin_Feuille_Saine": {
+      "train": 35,
+      "val": 7,
+      "test": 8
+    },
+    "Raisin_Pourriture_noire": {
+      "train": 35,
+      "val": 7,
+      "test": 8
+    },
+    "Raisin_Esca": {
+      "train": 35,
+      "val": 7,
+      "test": 8
+    },
+    "Raisin_Brulure_isariopsis": {
+      "train": 35,
+      "val": 7,
+      "test": 8
+    },
+    "Peche_Feuille_Saine": {
+      "train": 35,
+      "val": 7,
+      "test": 8
+    },
+    "Peche_Tache_bacterienne": {
+      "train": 35,
+      "val": 7,
+      "test": 8
+    },
+    "Fraise_Feuille_Saine": {
+      "train": 35,
+      "val": 7,
+      "test": 8
+    },
+    "Fraise_Brulure_foliaire": {
+      "train": 35,
+      "val": 7,
+      "test": 8
+    },
+    "Cerisier_Feuille_Saine": {
+      "train": 35,
+      "val": 7,
+      "test": 8
+    },
+    "Cerisier_Oidium": {
+      "train": 35,
+      "val": 7,
+      "test": 8
+    },
+    "Ble_dur_Feuille_Saine": {
+      "train": 14,
+      "val": 3,
+      "test": 3
+    }
+  }
+}

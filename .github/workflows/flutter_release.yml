@@ -1,0 +1,197 @@
+name: ZirIA Mobile — Release APKs
+
+# ─── Triggers ─────────────────────────────────────────────────────────────────
+on:
+  # 1. On version tag (e.g. v2.0.0) — automated release
+  push:
+    tags:
+      - 'v*'
+
+  # 2. Manual trigger — useful during field-testing phase
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag (e.g. 2.0.1-beta)'
+        required: true
+        default: 'dev'
+
+# ─── Permissions ──────────────────────────────────────────────────────────────
+permissions:
+  contents: write   # required to create GitHub releases
+
+# ─── Environment ──────────────────────────────────────────────────────────────
+env:
+  FLUTTER_VERSION: '3.22.0'
+  JAVA_VERSION: '17'
+  MOBILE_DIR: './mobile'
+
+jobs:
+  # ╔══════════════════════════════════════════════════════════════════╗
+  # ║  BUILD — Runs in parallel for each role flavor                  ║
+  # ╚══════════════════════════════════════════════════════════════════╝
+  build:
+    name: Build APK — ${{ matrix.role }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      # Build all 3 flavors even if one fails
+      fail-fast: false
+      matrix:
+        role: [farmer, driver, worker]
+        include:
+          - role: farmer
+            app_name: ZirIA Farmer
+            icon_color: '#2ECC71'
+          - role: driver
+            app_name: ZirIA Driver
+            icon_color: '#3498DB'
+          - role: worker
+            app_name: ZirIA Worker
+            icon_color: '#E67E22'
+
+    steps:
+      # ── 1. Checkout ─────────────────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ── 2. Java (required by Gradle) ────────────────────────────────
+      - name: Set up Java ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+
+      # ── 3. Flutter ──────────────────────────────────────────────────
+      - name: Set up Flutter ${{ env.FLUTTER_VERSION }}
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true   # Cache Flutter SDK between runs
+
+      # ── 4. Dependencies ─────────────────────────────────────────────
+      - name: Install Flutter dependencies
+        working-directory: ${{ env.MOBILE_DIR }}
+        run: flutter pub get
+
+      # ── 5. Code generation (Riverpod, GoRouter, Isar) ───────────────
+      - name: Run build_runner
+        working-directory: ${{ env.MOBILE_DIR }}
+        run: flutter pub run build_runner build --delete-conflicting-outputs
+
+      # ── 6. Decode & write keystore ──────────────────────────────────
+      #    Secrets must be set in: Settings → Secrets → Actions
+      #    KEYSTORE_BASE64   : base64 of your .jks / .keystore file
+      #    KEY_ALIAS         : key alias inside the keystore
+      #    KEY_PASSWORD      : key password
+      #    STORE_PASSWORD    : store password
+      - name: Decode keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: |
+          echo "$KEYSTORE_BASE64" | base64 --decode > ${{ env.MOBILE_DIR }}/android/app/ziria.keystore
+          echo "Keystore written."
+
+      # ── 7. Write key.properties for Gradle ─────────────────────────
+      - name: Write key.properties
+        run: |
+          cat > ${{ env.MOBILE_DIR }}/android/key.properties <<EOF
+          storePassword=${{ secrets.STORE_PASSWORD }}
+          keyPassword=${{ secrets.KEY_PASSWORD }}
+          keyAlias=${{ secrets.KEY_ALIAS }}
+          storeFile=ziria.keystore
+          EOF
+
+      # ── 8. Build APK with role injection ────────────────────────────
+      - name: Build APK — ${{ matrix.role }}
+        working-directory: ${{ env.MOBILE_DIR }}
+        run: |
+          flutter build apk \
+            --release \
+            --split-per-abi \
+            --dart-define=APP_ROLE=${{ matrix.role }} \
+            --dart-define=APP_NAME="${{ matrix.app_name }}" \
+            --dart-define=API_BASE_URL=${{ secrets.API_BASE_URL }} \
+            --dart-define=MLOPS_BASE_URL=${{ secrets.MLOPS_BASE_URL }}
+
+      # ── 9. Rename APKs to include role in filename ──────────────────
+      - name: Rename APKs
+        working-directory: ${{ env.MOBILE_DIR }}/build/app/outputs/flutter-apk
+        run: |
+          for apk in app-arm64-v8a-release.apk app-armeabi-v7a-release.apk app-x86_64-release.apk; do
+            [ -f "$apk" ] && mv "$apk" "ziria-${{ matrix.role }}-${apk/app-/}"
+          done
+          ls -la
+
+      # ── 10. Upload APKs as workflow artifacts ────────────────────────
+      - name: Upload APK artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ziria-${{ matrix.role }}-apks
+          path: ${{ env.MOBILE_DIR }}/build/app/outputs/flutter-apk/ziria-${{ matrix.role }}-*.apk
+          retention-days: 30
+
+  # ╔══════════════════════════════════════════════════════════════════╗
+  # ║  RELEASE — Creates a GitHub Release and attaches all APKs       ║
+  # ╚══════════════════════════════════════════════════════════════════╝
+  release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: build   # Wait for all 3 matrix builds
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ── Download all APK artifacts from the build job ───────────────
+      - name: Download all APK artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-apks/
+          merge-multiple: true   # Flatten into single directory
+
+      - name: List release assets
+        run: ls -la release-apks/
+
+      # ── Determine version label ─────────────────────────────────────
+      - name: Resolve version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "tag=v${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "tag=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+          fi
+
+      # ── Create GitHub Release with all APKs ─────────────────────────
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: "ZirIA V2.0 — Release ${{ steps.version.outputs.tag }}"
+          body: |
+            ## 🌿 ZirIA V2.0 — Mise à jour terrain
+
+            ### 📱 APKs disponibles
+
+            | Shell | Architecture | Cible |
+            |-------|-------------|-------|
+            | `ziria-farmer-*.apk` | arm64 / armeabi / x86_64 | Agriculteurs & Ambassadeurs |
+            | `ziria-driver-*.apk` | arm64 / armeabi / x86_64 | Chauffeurs B2B |
+            | `ziria-worker-*.apk` | arm64 / armeabi / x86_64 | Travailleurs saisonniers |
+
+            ### 📥 Installation
+            1. Télécharger l'APK correspondant à votre profil
+            2. Activer "Sources inconnues" sur votre Android
+            3. Lancer l'APK et se connecter avec vos identifiants ZirIA
+
+            ### 🔐 Sécurité
+            Tous les APKs sont signés avec le keystore ZirIA officiel.
+
+            ---
+            *Généré automatiquement par le pipeline ZirIA CI/CD*
+          draft: false
+          prerelease: ${{ contains(steps.version.outputs.tag, 'beta') || contains(steps.version.outputs.tag, 'alpha') }}
+          files: release-apks/*.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

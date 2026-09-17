@@ -1,0 +1,219 @@
+.worker-notifications {
+  padding: 1.5rem;
+  max-width: 900px;
+  margin: 0 auto;
+  color: var(--text-primary);
+
+  .clear-all-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 700;
+    font-size: 0.9rem;
+  }
+
+  // Loading State
+  .loading-state {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 5rem 2rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    color: var(--text-secondary);
+  }
+
+  .notifications-card-wrapper {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 1rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+  }
+
+  .notifications-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+
+    .notif-item-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+      &:hover {
+        background: var(--bg-primary);
+        border-color: rgba(16, 185, 129, 0.2);
+        transform: translateX(4px);
+
+        .notif-action-arrow {
+          transform: translateX(2px);
+          color: var(--zir-emerald);
+        }
+      }
+
+      &.unread {
+        background: rgba(16, 185, 129, 0.02);
+        border-color: rgba(16, 185, 129, 0.15);
+
+        h3 {
+          font-weight: 800;
+        }
+      }
+
+      .unread-dot {
+        position: absolute;
+        left: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--zir-emerald);
+        box-shadow: 0 0 8px var(--zir-emerald);
+      }
+
+      .notif-icon-circle {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        background: rgba(59, 130, 246, 0.1); // default blue
+        color: #3b82f6;
+
+        ng-icon {
+          font-size: 1.25rem;
+        }
+
+        // Custom theme colors matching types
+        &[class*="earning"], &[class*="payment"] {
+          background: rgba(16, 185, 129, 0.1);
+          color: var(--zir-emerald);
+        }
+
+        &[class*="cert"] {
+          background: rgba(245, 158, 11, 0.1);
+          color: #f59e0b;
+        }
+
+        &[class*="application"], &[class*="job"] {
+          background: rgba(139, 92, 246, 0.1);
+          color: #8b5cf6;
+        }
+      }
+
+      .notif-body {
+        flex: 1;
+        min-width: 0;
+
+        .notif-title-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: baseline;
+          gap: 1rem;
+          margin-bottom: 0.25rem;
+
+          h3 {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+
+          .notif-time {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            white-space: nowrap;
+          }
+        }
+
+        .notif-message {
+          font-size: 0.85rem;
+          color: var(--text-secondary);
+          margin: 0;
+          line-height: 1.4;
+          word-wrap: break-word;
+        }
+      }
+
+      .notif-action-arrow {
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+        transition: all 0.2s ease;
+
+        ng-icon {
+          font-size: 1.2rem;
+        }
+      }
+    }
+
+    // Empty state bell
+    .empty-notifications-card {
+      padding: 5rem 2rem;
+
+      .illustration-bell {
+        position: relative;
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        .pulsing-halo {
+          position: absolute;
+          width: 100%;
+          height: 100%;
+          border-radius: 50%;
+          background: rgba(16, 185, 129, 0.08);
+          animation: haloPulse 2s infinite;
+        }
+
+        .bell-icon {
+          font-size: 3rem;
+          color: var(--zir-emerald);
+          position: relative;
+          z-index: 2;
+        }
+      }
+
+      h3 {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin: 0 0 0.5rem;
+      }
+
+      p {
+        font-size: 0.9rem;
+        color: var(--text-muted);
+        max-width: 400px;
+        margin: 0 auto;
+        line-height: 1.5;
+      }
+    }
+  }
+}
+
+@keyframes haloPulse {
+  0% { transform: scale(0.9); opacity: 0.8; }
+  50% { transform: scale(1.2); opacity: 0.3; }
+  100% { transform: scale(1.4); opacity: 0; }
+}

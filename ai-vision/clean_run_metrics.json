@@ -1,0 +1,288 @@
+{
+  "train_samples": 665,
+  "val_samples": 133,
+  "test_samples": 152,
+  "classes": [
+    "Olivier_Carence_Foliaire",
+    "Olivier_Fumagine",
+    "Olivier_Virose",
+    "Pecher_Tache_bacterienne",
+    "Poivron_Feuille_Saine",
+    "Poivron_Tache_bacterienne",
+    "Pomme_de_terre_Feuille_Saine",
+    "Pomme_de_terre_Mildiou_precoce",
+    "Pomme_de_terre_Mildiou_tardif",
+    "Pommier_Feuille_Saine",
+    "Pommier_Pourriture_noire",
+    "Tomate_Acarien",
+    "Tomate_Feuille_Saine",
+    "Tomate_Mildiou_precoce",
+    "Tomate_Mildiou_tardif",
+    "Tomate_Moisissure_foliaire",
+    "Tomate_Septoriose",
+    "Tomate_Tache_bacterienne",
+    "Tomate_Virus_mosaique"
+  ],
+  "temp1": 0.999,
+  "temp2": 1.192,
+  "test_accuracy": 0.9079,
+  "ece_raw": 0.0366,
+  "ece_ensemble": 0.1539,
+  "bins_ensemble": [
+    {
+      "bin": "0.2-0.3",
+      "count": 3,
+      "acc": 0.3333,
+      "conf": 0.2864,
+      "error": 0.0469
+    },
+    {
+      "bin": "0.3-0.4",
+      "count": 9,
+      "acc": 0.6667,
+      "conf": 0.3575,
+      "error": 0.3092
+    },
+    {
+      "bin": "0.4-0.5",
+      "count": 14,
+      "acc": 0.7857,
+      "conf": 0.4625,
+      "error": 0.3232
+    },
+    {
+      "bin": "0.5-0.6",
+      "count": 22,
+      "acc": 0.7727,
+      "conf": 0.5505,
+      "error": 0.2222
+    },
+    {
+      "bin": "0.6-0.7",
+      "count": 11,
+      "acc": 1.0,
+      "conf": 0.6422,
+      "error": 0.3578
+    },
+    {
+      "bin": "0.7-0.8",
+      "count": 11,
+      "acc": 1.0,
+      "conf": 0.7575,
+      "error": 0.2425
+    },
+    {
+      "bin": "0.8-0.9",
+      "count": 25,
+      "acc": 0.96,
+      "conf": 0.8545,
+      "error": 0.1055
+    },
+    {
+      "bin": "0.9-1.0",
+      "count": 57,
+      "acc": 1.0,
+      "conf": 0.9682,
+      "error": 0.0318
+    }
+  ],
+  "median_margin": 0.7403,
+  "acc_low_margin": 0.6316,
+  "acc_high_margin": 0.9474,
+  "class_metrics": [
+    {
+      "class_id": 0,
+      "name": "Olivier_Carence_Foliaire",
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 8
+    },
+    {
+      "class_id": 1,
+      "name": "Olivier_Fumagine",
+      "precision": 0.875,
+      "recall": 0.875,
+      "f1": 0.875,
+      "support": 8
+    },
+    {
+      "class_id": 2,
+      "name": "Olivier_Virose",
+      "precision": 0.875,
+      "recall": 0.875,
+      "f1": 0.875,
+      "support": 8
+    },
+    {
+      "class_id": 3,
+      "name": "Pecher_Tache_bacterienne",
+      "precision": 0.889,
+      "recall": 1.0,
+      "f1": 0.941,
+      "support": 8
+    },
+    {
+      "class_id": 4,
+      "name": "Poivron_Feuille_Saine",
+      "precision": 0.889,
+      "recall": 1.0,
+      "f1": 0.941,
+      "support": 8
+    },
+    {
+      "class_id": 5,
+      "name": "Poivron_Tache_bacterienne",
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 8
+    },
+    {
+      "class_id": 6,
+      "name": "Pomme_de_terre_Feuille_Saine",
+      "precision": 0.889,
+      "recall": 1.0,
+      "f1": 0.941,
+      "support": 8
+    },
+    {
+      "class_id": 7,
+      "name": "Pomme_de_terre_Mildiou_precoce",
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 8
+    },
+    {
+      "class_id": 8,
+      "name": "Pomme_de_terre_Mildiou_tardif",
+      "precision": 1.0,
+      "recall": 0.875,
+      "f1": 0.933,
+      "support": 8
+    },
+    {
+      "class_id": 9,
+      "name": "Pommier_Feuille_Saine",
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 8
+    },
+    {
+      "class_id": 10,
+      "name": "Pommier_Pourriture_noire",
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 8
+    },
+    {
+      "class_id": 11,
+      "name": "Tomate_Acarien",
+      "precision": 0.8,
+      "recall": 1.0,
+      "f1": 0.889,
+      "support": 8
+    },
+    {
+      "class_id": 12,
+      "name": "Tomate_Feuille_Saine",
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 8
+    },
+    {
+      "class_id": 13,
+      "name": "Tomate_Mildiou_precoce",
+      "precision": 0.8,
+      "recall": 0.5,
+      "f1": 0.615,
+      "support": 8
+    },
+    {
+      "class_id": 14,
+      "name": "Tomate_Mildiou_tardif",
+      "precision": 0.75,
+      "recall": 0.75,
+      "f1": 0.75,
+      "support": 8
+    },
+    {
+      "class_id": 15,
+      "name": "Tomate_Moisissure_foliaire",
+      "precision": 0.857,
+      "recall": 0.75,
+      "f1": 0.8,
+      "support": 8
+    },
+    {
+      "class_id": 16,
+      "name": "Tomate_Septoriose",
+      "precision": 0.714,
+      "recall": 0.625,
+      "f1": 0.667,
+      "support": 8
+    },
+    {
+      "class_id": 17,
+      "name": "Tomate_Tache_bacterienne",
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 8
+    },
+    {
+      "class_id": 18,
+      "name": "Tomate_Virus_mosaique",
+      "precision": 0.889,
+      "recall": 1.0,
+      "f1": 0.941,
+      "support": 8
+    }
+  ],
+  "confusable_pairs": [
+    {
+      "true_class": "Tomate_Mildiou_precoce",
+      "pred_class": "Tomate_Septoriose",
+      "error_count": 2
+    },
+    {
+      "true_class": "Tomate_Moisissure_foliaire",
+      "pred_class": "Tomate_Acarien",
+      "error_count": 2
+    },
+    {
+      "true_class": "Olivier_Fumagine",
+      "pred_class": "Olivier_Virose",
+      "error_count": 1
+    },
+    {
+      "true_class": "Olivier_Virose",
+      "pred_class": "Olivier_Fumagine",
+      "error_count": 1
+    },
+    {
+      "true_class": "Pomme_de_terre_Mildiou_tardif",
+      "pred_class": "Poivron_Feuille_Saine",
+      "error_count": 1
+    },
+    {
+      "true_class": "Tomate_Mildiou_precoce",
+      "pred_class": "Tomate_Mildiou_tardif",
+      "error_count": 1
+    },
+    {
+      "true_class": "Tomate_Mildiou_precoce",
+      "pred_class": "Tomate_Virus_mosaique",
+      "error_count": 1
+    },
+    {
+      "true_class": "Tomate_Mildiou_tardif",
+      "pred_class": "Pomme_de_terre_Feuille_Saine",
+      "error_count": 1
+    }
+  ]
+}

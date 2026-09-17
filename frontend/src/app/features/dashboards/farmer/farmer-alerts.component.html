@@ -1,0 +1,80 @@
+<div class="farmer-alerts zir-animate-in">
+
+  <!-- Header -->
+  <header class="page-header" style="display:flex; justify-content:space-between; align-items:center;">
+    <div>
+      <h2>Centre d'Alertes</h2>
+      <p>{{ unreadCount }} alerte(s) non lue(s)</p>
+    </div>
+    <div style="display:flex; gap:12px; align-items:center;">
+      <button class="zir-btn zir-btn--ghost" (click)="loadNotifications()">
+        <ng-icon name="lucideRefreshCcw"></ng-icon>
+      </button>
+      <button class="zir-btn zir-btn--ghost" (click)="markAllRead()" [disabled]="unreadCount === 0">
+        <ng-icon name="lucideCheckCheck"></ng-icon> Tout lire
+      </button>
+    </div>
+  </header>
+
+  <!-- Filter Chips -->
+  <div class="filter-chips">
+    @for (f of filters; track f.val) {
+      <button class="filter-chip" [class.active]="activeFilter() === f.val" (click)="setFilter(f.val)">
+        {{ f.label }}
+      </button>
+    }
+  </div>
+
+  <!-- Content -->
+  @if (isLoading()) {
+    <div class="zir-card" style="padding:24px;">
+      @for (_ of [1,2,3,4,5]; track $index) {
+        <div class="zir-skeleton--text" style="height:70px; margin-bottom:12px; border-radius:10px;"></div>
+      }
+    </div>
+  } @else if (grouped().length === 0) {
+    <div class="zir-empty" style="padding:80px;">
+      <div class="zir-empty__icon"><ng-icon name="lucideBell"></ng-icon></div>
+      <div class="zir-empty__desc">Aucune notification pour ce filtre.</div>
+    </div>
+  } @else {
+
+    <div class="notifications-feed">
+      @for (group of grouped(); track group.date) {
+
+        <!-- Date Group Header -->
+        <div class="group-header">
+          <div class="group-line"></div>
+          <span class="group-date">{{ group.date }}</span>
+          <div class="group-line"></div>
+        </div>
+
+        <!-- Notifications in this group -->
+        @for (notif of group.notifs; track notif.id) {
+          <div class="notif-item" [class.notif-item--unread]="!notif.is_read" (click)="markRead(notif)">
+            
+            <div class="notif-icon" [ngClass]="getNotifIconClass(notif.type)">
+              <ng-icon [name]="getNotifIcon(notif.type)"></ng-icon>
+            </div>
+
+            <div class="notif-content">
+              <p class="notif-title" [class.notif-title--unread]="!notif.is_read">{{ notif.title }}</p>
+              <p class="notif-body">{{ notif.body }}</p>
+            </div>
+
+            <div style="display:flex; flex-direction:column; align-items:flex-end; gap:8px; flex-shrink:0;">
+              <span class="notif-time">{{ getTimeAgo(notif.created_at) }}</span>
+              @if (!notif.is_read) {
+                <span class="unread-dot"></span>
+              }
+            </div>
+
+          </div>
+        }
+
+      }
+    </div>
+
+  }
+
+</div>

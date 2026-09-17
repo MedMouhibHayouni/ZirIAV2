@@ -1,0 +1,161 @@
+<div class="checkout-layout">
+  <div class="checkout-container">
+    
+    <!-- Progress Stepper -->
+    <div class="stepper">
+      <div class="stepper__item" [class.active]="step() >= 1" [class.completed]="step() > 1">
+        <div class="stepper__circle"><ng-icon name="lucideZap"></ng-icon></div>
+        <span>Choix</span>
+      </div>
+      <div class="stepper__line" [class.active]="step() >= 2"></div>
+      <div class="stepper__item" [class.active]="step() >= 2" [class.completed]="step() > 2">
+        <div class="stepper__circle"><ng-icon name="lucideBuilding2"></ng-icon></div>
+        <span>Facturation</span>
+      </div>
+      <div class="stepper__line" [class.active]="step() >= 3"></div>
+      <div class="stepper__item" [class.active]="step() >= 3" [class.completed]="step() > 3">
+        <div class="stepper__circle"><ng-icon name="lucideCreditCard"></ng-icon></div>
+        <span>Paiement</span>
+      </div>
+    </div>
+
+    <!-- Step 1: Recap -->
+    @if (step() === 1) {
+      <div class="step-card fade-in">
+        <div class="step-header">
+          <h2>Choisissez votre abonnement</h2>
+          <p>Mettez à niveau votre espace ZirIA Sentinel.</p>
+        </div>
+
+        <div class="plans-grid">
+          @for (plan of plans; track plan.code) {
+            <div class="plan-item" 
+                 [class.selected]="selectedPlanCode() === plan.code"
+                 (click)="selectedPlanCode.set(plan.code)">
+              <div class="plan-icon" [style.color]="plan.color" [style.background]="plan.color + '20'">
+                <ng-icon [name]="plan.icon"></ng-icon>
+              </div>
+              <div class="plan-info">
+                <h3>{{ plan.name }}</h3>
+                <div class="plan-price">{{ plan.price }}<span>/mois</span></div>
+              </div>
+              @if (selectedPlanCode() === plan.code) {
+                <div class="plan-check"><ng-icon name="lucideCheckCircle2"></ng-icon></div>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="step-actions">
+          <button class="btn btn-primary" (click)="nextStep()">
+            Continuer <ng-icon name="lucideArrowRight"></ng-icon>
+          </button>
+        </div>
+      </div>
+    }
+
+    <!-- Step 2: Billing Info -->
+    @if (step() === 2) {
+      <div class="step-card fade-in">
+        <div class="step-header">
+          <h2>Détails de facturation</h2>
+          <p>Ces informations apparaîtront sur votre facture.</p>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label>Nom de l'entreprise ou Coopérative</label>
+            <div class="input-icon">
+              <ng-icon name="lucideBuilding2"></ng-icon>
+              <input type="text" [(ngModel)]="companyName" placeholder="Ex: SMSA Les Oliviers">
+            </div>
+          </div>
+          <div class="form-group full-width">
+            <label>Matricule Fiscal</label>
+            <div class="input-icon">
+              <ng-icon name="lucideShieldCheck"></ng-icon>
+              <input type="text" [(ngModel)]="taxId" placeholder="Ex: 0000000X/A/M/000">
+            </div>
+          </div>
+          <div class="form-group full-width">
+            <label>Adresse complète</label>
+            <textarea [(ngModel)]="address" placeholder="Saisissez votre adresse..." rows="3"></textarea>
+          </div>
+        </div>
+
+        <div class="step-actions split">
+          <button class="btn btn-secondary" (click)="prevStep()">
+            <ng-icon name="lucideArrowLeft"></ng-icon> Retour
+          </button>
+          <button class="btn btn-primary" (click)="nextStep()">
+            Aller au paiement <ng-icon name="lucideArrowRight"></ng-icon>
+          </button>
+        </div>
+      </div>
+    }
+
+    <!-- Step 3: Payment -->
+    @if (step() === 3) {
+      <div class="step-card fade-in">
+        <div class="step-header">
+          <h2>Méthode de paiement</h2>
+          <p>Total à payer : <strong>{{ selectedPlan().price }}</strong></p>
+        </div>
+
+        <div class="payment-methods">
+          <label class="payment-option" [class.selected]="paymentMethod() === 'card'">
+            <input type="radio" name="payment" value="card" [checked]="paymentMethod() === 'card'" (change)="paymentMethod.set('card')">
+            <div class="opt-icon"><ng-icon name="lucideCreditCard"></ng-icon></div>
+            <div class="opt-content">
+              <strong>Carte Bancaire</strong>
+              <span>Simulation (Aucun débit réel)</span>
+            </div>
+          </label>
+          <label class="payment-option" [class.selected]="paymentMethod() === 'transfer'">
+            <input type="radio" name="payment" value="transfer" [checked]="paymentMethod() === 'transfer'" (change)="paymentMethod.set('transfer')">
+            <div class="opt-icon"><ng-icon name="lucideLandmark"></ng-icon></div>
+            <div class="opt-content">
+              <strong>Virement Bancaire</strong>
+              <span>Détails fournis après confirmation</span>
+            </div>
+          </label>
+        </div>
+
+        @if (paymentMethod() === 'card') {
+          <div class="simulated-card">
+            <p class="simulated-note">Mode simulation : Cliquez sur confirmer pour valider directement.</p>
+          </div>
+        }
+
+        <div class="step-actions split">
+          <button class="btn btn-secondary" [disabled]="loading()" (click)="prevStep()">
+            <ng-icon name="lucideArrowLeft"></ng-icon> Retour
+          </button>
+          <button class="btn btn-primary" [class.loading]="loading()" [disabled]="loading()" (click)="confirmPayment()">
+            @if (loading()) {
+              <div class="spinner"></div> Validation...
+            } @else {
+              Confirmer et payer
+            }
+          </button>
+        </div>
+      </div>
+    }
+
+    <!-- Step 4: Success -->
+    @if (step() === 4) {
+      <div class="step-card success-card scale-in">
+        <div class="success-icon">
+          <ng-icon name="lucideCheckCircle2"></ng-icon>
+        </div>
+        <h2>Abonnement activé !</h2>
+        <p>Merci pour votre confiance. Vous êtes maintenant sur le plan <strong>{{ selectedPlan().name }}</strong>. Toutes les fonctionnalités premium ont été débloquées.</p>
+        
+        <button class="btn btn-primary btn-large" (click)="returnToDashboard()">
+          Accéder à mon tableau de bord
+        </button>
+      </div>
+    }
+
+  </div>
+</div>

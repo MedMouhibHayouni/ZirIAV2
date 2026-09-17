@@ -1,0 +1,125 @@
+<div class="admin-page">
+  <div class="page-header">
+    <div>
+      <h2><ng-icon name="lucideActivity"></ng-icon> État du Système</h2>
+      <p>Santé de l'infrastructure — actualisation automatique toutes les 10 secondes</p>
+    </div>
+    <button class="zir-btn zir-btn--primary" (click)="openBtsReport()">
+      <ng-icon name="lucideFileText"></ng-icon> Rapport BTS
+    </button>
+  </div>
+
+  <!-- Health Cards -->
+  @if (health()) {
+    <div class="health-grid">
+      <div class="health-card" [class.status-ok]="health()!.db_status === 'OK'" [class.status-err]="health()!.db_status !== 'OK'">
+        <ng-icon name="lucideDatabase"></ng-icon>
+        <div class="hc-info">
+          <span class="hc-label">Base de Données</span>
+          <span class="hc-value">{{ health()!.db_status }}</span>
+        </div>
+        <span class="status-pill" [class.ok]="health()!.db_status === 'OK'" [class.err]="health()!.db_status !== 'OK'">
+          {{ health()!.db_status === 'OK' ? '● Opérationnel' : '● Erreur' }}
+        </span>
+      </div>
+      <div class="health-card">
+        <ng-icon name="lucideWifi"></ng-icon>
+        <div class="hc-info">
+          <span class="hc-label">Connexions WebSocket</span>
+          <span class="hc-value">{{ health()!.websocket_connections }}</span>
+        </div>
+        <span class="status-pill ok">● En ligne</span>
+      </div>
+      <div class="health-card">
+        <ng-icon name="lucideActivity"></ng-icon>
+        <div class="hc-info">
+          <span class="hc-label">Uptime Serveur</span>
+          <span class="hc-value">{{ formatUptime(health()!.uptime_seconds) }}</span>
+        </div>
+        <span class="status-pill ok">● Stable</span>
+      </div>
+      <div class="health-card" [class.status-warn]="health()!.pending_commissions > 0">
+        <ng-icon name="lucideAlertTriangle"></ng-icon>
+        <div class="hc-info">
+          <span class="hc-label">Commissions en Attente</span>
+          <span class="hc-value">{{ health()!.pending_commissions }}</span>
+        </div>
+        <span class="status-pill" [class.ok]="health()!.pending_commissions === 0" [class.warn]="health()!.pending_commissions > 0">
+          {{ health()!.pending_commissions === 0 ? '● OK' : '● Attente' }}
+        </span>
+      </div>
+    </div>
+  } @else {
+    <div class="loading-state"><ng-icon name="lucideLoader" class="spin"></ng-icon> Connexion au système...</div>
+  }
+
+  <!-- User Suspension Search -->
+  <div class="zir-card search-section">
+    <h3 class="card-title"><ng-icon name="lucideUsers"></ng-icon> Suspendre un Utilisateur</h3>
+    <div class="search-bar">
+      <div class="search-input-wrap">
+        <ng-icon name="lucideSearch"></ng-icon>
+        <input type="text" class="zir-input" [(ngModel)]="searchQuery" placeholder="Rechercher par nom ou email..." (input)="searchUsers()">
+      </div>
+      @if (isSearching()) { <ng-icon name="lucideLoader" class="spin"></ng-icon> }
+    </div>
+
+    @if (searchResults().length > 0) {
+      <div class="search-results">
+        @for (user of searchResults(); track user.id) {
+          <div class="result-row">
+            <div class="user-avatar-sm">{{ user.name?.charAt(0) }}</div>
+            <div class="result-info">
+              <span class="font-semibold">{{ user.name }}</span>
+              <span class="text-muted text-sm">{{ user.role }} · {{ user.email }}</span>
+            </div>
+            <button class="zir-btn zir-btn--danger-ghost" (click)="suspendUser(user.id)">
+              <ng-icon name="lucideXCircle"></ng-icon> Suspendre
+            </button>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>
+
+<!-- BTS Report Modal (Drawer) -->
+@if (showBtsModal) {
+  <div class="zir-modal">
+    <div class="zir-modal__backdrop" (click)="showBtsModal = false"></div>
+    <div class="zir-modal__content">
+      <div class="zir-modal__header">
+        <h3><ng-icon name="lucideBarChart2"></ng-icon> Rapport BTS — 6 Derniers Mois</h3>
+        <button class="close-btn" (click)="showBtsModal = false"><ng-icon name="lucideXCircle"></ng-icon></button>
+      </div>
+      <div class="zir-modal__body">
+        @if (isLoadingBts()) {
+          <div class="loading-state"><ng-icon name="lucideLoader" class="spin"></ng-icon> Génération du rapport...</div>
+        } @else if (btsReport()) {
+          <div class="bts-stats">
+            <div class="bts-kpi"><span>Utilisateurs Actifs</span><strong>{{ btsReport()!.total_active_users }}</strong></div>
+            <div class="bts-kpi"><span>Transactions Totales</span><strong>{{ btsReport()!.total_transactions }}</strong></div>
+            <div class="bts-kpi"><span>Revenus Abonnements</span><strong>{{ btsReport()!.subscription_revenue_tnd | number:'1.0-0' }} TND</strong></div>
+            <div class="bts-kpi"><span>Croissance</span><strong [class.text-success]="btsReport()!.growth_rate_pct > 0">{{ btsReport()!.growth_rate_pct }}%</strong></div>
+          </div>
+          <table class="zir-table">
+            <thead><tr><th>Mois</th><th>Commissions TND</th><th>Transactions</th></tr></thead>
+            <tbody>
+              @for (row of btsReport()!.monthly_revenue; track row.month) {
+                <tr>
+                  <td>{{ row.month }}</td>
+                  <td class="font-bold text-success">{{ row.commission_tnd | number:'1.2-2' }}</td>
+                  <td>{{ row.transaction_count }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+      </div>
+      <div class="zir-modal__footer">
+        <button class="zir-btn zir-btn--ghost" (click)="showBtsModal = false">Fermer</button>
+        <button class="zir-btn zir-btn--primary" onclick="window.print()"><ng-icon name="lucideFileText"></ng-icon> Imprimer</button>
+      </div>
+    </div>
+  </div>
+}

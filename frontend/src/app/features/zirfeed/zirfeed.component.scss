@@ -1,0 +1,449 @@
+// ═══════════════════════════════════════════════════════════════════
+// ZirFeed — Warm, elegant & senior-friendly social design
+// Big type, high contrast, generous touch targets, calm warm palette
+// ═══════════════════════════════════════════════════════════════════
+
+:host {
+  display: block;
+  width: 100%;
+  height: 100%;
+  --zf-green: #1a7a4a;
+  --zf-green-deep: #0e5a3c;
+  --zf-gold: #c2832a;
+  --zf-gold-soft: rgba(194, 131, 42, .14);
+  --zf-card-shadow: 0 6px 24px -8px rgba(60, 50, 30, .14), 0 1px 3px rgba(60, 50, 30, .08);
+  --zf-radius: 20px;
+}
+
+.zirfeed-app {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+// ─── HEADER — warm & clear ───
+.zirfeed-header {
+  background: var(--bg-topbar);
+  border-bottom: 1px solid var(--border);
+  position: relative;
+  z-index: 50;
+  padding: 12px 22px !important;
+  gap: 12px;
+
+  .zirfeed-logo { height: 44px; width: auto; border-radius: 12px; }
+
+  .zirfeed-brand {
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -.4px;
+    color: var(--text-primary);
+    -webkit-text-fill-color: currentColor;
+    background: none;
+  }
+}
+
+.zirfeed-search-input {
+  background: var(--bg-input);
+  border: 1.5px solid var(--border);
+  color: var(--text-primary);
+  font-size: 1rem;
+  min-height: 48px;
+  border-radius: 16px !important;
+  padding-left: 44px !important;
+
+  &::placeholder { color: var(--text-muted); font-size: .95rem; }
+  &:focus {
+    background: var(--bg-card);
+    border-color: var(--zf-green);
+    box-shadow: 0 0 0 4px rgba(26, 122, 74, .14);
+    outline: none;
+  }
+}
+
+.zirfeed-search-results, .zirfeed-notif-dropdown {
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  border-radius: 18px !important;
+  box-shadow: var(--zf-card-shadow);
+  color: var(--text-primary);
+  font-size: .95rem;
+
+  .search-tab-btn {
+    background: var(--bg-input);
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+    font-size: .85rem;
+    font-weight: 600;
+    padding: 8px 14px !important;
+    min-height: 40px;
+
+    &.active { background: var(--zf-green); border-color: var(--zf-green); color: #fff; }
+  }
+}
+
+.zirfeed-action-btn {
+  min-width: 48px; min-height: 48px;
+  border-radius: 14px !important;
+  border: 1.5px solid var(--border);
+  background: var(--bg-card);
+  &:hover { border-color: var(--zf-green); }
+}
+.exit-btn { min-height: 44px; font-size: .9rem !important; border-radius: 12px !important; }
+
+.notif-card {
+  border-radius: 14px;
+  padding: 14px !important;
+  font-size: .92rem;
+  &.unread { background: var(--zf-gold-soft); border-left: 4px solid var(--zf-gold); }
+}
+
+// ─── LAYOUT ───
+.zirfeed-layout {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 22px;
+  padding: 22px;
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+  max-width: 1320px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.zirfeed-sidebar-left, .zirfeed-sidebar-right {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: sticky;
+  top: 0;
+  height: max-content;
+}
+
+// ─── SIDEBAR NAV — big friendly buttons ───
+.sidebar-nav-item {
+  width: 100%;
+  color: var(--text-secondary);
+  text-align: left;
+  font-size: 1.02rem;
+  font-weight: 600;
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  padding: 13px 16px;
+  min-height: 54px;
+  border-radius: 16px;
+  transition: all .2s ease;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(60, 50, 30, .05);
+
+  ng-icon { font-size: 1.35rem; color: var(--zf-green); flex-shrink: 0; }
+
+  &:hover { border-color: var(--zf-green); color: var(--text-primary); transform: translateX(3px); }
+
+  &.active {
+    color: #fff;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--zf-green) 0%, var(--zf-green-deep) 100%);
+    border-color: var(--zf-green-deep);
+    box-shadow: 0 8px 20px -6px rgba(26, 122, 74, .5);
+    ng-icon { color: #fff; }
+  }
+
+  &--admin { border-style: dashed; }
+}
+
+.sidebar-collections-widget {
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  padding: 18px;
+  border-radius: var(--zf-radius);
+  h4 { font-size: .85rem !important; }
+}
+
+.drag-collection-target {
+  border: 1.5px dashed var(--border);
+  padding: 14px;
+  min-height: 52px;
+  border-radius: 14px;
+  background: var(--bg-input);
+  font-size: .92rem;
+  &:hover { border-color: var(--zf-gold); background: var(--zf-gold-soft); }
+}
+
+.zirfeed-right-widget {
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--zf-radius);
+  padding: 22px;
+  box-shadow: var(--zf-card-shadow);
+  h4, h3 { font-size: 1.05rem !important; }
+  font-size: .95rem;
+}
+
+// ─── COMPOSER — inviting ───
+.zirfeed-composer {
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  border-radius: 22px;
+  padding: 22px;
+  box-shadow: var(--zf-card-shadow);
+
+  .composer-textarea {
+    font-size: 1.05rem;
+    line-height: 1.65;
+    min-height: 90px;
+    color: var(--text-primary);
+    &::placeholder { color: var(--text-muted); font-size: 1rem; }
+    &:focus { outline: none; }
+  }
+
+  .context-chip {
+    min-height: 40px; padding: 8px 14px !important;
+    font-size: .85rem !important; border-radius: 999px !important;
+    border: 1.5px solid var(--border);
+    &.active { background: var(--zf-green); color: #fff; border-color: var(--zf-green); }
+  }
+
+  .media-tab-btn {
+    background: var(--bg-input);
+    border: 1.5px solid var(--border);
+    color: var(--text-secondary);
+    padding: 10px 16px;
+    min-height: 46px;
+    border-radius: 13px;
+    font-size: .92rem;
+    &:hover { border-color: var(--zf-green); color: var(--text-primary); }
+  }
+
+  .composer-submit-btn {
+    min-height: 50px; padding: 12px 30px !important;
+    font-size: 1rem !important; border-radius: 14px !important;
+    background: linear-gradient(135deg, #e8a33d, var(--zf-gold)) !important;
+    box-shadow: 0 8px 18px -6px rgba(194, 131, 42, .55);
+    &:hover { filter: brightness(1.05); }
+  }
+}
+
+// ─── STORIES — big & clear ───
+.stories-bar {
+  border-radius: 22px !important;
+  padding: 18px !important;
+  gap: 16px !important;
+  background: var(--bg-card);
+  border: 1.5px solid var(--border) !important;
+  box-shadow: var(--zf-card-shadow);
+}
+.story-bubble-wrapper {
+  min-width: 72px;
+  span { font-size: .78rem !important; font-weight: 600; }
+  .w-12.h-12 { width: 64px !important; height: 64px !important; border-radius: 50% !important; font-size: 1.3rem !important; }
+}
+
+// ─── POST CARDS — spacious & readable ───
+.zirfeed-post-card {
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  border-radius: 22px;
+  padding: 24px;
+  box-shadow: var(--zf-card-shadow);
+  position: relative;
+  overflow: hidden;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 320px;
+
+  &:hover { border-color: rgba(26, 122, 74, .35); }
+  &.promoted-post { border-color: var(--zf-gold); }
+  &.expert-tint { border-top: 4px solid var(--zf-green); }
+
+  .post-accent-left { width: 5px; }
+
+  // author row
+  .avatar-wrapper .w-10.h-10, .w-10.h-10.rounded-full {
+    width: 50px !important; height: 50px !important;
+    font-size: 1.15rem !important; border-radius: 50% !important;
+    border: 2px solid rgba(26, 122, 74, .25);
+  }
+  .font-bold.text-sm { font-size: 1.02rem !important; }
+  .role-badge { font-size: .75rem !important; padding: 4px 10px !important; font-weight: 700; }
+
+  // content — the key senior fix: big readable text
+  p.text-xs.text-gray-200, .text-xs {
+    font-size: .8rem;
+  }
+  p[class*="content"], .post-content {
+    font-size: 1.02rem !important; line-height: 1.7 !important;
+  }
+}
+
+// Boost all post body text specifically
+.zirfeed-post-card > p,
+.zirfeed-post-card .text-gray-200,
+.group-interior .text-gray-200,
+.page-interior .text-gray-200 {
+  font-size: 1rem !important;
+  line-height: 1.7 !important;
+  color: var(--text-primary) !important;
+}
+
+// Action bar — big touch targets
+.action-bar {
+  padding: 12px 0 !important;
+  button { min-height: 44px; min-width: 44px; font-size: .95rem !important; border-radius: 12px; padding: 8px 12px !important; }
+}
+
+// Role badges — clear
+.badge-FARMER { background: rgba(26,122,74,.13); color: #15803d; font-weight: 700; }
+.badge-EXPERT { background: rgba(59,130,246,.13); color: #1d4ed8; font-weight: 700; }
+.badge-SUPPLIER { background: var(--zf-gold-soft); color: #92400e; font-weight: 700; }
+.badge-COOP_PRESIDENT { background: rgba(20,184,166,.13); color: #0f766e; font-weight: 700; }
+.badge-WORKER, .badge-AGRI_WORKER { background: rgba(100,116,139,.13); color: #475569; font-weight: 700; }
+.badge-DRIVER { background: rgba(100,116,139,.13); color: #475569; font-weight: 700; }
+.badge-EQUIP_OWNER { background: rgba(180,83,9,.13); color: #92400e; font-weight: 700; }
+.badge-ADMIN { background: rgba(220,38,38,.1); color: #b91c1c; font-weight: 700; }
+.badge-CONTENT_CREATOR { background: rgba(234,88,12,.12); color: #c2410c; font-weight: 700; }
+
+// Media
+.post-media-grid { gap: 10px;
+  img { border-radius: 16px; }
+}
+
+// Reactions — calmer
+.reaction-btn {
+  padding: 10px 18px;
+  min-height: 46px;
+  border-radius: 999px;
+  background: var(--bg-input);
+  border: 1.5px solid var(--border);
+  font-size: .95rem;
+  &.active { background: var(--zf-gold-soft); border-color: var(--zf-gold); }
+}
+
+// Comments — readable
+.comment-input {
+  background: var(--bg-input);
+  border: 1.5px solid var(--border);
+  color: var(--text-primary);
+  font-size: 1rem;
+  min-height: 48px;
+  border-radius: 14px !important;
+  &:focus { border-color: var(--zf-green); box-shadow: 0 0 0 4px rgba(26,122,74,.12); outline: none; }
+}
+.comment-item-card {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  padding: 14px 16px;
+  border-radius: 14px;
+  font-size: .95rem;
+  p { font-size: .95rem !important; line-height: 1.65 !important; }
+}
+
+// News / interiors
+.news-feed-card {
+  background: var(--bg-card);
+  border: 1.5px solid rgba(26,122,74,.3);
+  box-shadow: var(--zf-card-shadow);
+  padding: 24px;
+  border-radius: 22px;
+  h3 { font-size: 1.15rem !important; line-height: 1.5 !important; }
+  p { font-size: 1rem !important; line-height: 1.7 !important; }
+}
+.group-interior, .page-interior, .event-interior {
+  border-radius: 22px !important;
+  border-width: 1.5px !important;
+  h1 { font-size: 1.5rem !important; }
+  p { font-size: .98rem !important; line-height: 1.7 !important; }
+  button { min-height: 46px; }
+}
+
+// Modals & inputs
+.modal-input {
+  background: var(--bg-input);
+  border: 1.5px solid var(--border);
+  color: var(--text-primary);
+  font-size: 1rem;
+  min-height: 48px;
+  border-radius: 13px;
+  &:focus { border-color: var(--zf-green); outline: none; }
+}
+.zirfeed-modal { background: var(--bg-card); border: 1.5px solid var(--border); border-radius: 22px; box-shadow: 0 24px 60px rgba(0,0,0,.25); }
+
+// Reels
+.reel-icon-wrapper { width: 52px; height: 52px; border-radius: 16px; }
+.reel-nav-btn { width: 46px; height: 46px; }
+.reel-tab-btn {
+  font-size: 1rem; font-weight: 600; padding: 12px 18px; min-height: 48px;
+  &.active { color: var(--zf-gold); border-color: var(--zf-gold); }
+}
+
+// Accessibility: visible focus everywhere
+.zirfeed-app button:focus-visible, .zirfeed-app input:focus-visible, .zirfeed-app textarea:focus-visible, .zirfeed-app a:focus-visible {
+  outline: 3px solid rgba(26, 122, 74, .5);
+  outline-offset: 2px;
+}
+
+// ─── Theme overrides (keep light/dark working) ───
+.zirfeed-app {
+  color: var(--text-primary);
+  .text-white, .text-gray-100, .text-gray-200 { color: var(--text-primary); }
+  .text-gray-300 { color: var(--text-secondary); }
+  .text-gray-400, .text-gray-500 { color: var(--text-muted); }
+  .bg-gray-900 { background: var(--bg-card); }
+  .bg-gray-950 { background: var(--bg-primary); }
+  .bg-white\/5 { background: var(--bg-input); }
+  .bg-white\/10 { background: var(--bg-card-hover); }
+  .bg-black\/20 { background: var(--bg-input); }
+  .bg-black\/40 { background: var(--bg-input); }
+  .bg-black\/60, .bg-black\/75, .bg-black\/85 { background: var(--bg-overlay); }
+  .border-gray-700, .border-gray-800, .border-gray-700\/50, .border-gray-700\/60 { border-color: var(--border); }
+  .bg-gray-900\/95 { background: var(--bg-card); }
+  .bg-gray-800\/50 { background: var(--bg-input); }
+}
+
+.group-interior-card, .page-interior-card { background: var(--bg-card); border-color: var(--border); }
+.shared-post-preview { background: var(--bg-input) !important; border-color: var(--border) !important; }
+.voice-note-waveform-container { background: var(--bg-input) !important; border-color: var(--border) !important; }
+.comments-section-container { border-top-color: var(--border) !important; }
+.nested-reply-item { background: var(--bg-input) !important; }
+.story-viewer-overlay { background: rgba(0,0,0,.88) !important; }
+
+// ─── Responsive: tablet + phone ───
+.zirfeed-mobile-nav { display: none; }
+
+@media (max-width: 1100px) {
+  .zirfeed-layout { grid-template-columns: repeat(12, 1fr); padding: 16px; }
+  .zirfeed-sidebar-left { grid-column: span 4 / span 4; }
+  .zirfeed-main-content { grid-column: span 8 / span 8; }
+  .zirfeed-sidebar-right { display: none; }
+}
+
+@media (max-width: 820px) {
+  .hidden-mobile { display: none !important; }
+  .zirfeed-app { font-size: 16px; }
+  .zirfeed-layout { display: flex; flex-direction: column; padding: 12px; gap: 14px; }
+  .zirfeed-sidebar-left, .zirfeed-sidebar-right { display: none; }
+  .zirfeed-header { padding: 10px 14px !important; }
+  .zirfeed-brand { font-size: 1.25rem !important; }
+  .zirfeed-post-card { padding: 18px; border-radius: 18px; }
+  .zirfeed-composer { padding: 16px; }
+  .sidebar-nav-item { min-height: 52px; }
+  .zirfeed-mobile-nav {
+    display: flex;
+    background: var(--bg-topbar);
+    border-top: 1.5px solid var(--border);
+    position: sticky; bottom: 0; z-index: 40;
+    button { flex: 1; min-height: 60px; font-size: .8rem; }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .zirfeed-app * { animation: none !important; transition: none !important; }
+}

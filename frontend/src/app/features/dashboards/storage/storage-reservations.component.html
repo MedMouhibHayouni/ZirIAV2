@@ -1,0 +1,75 @@
+<div class="storage-reservations-container">
+  <div class="header-actions">
+    <div>
+      <h2>Demandes & Réservations de Chambre Froide</h2>
+      <p class="subtitle">Gérez les demandes entrantes et suivez les contrats d'occupation</p>
+    </div>
+
+    <div class="filter-tabs">
+      <button [class.active]="selectedStatus() === ''" (click)="onStatusFilter('')">Toutes</button>
+      <button [class.active]="selectedStatus() === 'EN_ATTENTE'" (click)="onStatusFilter('EN_ATTENTE')">En Attente</button>
+      <button [class.active]="selectedStatus() === 'CONFIRMEE'" (click)="onStatusFilter('CONFIRMEE')">Confirmées</button>
+      <button [class.active]="selectedStatus() === 'EN_COURS'" (click)="onStatusFilter('EN_COURS')">En Cours</button>
+    </div>
+  </div>
+
+  <div class="table-card">
+    <table class="res-table">
+      <thead>
+        <tr>
+          <th>Locataire / Référence</th>
+          <th>Salle & Site</th>
+          <th>Capacité Occupée</th>
+          <th>Date Début</th>
+          <th>Total Est.</th>
+          <th>Prochaine Échéance</th>
+          <th>Statut</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let res of reservations()">
+          <td>
+            <strong>{{ res.renter ? res.renter.name : (res.initial_occupant_label || 'Locataire Offline') }}</strong>
+            <div class="subtext" *ngIf="res.renter?.phone">{{ res.renter?.phone }}</div>
+          </td>
+          <td>
+            <strong>{{ res.room?.name }}</strong>
+            <div class="subtext">{{ res.room?.facility?.name }} ({{ res.room?.facility?.governorate }})</div>
+          </td>
+          <td><strong>{{ res.occupied_capacity }} {{ res.occupied_unit || 'm³' }}</strong></td>
+          <td>{{ res.start_date | date:'dd/MM/yyyy' }}</td>
+          <td>{{ res.total_price }} TND</td>
+          <td>{{ res.next_payment_due_date ? (res.next_payment_due_date | date:'dd/MM/yyyy') : '—' }}</td>
+          <td>
+            <span class="status-badge" [ngClass]="res.status.toLowerCase()">
+              {{ res.status }}
+            </span>
+          </td>
+          <td>
+            <div class="btn-group" *ngIf="res.status === 'EN_ATTENTE'">
+              <button class="btn-sm btn-accept" (click)="accept(res.id)">
+                <ng-icon name="lucideCheck" size="14" />
+                Accepter
+              </button>
+              <button class="btn-sm btn-reject" (click)="reject(res.id)">
+                <ng-icon name="lucideX" size="14" />
+                Refuser
+              </button>
+            </div>
+            <span *ngIf="res.status !== 'EN_ATTENTE'" class="text-muted">—</span>
+          </td>
+        </tr>
+        <tr *ngIf="reservations().length === 0">
+          <td colspan="8" class="empty text-center">Aucune réservation correspondant aux critères.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="pagination-footer" *ngIf="totalPages() > 1">
+      <button [disabled]="page() === 1" (click)="changePage(page() - 1)">Précédent</button>
+      <span>Page {{ page() }} sur {{ totalPages() }}</span>
+      <button [disabled]="page() === totalPages()" (click)="changePage(page() + 1)">Suivant</button>
+    </div>
+  </div>
+</div>

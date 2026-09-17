@@ -1,0 +1,58 @@
+{
+  "temperature": 0.6032,
+  "classes": [
+    "Ble_dur_Feuille_Saine",
+    "Cerisier_Feuille_Saine",
+    "Cerisier_Oidium",
+    "Fraise_Brulure_foliaire",
+    "Fraise_Feuille_Saine",
+    "Mais_Brulure_nord",
+    "Mais_Feuille_Saine",
+    "Mais_Rouille_commune",
+    "Mais_Tache_cercospora",
+    "Olivier_Deficience_Nutritionnelle",
+    "Olivier_Fumagine",
+    "Olivier_Virose",
+    "Peche_Feuille_Saine",
+    "Peche_Tache_bacterienne",
+    "Poivron_Feuille_Saine",
+    "Poivron_Tache_bacterienne",
+    "Pomme_Feuille_Saine",
+    "Pomme_Pourriture_noire",
+    "Pomme_Rouille",
+    "Pomme_Tavelure",
+    "Pomme_de_terre_Feuille_Saine",
+    "Pomme_de_terre_Mildiou_precoce",
+    "Pomme_de_terre_Mildiou_tardif",
+    "Raisin_Brulure_isariopsis",
+    "Raisin_Esca",
+    "Raisin_Feuille_Saine",
+    "Raisin_Pourriture_noire",
+    "Tomate_Acarien",
+    "Tomate_Feuille_Saine",
+    "Tomate_Mildiou_precoce",
+    "Tomate_Mildiou_tardif",
+    "Tomate_Moisissure_foliaire",
+    "Tomate_Septoriose",
+    "Tomate_TYLCV",
+    "Tomate_Tache_bacterienne",
+    "Tomate_Virus_mosaique"
+  ],
+  "num_classes": 36,
+  "img_size": 224,
+  "model_arch": "ensemble_mobilenetv3_efficientnet_b0",
+  "models": [
+    "sentinel_mobilenetv3.torchscript.pt",
+    "sentinel_efficientnet_b0.torchscript.pt"
+  ],
+  "mean": [
+    0.485,
+    0.456,
+    0.406
+  ],
+  "std": [
+    0.229,
+    0.224,
+    0.225
+  ]
+}

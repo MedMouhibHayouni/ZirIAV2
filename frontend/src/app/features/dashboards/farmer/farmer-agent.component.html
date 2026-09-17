@@ -1,0 +1,158 @@
+<div class="agent-layout">
+  
+  <!-- SIDEBAR GAUCHE -->
+  <aside class="sidebar-history">
+    <div class="sidebar-header">
+      <h3>Mes conversations</h3>
+      <button class="btn-icon new-btn" (click)="newConversation()" title="Nouvelle conversation">
+        <ng-icon name="lucidePlus"></ng-icon>
+      </button>
+    </div>
+
+    <div class="conversation-list">
+      <div class="conv-group" *ngFor="let group of groupedConversations">
+        <h4 class="group-label">{{ group.label }}</h4>
+        <div class="conv-item" *ngFor="let conv of group.items" 
+             [class.active]="conv.id === agentApi.activeSessionId()"
+             (click)="loadConversation(conv.id)">
+          <div class="conv-content">
+            <span class="conv-date">{{ getRelativeTime(conv.updated_at) }}</span>
+            <p class="conv-text">{{ conv.title || 'Nouvelle discussion' }}</p>
+          </div>
+          <div class="conv-actions">
+            <button class="delete-btn" (click)="deleteConversation(conv.id, $event)">
+              <ng-icon name="lucideTrash2"></ng-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      <button class="btn-primary-outline w-full" (click)="newConversation()">
+        <ng-icon name="lucidePlus"></ng-icon> Nouvelle discussion
+      </button>
+    </div>
+  </aside>
+
+  <!-- ZONE PRINCIPALE (CHAT) -->
+  <main class="chat-main">
+    
+    <!-- HEADER -->
+    <header class="chat-header">
+      <div class="header-left">
+        <div class="logo-circle">
+          <img src="assets/ziria-icon.png" alt="ZirIA" class="logo-circle__img" />
+        </div>
+        <div>
+          <h2>Agent <span class="agent-zir">Zir</span><span class="agent-ia">IA</span> <span class="agent-pulse">Pulse</span></h2>
+          <span class="status-badge"><span class="dot"></span> En ligne</span>
+        </div>
+      </div>
+      <div class="header-right">
+        <button class="btn-action" (click)="exportPDF()" [disabled]="agentApi.messages().length === 0" title="Exporter PDF">
+          <ng-icon name="lucideDownload"></ng-icon> Exporter PDF
+        </button>
+        <button class="btn-action btn-danger" (click)="newConversation()" title="Effacer la vue">
+          <ng-icon name="lucideTrash2"></ng-icon>
+        </button>
+      </div>
+    </header>
+
+    <!-- MESSAGES AREA -->
+    <div class="messages-container" #chatScroll>
+      
+      <!-- Welcome Message if empty -->
+      <div class="welcome-box" *ngIf="agentApi.messages().length === 0">
+        <div class="logo-large">
+          <img src="assets/ziria-icon.png" alt="ZirIA" class="logo-large__img" />
+        </div>
+        <h3>Bonjour {{ userName }} !</h3>
+        <p>Je suis <strong>Zir<span style="color:var(--zir-emerald)">IA</span> Pulse</strong>. Comment puis-je vous aider aujourd'hui sur votre exploitation ?</p>
+      </div>
+
+      <!-- Messages Loop -->
+      <div class="message-row" *ngFor="let msg of agentApi.messages()" [ngClass]="msg.sender === 'USER' ? 'row-user' : 'row-agent'">
+        
+        <!-- Agent Avatar -->
+        <div class="avatar agent-avatar" *ngIf="msg.sender === 'AGENT'">
+          <img src="assets/ziria-icon.png" alt="Z" class="avatar__img" />
+        </div>
+
+        <div class="bubble" [ngClass]="msg.sender === 'USER' ? 'bubble-user' : 'bubble-agent'">
+          <div class="audio-player" *ngIf="msg.audio_url">
+            <audio controls [src]="msg.audio_url"></audio>
+          </div>
+          
+          <div class="text-content">
+            <ng-container *ngIf="typewriterMsgId() === msg.id; else staticText">
+              {{ displayedAgentText() }}<span class="cursor">|</span>
+            </ng-container>
+            <ng-template #staticText>
+              {{ msg.text }}
+            </ng-template>
+          </div>
+
+          <!-- Actions Inlines -->
+          <div class="agent-actions" *ngIf="msg.actions && msg.actions.length > 0">
+            <button class="btn-inline-action" *ngFor="let act of msg.actions" (click)="handleAction(act)">
+              {{ act }}
+            </button>
+          </div>
+        </div>
+        
+      </div>
+
+      <!-- Loading Indicator -->
+      <div class="message-row row-agent" *ngIf="agentApi.isProcessing()">
+        <div class="avatar agent-avatar pulse-anim">
+          <img src="assets/ziria-icon.png" alt="Z" class="avatar__img" />
+        </div>
+        <div class="bubble bubble-agent loading-bubble">
+          <div class="typing-dots"><span></span><span></span><span></span></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- INPUT ZONE -->
+    <div class="input-zone">
+      
+      <!-- Suggestions -->
+      <div class="suggestions-scroll">
+        <button class="chip" *ngFor="let sug of quickSuggestions" (click)="sendSuggestion(sug.query)">
+          {{ sug.label }}
+        </button>
+      </div>
+
+      <!-- Form -->
+      <form class="input-form" (submit)="sendTextMessage()">
+        <button type="button" class="btn-mic" [class.recording]="isRecording" (click)="toggleRecording()">
+          <ng-icon *ngIf="!isRecording" name="lucideMic"></ng-icon>
+          <div *ngIf="isRecording" class="recording-ui">
+            <span class="timer">{{ formatTime(recordingTimer()) }}</span>
+            <div class="wave-bars">
+              <span></span><span></span><span></span>
+            </div>
+            <ng-icon name="lucideStopCircle"></ng-icon>
+          </div>
+        </button>
+
+        <textarea 
+          [(ngModel)]="chatInput" 
+          name="chatInput"
+          placeholder="Parlez en Darija, français ou arabe..."
+          (keydown.enter)="onEnterPress($event)"
+          rows="1"
+          [disabled]="isRecording || agentApi.isProcessing()">
+        </textarea>
+
+        <button type="submit" class="btn-send" [disabled]="!chatInput.trim() || agentApi.isProcessing() || isRecording">
+          <ng-icon name="lucideSend"></ng-icon>
+        </button>
+      </form>
+
+    </div>
+  </main>
+
+</div>

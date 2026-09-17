@@ -1,0 +1,47 @@
+{
+  "Tstar": 0.8457,
+  "lbfgs_success": true,
+  "sanity": {
+    "perturb": 2.0,
+    "T_miscal": 1.6915,
+    "ratio": 2.0,
+    "status": "PASSED"
+  },
+  "full": {
+    "n": 3598,
+    "acc": 0.9814,
+    "ece_before": 0.0183,
+    "ece_after": 0.0102,
+    "mce_before": 0.6008,
+    "mce_after": 0.5658
+  },
+  "old34": {
+    "n": 1227,
+    "acc": 0.9853,
+    "ece_before": 0.0254,
+    "ece_after": 0.0179,
+    "mce_before": 0.2232,
+    "mce_after": 0.4405
+  },
+  "new19": {
+    "n": 2371,
+    "acc": 0.9793,
+    "ece_before": 0.0157,
+    "ece_after": 0.0099,
+    "mce_before": 0.6008,
+    "mce_after": 0.5658
+  },
+  "hard": {
+    "n": 141,
+    "acc": 0.9149,
+    "ece_before": 0.0571,
+    "ece_after": 0.0452,
+    "mce_before": 0.6725,
+    "mce_after": 0.5834
+  },
+  "val_n": 3598,
+  "val_range": [
+    -23.420103073120117,
+    32.57859420776367
+  ]
+}

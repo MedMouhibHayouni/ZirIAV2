@@ -1,0 +1,204 @@
+.smsa-marketplace {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+
+  &__tabs {
+    display: flex;
+    gap: 8px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 16px;
+  }
+
+  &__tab {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    &.active {
+      background: var(--bg-card);
+      color: var(--text-primary);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    &:hover:not(.active) {
+      background: var(--bg-card-hover);
+      color: var(--text-primary);
+    }
+  }
+
+  &__badge {
+    background: var(--error);
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 12px;
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 24px;
+  }
+
+  &__card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  &__card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+
+    h4 {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+  }
+
+  &__card-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  &__stat {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    ng-icon {
+      color: var(--text-muted);
+      font-size: 20px;
+    }
+
+    label {
+      font-size: 11px;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: var(--text-muted);
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    p {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+  }
+
+  &__card-footer {
+    padding-top: 16px;
+    border-top: 1px dashed var(--border);
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+
+  &__requests {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  &__request-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px;
+  }
+
+  &__request-info {
+    h4 {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    p {
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+  }
+
+  &__request-msg {
+    margin-top: 12px;
+    padding: 12px;
+    background: var(--bg-primary);
+    border-left: 3px solid var(--border);
+    font-style: italic;
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+
+  &__request-actions {
+    display: flex;
+    gap: 12px;
+  }
+
+  &__kanban {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    align-items: start;
+  }
+
+  &__kanban-col {
+    background: var(--bg-primary);
+    border-radius: var(--radius-lg);
+    padding: 16px;
+    min-height: 400px;
+  }
+
+  &__kanban-header {
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  &__kanban-body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  &__kanban-card {
+    padding: 16px;
+    cursor: grab;
+    
+    &:active {
+      cursor: grabbing;
+    }
+
+    b {
+      font-size: 14px;
+      color: var(--text-primary);
+    }
+
+    p {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+  }
+}

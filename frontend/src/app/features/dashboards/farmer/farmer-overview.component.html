@@ -1,0 +1,171 @@
+<div class="premium-dash zir-animate-in">
+
+  <!-- ═══ HERO ═══ -->
+  <header class="hero">
+    <div class="hero__orbs"><i class="orb orb--a"></i><i class="orb orb--b"></i><i class="orb orb--c"></i></div>
+    <div class="hero__inner">
+      <div class="hero__left">
+        <div class="eyebrow">
+          <span class="live-dot"></span>
+          <span class="eyebrow__date">{{ todayLabel() }}</span>
+          <span class="eyebrow__sep">•</span>
+          <span class="eyebrow__loc"><ng-icon name="lucideMapPin"></ng-icon>{{ userGovernorate() }}</span>
+        </div>
+        <h1 class="hero__title">{{ getGreeting() }}, <span class="grad">{{ displayName() }}</span></h1>
+        <p class="hero__sub">Voici l'état de votre exploitation en temps réel — cultures, revenus et alertes.</p>
+        <div class="hero__pills">
+          <span class="pill pill--activity"><ng-icon name="lucideSprout"></ng-icon>{{ activityLabel() }}</span>
+          <span class="pill pill--plan"><ng-icon name="lucideCrown"></ng-icon>{{ planLabel() }}</span>
+          <span class="pill pill--parcels"><ng-icon name="lucideHexagon"></ng-icon>{{ stats().parcelsCount }} parcelles</span>
+        </div>
+        @if (weatherData()) {
+          <div class="hero__weather">
+            <span class="hw hw--temp"><ng-icon name="lucideSun"></ng-icon>{{ weatherData().temp }}°C</span>
+            <span class="hw"><ng-icon name="lucideDroplets"></ng-icon>{{ weatherData().humidity }}%</span>
+            <span class="hw"><ng-icon name="lucideWind"></ng-icon>{{ weatherData().wind }} km/h</span>
+            <span class="hw hw--sep"></span>
+            @for (day of weatherData().forecast; track day.day) {
+              <span class="hw hw--fc">{{ day.day }} <strong>{{ day.temp }}°</strong></span>
+            }
+          </div>
+        }
+      </div>
+      <div class="hero__right">
+        <div class="avatar-ring"><div class="avatar">{{ initials() }}</div></div>
+        <div class="hero__actions">
+          <button class="btn-primary" routerLink="/dashboard/farmer/agent">
+            <span class="btn-pulse"></span>
+            <ng-icon name="lucideSparkles"></ng-icon>
+            ZirPulse IA
+          </button>
+          <button class="btn-glass" routerLink="/dashboard/farmer/map">
+            <ng-icon name="lucidePlus"></ng-icon>
+            Nouvelle parcelle
+          </button>
+          <button class="btn-gold" routerLink="/dashboard/subscription/checkout">
+            <ng-icon name="lucideCrown"></ng-icon>
+            Voir les offres
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- PENDING CONTRACTS -->
+  @if (pendingContractsCount() > 0) {
+    <div class="contracts-banner">
+      <div class="contracts-banner__icon"><ng-icon name="lucideAlertCircle"></ng-icon></div>
+      <div class="contracts-banner__text">
+        <h3>{{ pendingContractsCount() }} contrat(s) en attente de signature</h3>
+        <p>Signez-les pour activer vos missions et débloquer les prestations.</p>
+      </div>
+      <button class="contracts-banner__btn" routerLink="/dashboard/farmer/contrats">
+        Voir mes contrats <ng-icon name="lucideChevronRight"></ng-icon>
+      </button>
+    </div>
+  }
+
+  <!-- ═══ STATS ═══ -->
+  <div class="stats">
+    <div class="stat stat--emerald">
+      <div class="stat__glow"></div>
+      <div class="stat__icon"><ng-icon name="lucideWallet"></ng-icon></div>
+      <div class="stat__body">
+        <span class="stat__label">Revenus réalisés</span>
+        <span class="stat__value">{{ stats().monthlyIncome | number:'1.0-0' }} <small>TND</small></span>
+        <span class="stat__foot stat__foot--up"><ng-icon name="lucideTrendingUp"></ng-icon>Ce mois-ci</span>
+      </div>
+    </div>
+    <div class="stat stat--gold">
+      <div class="stat__glow"></div>
+      <div class="stat__icon"><ng-icon name="lucideTrendingUp"></ng-icon></div>
+      <div class="stat__body">
+        <span class="stat__label">Revenus estimés B2B</span>
+        <span class="stat__value">{{ stats().estimatedRevenue | number:'1.0-0' }} <small>TND</small></span>
+        <span class="stat__foot">Basé sur vos annonces</span>
+      </div>
+    </div>
+    <div class="stat stat--teal">
+      <div class="stat__glow"></div>
+      <div class="stat__icon"><ng-icon name="lucideHexagon"></ng-icon></div>
+      <div class="stat__body">
+        <span class="stat__label">Parcelles actives</span>
+        <span class="stat__value">{{ stats().parcelsCount }}</span>
+        <a class="stat__foot stat__foot--link" routerLink="/dashboard/farmer/map">Gérer <ng-icon name="lucideArrowRight"></ng-icon></a>
+      </div>
+    </div>
+    <div class="stat stat--violet">
+      <div class="stat__glow"></div>
+      <div class="stat__icon"><ng-icon name="lucideShoppingCart"></ng-icon></div>
+      <div class="stat__body">
+        <span class="stat__label">Annonces marketplace</span>
+        <span class="stat__value">{{ stats().activeListings }}</span>
+        <a class="stat__foot stat__foot--link" routerLink="/dashboard/farmer/marketplace">Voir <ng-icon name="lucideArrowRight"></ng-icon></a>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid--chat">
+    <!-- ZIRPULSE DISCUSSION -->
+    <section class="card chat-card">
+      <div class="card__head">
+        <div class="card__title"><span class="card__icon card__icon--ai"><ng-icon name="lucideSparkles"></ng-icon></span><h3>Discuter avec ZirPulse</h3></div>
+        <button class="link" routerLink="/dashboard/farmer/agent">Plein écran <ng-icon name="lucideArrowRight"></ng-icon></button>
+      </div>
+      <div class="chat-embed"><app-farmer-agent></app-farmer-agent></div>
+    </section>
+
+    <!-- LEFT -->
+    <div class="col">
+      <!-- PARCELS -->
+      <section class="card">
+        <div class="card__head">
+          <div class="card__title"><span class="card__icon card__icon--green"><ng-icon name="lucideMapPin"></ng-icon></span><h3>Mes Parcelles</h3></div>
+          <button class="link" routerLink="/dashboard/farmer/map">Tout voir <ng-icon name="lucideArrowRight"></ng-icon></button>
+        </div>
+        <div class="parcel-list">
+          @for (p of parcelsSummary(); track p.id) {
+            <div class="parcel" routerLink="/dashboard/farmer/map">
+              <span class="parcel__dot" [style.background]="p.color_hex || '#22c55e'"></span>
+              <div class="parcel__info">
+                <p class="parcel__name">{{ p.name || 'Parcelle ' + p.id.substring(0,6) }}</p>
+                <p class="parcel__meta">{{ p.crop_type || 'Non défini' }} • {{ (p.area_ha ?? p.surface_ha ?? 0) | number:'1.2-2' }} ha</p>
+              </div>
+              <span class="badge" [class.badge--ok]="p.alert_level !== 'CRITICAL' && p.alert_level !== 'WARNING'" [class.badge--warn]="p.alert_level === 'WARNING'" [class.badge--crit]="p.alert_level === 'CRITICAL'">{{ p.alert_level === 'CRITICAL' ? 'Critique' : (p.alert_level === 'WARNING' ? 'Alerte' : 'Sain') }}</span>
+            </div>
+          } @empty {
+            <div class="empty">
+              <div class="empty__icon"><ng-icon name="lucideSprout"></ng-icon></div>
+              <p class="empty__title">Aucune parcelle pour l'instant</p>
+              <p class="empty__sub">Dessinez votre première parcelle sur la carte.</p>
+              <button class="btn-primary btn-primary--sm" routerLink="/dashboard/farmer/map"><ng-icon name="lucidePlus"></ng-icon>Créer une parcelle</button>
+            </div>
+          }
+        </div>
+      </section>
+
+      <!-- ALERTS -->
+      <section class="card">
+        <div class="card__head">
+          <div class="card__title"><span class="card__icon card__icon--amber"><ng-icon name="lucideBell"></ng-icon></span><h3>Alertes récentes</h3></div>
+          <button class="link" routerLink="/dashboard/farmer/alerts">Centre d'alertes <ng-icon name="lucideArrowRight"></ng-icon></button>
+        </div>
+        <div class="alerts">
+          @for (a of recentAlerts(); track a.id) {
+            <div class="alert">
+              <div class="alert__icon"><ng-icon name="lucideBell"></ng-icon></div>
+              <div class="alert__text"><p class="alert__title">{{ a.title }}</p><p class="alert__msg">{{ a.message || a.body }}</p></div>
+            </div>
+          } @empty {
+            <div class="empty empty--ok">
+              <div class="empty__icon empty__icon--ok"><ng-icon name="lucideActivity"></ng-icon></div>
+              <p class="empty__title">Tout est sous contrôle</p>
+              <p class="empty__sub">Aucune alerte phytosanitaire active.</p>
+            </div>
+          }
+        </div>
+      </section>
+    </div>
+
+  </div>
+</div>

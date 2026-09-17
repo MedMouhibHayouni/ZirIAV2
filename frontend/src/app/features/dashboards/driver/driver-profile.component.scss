@@ -1,0 +1,436 @@
+.driver-profile {
+  padding: 1.5rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  color: var(--text-primary);
+
+  // ── Hero Banner ──
+  .profile-hero-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+
+    .hero-cover {
+      height: 140px;
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      position: relative;
+      overflow: hidden;
+
+      .hero-cover-pattern {
+        position: absolute; inset: 0;
+        background-image: repeating-linear-gradient(
+          45deg,
+          rgba(255,255,255,0.02) 0px,
+          rgba(255,255,255,0.02) 1px,
+          transparent 1px,
+          transparent 20px
+        );
+      }
+
+      &::after {
+        content: '';
+        position: absolute; bottom: 0; left: 0; right: 0;
+        height: 60%;
+        background: linear-gradient(to top, var(--bg-card) 0%, transparent 100%);
+      }
+    }
+
+    .hero-content {
+      padding: 1.5rem 2rem 2rem;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 2rem;
+      position: relative;
+      margin-top: -60px;
+    }
+
+    .avatar-wrapper {
+      position: relative;
+      width: 120px;
+      height: 120px;
+
+      .avatar-circle {
+        width: 100%; height: 100%;
+        border-radius: 16px;
+        background: linear-gradient(135deg, #0f2027, #203a43);
+        border: 4px solid var(--bg-card);
+        display: flex; align-items: center; justify-content: center;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+
+        ng-icon { font-size: 3rem; color: var(--zir-emerald); }
+      }
+
+      .status-badge {
+        position: absolute; bottom: -4px; right: -4px;
+        width: 20px; height: 20px;
+        border-radius: 50%;
+        background: #ef4444;
+        border: 3px solid var(--bg-card);
+        transition: background 0.3s ease;
+
+        &.active { background: var(--zir-emerald); }
+      }
+    }
+
+    .profile-info-main {
+      flex: 1;
+      min-width: 280px;
+
+      .name-row {
+        display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+
+        h1 {
+          font-size: 1.8rem; font-weight: 700; margin: 0;
+          color: var(--text-primary);
+        }
+
+        .governorate-badge {
+          background: rgba(16,185,129,0.1);
+          color: var(--zir-emerald);
+          font-size: 0.85rem; font-weight: 600;
+          padding: 0.25rem 0.75rem; border-radius: 30px;
+          display: inline-flex; align-items: center; gap: 0.35rem;
+          border: 1px solid rgba(16,185,129,0.2);
+          ng-icon { font-size: 0.95rem; }
+        }
+      }
+
+      .role-subtitle {
+        font-size: 1rem;
+        color: var(--text-secondary);
+        margin: 0.35rem 0 1rem;
+        font-weight: 500;
+      }
+
+      .stats-row {
+        display: flex; gap: 1rem; flex-wrap: wrap;
+
+        .stat-pill {
+          background: var(--bg-primary);
+          border: 1px solid var(--border-color);
+          padding: 0.4rem 1rem;
+          border-radius: 8px;
+          display: flex; align-items: center; gap: 0.5rem;
+          font-size: 0.9rem; color: var(--text-secondary);
+
+          .bold { font-weight: 700; color: var(--text-primary); }
+
+          &.rating {
+            border-color: rgba(245,158,11,0.3);
+            background: rgba(245,158,11,0.05);
+            .star-icon { color: #f59e0b; font-size: 1.1rem; }
+          }
+
+          &.vehicle {
+            border-color: rgba(16,185,129,0.3);
+            background: rgba(16,185,129,0.05);
+            .truck-icon { color: var(--zir-emerald); font-size: 1.1rem; }
+          }
+
+          &.plate {
+            border-color: rgba(99,102,241,0.3);
+            background: rgba(99,102,241,0.05);
+            .shield-icon { color: #6366f1; font-size: 1.1rem; }
+          }
+        }
+      }
+    }
+
+    .availability-switcher-card {
+      background: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      padding: 1.25rem 1.5rem;
+      border-radius: 12px;
+      display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+      width: 240px;
+
+      .switch-label {
+        font-size: 0.85rem; font-weight: 600;
+        color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em;
+      }
+
+      .avail-switch-btn {
+        width: 60px; height: 32px; border-radius: 30px;
+        background: #ef4444; border: none;
+        position: relative; cursor: pointer; padding: 0;
+        transition: background 0.3s ease;
+
+        &.active {
+          background: var(--zir-emerald);
+          .switch-handle { transform: translateX(28px); }
+        }
+
+        .switch-handle {
+          position: absolute; top: 3px; left: 3px;
+          width: 26px; height: 26px; border-radius: 50%;
+          background: #fff;
+          box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+          transition: transform 0.3s ease;
+        }
+      }
+
+      .switch-status-text {
+        font-size: 0.95rem; font-weight: 700; color: #ef4444;
+        &.active { color: var(--zir-emerald); }
+      }
+    }
+  }
+
+  // ── Grid Layout ──
+  .profile-grid {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 2rem;
+
+    @media (max-width: 1024px) { grid-template-columns: 1fr; }
+  }
+
+  .profile-section {
+    padding: 1.75rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .section-header-row {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 0.5rem;
+  }
+
+  .section-title {
+    font-size: 1.2rem; font-weight: 700; color: var(--text-primary);
+    display: flex; align-items: center; gap: 0.65rem; margin: 0 0 0.5rem 0;
+
+    ng-icon { color: var(--zir-emerald); font-size: 1.4rem; }
+  }
+
+  .section-desc {
+    font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.25rem;
+  }
+
+  .edit-inline-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 14px; border-radius: 8px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover { border-color: var(--zir-emerald); color: var(--zir-emerald); }
+    ng-icon { font-size: 14px; }
+  }
+
+  // ── Vehicle Display ──
+  .vehicle-display {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 24px;
+    align-items: start;
+
+    @media (max-width: 640px) { grid-template-columns: 1fr; }
+  }
+
+  .vehicle-visual {
+    height: 160px;
+    background: linear-gradient(135deg, #1e293b, #0f172a);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    position: relative; overflow: hidden;
+
+    .vehicle-bg-icon { font-size: 72px; color: rgba(255,255,255,0.06); }
+
+    .vehicle-plate-chip {
+      position: absolute; bottom: 12px; left: 12px;
+      padding: 6px 14px;
+      background: rgba(0,0,0,0.6);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 8px;
+      color: white; font-family: monospace;
+      font-size: 14px; font-weight: 700; letter-spacing: 2px;
+    }
+  }
+
+  .vehicle-specs {
+    display: flex; flex-direction: column; gap: 12px;
+
+    .spec-row {
+      display: flex; justify-content: space-between;
+      align-items: center;
+      padding: 10px 14px;
+      background: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+
+      .spec-label { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+      .spec-val { font-size: 14px; font-weight: 700; color: var(--text-primary); }
+      .spec-val.highlight { color: var(--zir-emerald); }
+    }
+  }
+
+  // ── Edit Form ──
+  .edit-form-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+
+    @media (max-width: 640px) { grid-template-columns: 1fr; }
+
+    .span-full { grid-column: 1 / -1; }
+  }
+
+  .edit-actions {
+    display: flex; gap: 12px; justify-content: flex-end;
+  }
+
+  // ── Docs placeholder ──
+  .docs-placeholder {
+    display: flex; flex-direction: column; align-items: center;
+    padding: 2.5rem 1.5rem; text-align: center;
+    border: 1px dashed var(--border-color);
+    border-radius: 12px; color: var(--text-muted);
+
+    ng-icon { font-size: 3rem; color: #6366f1; opacity: 0.5; margin-bottom: 1rem; }
+    p { font-size: 0.875rem; margin: 0; max-width: 340px; line-height: 1.5; }
+  }
+
+  .add-cert-icon-btn {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: rgba(16,185,129,0.1); color: var(--zir-emerald);
+    border: 1px solid rgba(16,185,129,0.2);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all 0.2s ease;
+
+    &:hover { background: var(--zir-emerald); color: #fff; transform: scale(1.05); }
+  }
+
+  // ── Settings forms ──
+  .form-group {
+    margin-bottom: 1.25rem;
+
+    .zir-label {
+      display: block; font-size: 0.85rem; font-weight: 600;
+      color: var(--text-secondary); margin-bottom: 0.45rem;
+    }
+  }
+
+  .input-icon-wrap {
+    position: relative;
+
+    ng-icon {
+      position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+      color: var(--text-muted); font-size: 16px;
+    }
+
+    input { padding-left: 2.5rem; }
+  }
+
+  // ── Rating display ──
+  .rating-display {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 8px; padding: 1.5rem 0;
+
+    .big-rating {
+      font-size: 4rem; font-weight: 900;
+      color: var(--text-primary); line-height: 1;
+    }
+
+    .rating-stars {
+      display: flex; gap: 4px;
+
+      .star-i { font-size: 1.4rem; color: var(--border-color); }
+      .star-i.gold { color: #f59e0b; }
+    }
+
+    .rating-label { font-size: 0.85rem; color: var(--text-muted); margin: 0; }
+  }
+
+  .rating-note-box {
+    display: flex; align-items: flex-start; gap: 10px;
+    background: rgba(99,102,241,0.05);
+    border: 1px solid rgba(99,102,241,0.15);
+    border-radius: 10px; padding: 12px;
+    margin-top: 8px;
+
+    ng-icon { color: #6366f1; flex-shrink: 0; font-size: 16px; margin-top: 2px; }
+    p { font-size: 0.82rem; color: var(--text-secondary); margin: 0; line-height: 1.5; }
+  }
+
+  // ── Modal ──
+  .zir-modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1000; padding: 1.5rem;
+    animation: fadeIn 0.15s ease-out both;
+    will-change: opacity; transform: translateZ(0);
+  }
+
+  .zir-modal {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 16px; width: 100%; max-width: 550px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+    overflow: hidden;
+    animation: modalSlideUp 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    will-change: transform, opacity; transform: translateZ(0);
+
+    .modal-header {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--border-color);
+      display: flex; justify-content: space-between; align-items: center;
+
+      h2 {
+        font-size: 1.15rem; font-weight: 700; color: var(--text-primary);
+        display: flex; align-items: center; gap: 0.5rem; margin: 0;
+        ng-icon { color: #6366f1; }
+      }
+
+      .close-modal-btn {
+        background: transparent; border: none; cursor: pointer;
+        color: var(--text-muted); padding: 0; display: flex;
+        &:hover { color: var(--text-primary); }
+        ng-icon { font-size: 1.25rem; }
+      }
+    }
+
+    .modal-body {
+      padding: 1.5rem; max-height: 70vh; overflow-y: auto;
+
+      .modal-intro {
+        font-size: 0.85rem; color: var(--text-secondary);
+        background: rgba(99,102,241,0.05);
+        border: 1px solid rgba(99,102,241,0.15);
+        padding: 0.75rem 1rem; border-radius: 8px; line-height: 1.5; margin-bottom: 1.25rem;
+      }
+    }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+    .modal-footer {
+      padding: 1rem 1.5rem;
+      border-top: 1px solid var(--border-color);
+      background: var(--bg-primary);
+      display: flex; justify-content: flex-end; gap: 0.75rem;
+    }
+  }
+
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes modalSlideUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  // ── Responsive ──
+  @media (max-width: 768px) {
+    padding: 1rem;
+
+    .hero-content {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+
+    .availability-switcher-card { width: 100%; }
+  }
+}

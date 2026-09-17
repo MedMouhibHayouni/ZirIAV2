@@ -1,0 +1,89 @@
+<div class="p-6 max-w-7xl mx-auto">
+  <div class="flex justify-between items-center mb-8">
+    <h1 class="text-2xl font-bold text-white">Analytiques & Performance</h1>
+    <div *ngIf="isAdvanced" class="bg-[var(--zir-emerald)]/20 text-[var(--zir-emerald)] px-3 py-1 rounded-full text-xs font-bold border border-[var(--zir-emerald)]/30">
+      ERP COMPLET
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="flex justify-center py-20">
+    <div class="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-[var(--zir-emerald)]"></div>
+  </div>
+
+  <div *ngIf="error" class="text-center py-20 zir-card">
+    <h3 class="text-xl font-bold text-red-400 mb-2">Accès Limité</h3>
+    <p class="text-gray-400">{{error}}</p>
+  </div>
+
+  <ng-container *ngIf="!loading && !error && analytics">
+    
+    <!-- Top KPI (Advanced Only) -->
+    <div *ngIf="isAdvanced" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+      <div class="zir-card p-6">
+        <div class="flex justify-between items-start mb-4">
+          <div class="p-3 bg-blue-900/30 rounded-xl text-blue-400"><ng-icon name="lucideTrendingUp" class="text-xl"></ng-icon></div>
+        </div>
+        <div class="text-gray-400 text-sm mb-1">Panier Moyen</div>
+        <div class="text-2xl font-bold text-white">{{analytics.averageOrderValue | number:'1.1-1'}} TND</div>
+      </div>
+      <div class="zir-card p-6">
+        <div class="flex justify-between items-start mb-4">
+          <div class="p-3 bg-purple-900/30 rounded-xl text-purple-400"><ng-icon name="lucideUsers" class="text-xl"></ng-icon></div>
+        </div>
+        <div class="text-gray-400 text-sm mb-1">Total Clients</div>
+        <div class="text-2xl font-bold text-white">{{analytics.topBuyers?.length || 0}} (Actifs)</div>
+      </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+      <div class="lg:col-span-2 zir-card p-6">
+        <h3 class="text-white font-medium mb-6">Évolution du Chiffre d'Affaires (6 mois)</h3>
+        <div class="h-[300px] w-full relative">
+          <canvas #revenueChart></canvas>
+        </div>
+      </div>
+      <div class="zir-card p-6">
+        <h3 class="text-white font-medium mb-6">Statut des Commandes (30j)</h3>
+        <div class="h-[250px] w-full relative">
+          <canvas #statusChart></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- Top Products -->
+      <div class="zir-card p-6">
+        <h3 class="text-white font-medium mb-6 flex items-center gap-2">
+          <ng-icon name="lucidePackageCheck" class="text-[var(--zir-emerald)]"></ng-icon> Top Produits (Mois en cours)
+        </h3>
+        <div class="space-y-4">
+          <div *ngIf="analytics.topProducts?.length === 0" class="text-gray-500 text-sm">Aucune vente ce mois-ci.</div>
+          <div *ngFor="let prod of analytics.topProducts" class="flex justify-between items-center bg-gray-900/50 p-3 rounded-lg border border-[var(--border-accent)]">
+            <span class="text-gray-300 font-medium truncate flex-1">{{prod.name}}</span>
+            <span class="text-[var(--zir-emerald)] font-bold whitespace-nowrap">{{prod.revenue | number:'1.3-3'}} TND</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top Buyers (Advanced Only) -->
+      <div *ngIf="isAdvanced" class="zir-card p-6">
+        <h3 class="text-white font-medium mb-6 flex items-center gap-2">
+          <ng-icon name="lucideUsers" class="text-blue-400"></ng-icon> Meilleurs Clients
+        </h3>
+        <div class="space-y-4">
+          <div *ngIf="analytics.topBuyers?.length === 0" class="text-gray-500 text-sm">Aucun client actif.</div>
+          <div *ngFor="let buyer of analytics.topBuyers" class="flex items-center justify-between bg-gray-900/50 p-3 rounded-lg border border-[var(--border-accent)]">
+            <div>
+              <div class="text-gray-300 font-medium">{{buyer.name}}</div>
+              <div class="text-gray-500 text-xs">{{buyer.orders_count}} commande(s)</div>
+            </div>
+            <span class="text-white font-bold">{{buyer.total_spent | number:'1.3-3'}} TND</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </ng-container>
+</div>

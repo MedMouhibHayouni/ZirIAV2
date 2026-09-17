@@ -1,0 +1,135 @@
+<div class="equip-page">
+  <div class="page-header">
+    <div class="title-area">
+      <h2><ng-icon name="lucideWrench"></ng-icon> Gestion Locations Matériel</h2>
+      <p>Vos demandes entrantes et contrats de location</p>
+    </div>
+    <div class="tabs-pills">
+      <button class="tab-pill" [class.active]="activeTab() === 'PENDING'" (click)="setTab('PENDING')">
+        En attente
+        <span class="badge" *ngIf="pending().length > 0">{{ pending().length }}</span>
+      </button>
+      <button class="tab-pill" [class.active]="activeTab() === 'ACTIVE'" (click)="setTab('ACTIVE')">
+        Locations actives
+      </button>
+      <button class="tab-pill" [class.active]="activeTab() === 'HISTORY'" (click)="setTab('HISTORY')">
+        Historique
+      </button>
+    </div>
+  </div>
+
+  @if (stats()) {
+    <div class="stats-row">
+      <div class="stat-pill"><span>Total Équipements</span><strong>{{ stats()!.total_equipment || 0 }}</strong></div>
+      <div class="stat-pill blue"><span>Locations Actives</span><strong>{{ active().length }}</strong></div>
+      <div class="stat-pill emerald"><span>Revenus du Mois</span><strong>{{ stats()!.monthly_revenue_tnd | number:'1.0-0' }} TND</strong></div>
+      <div class="stat-pill amber"><span>Demandes en attente</span><strong>{{ pending().length }}</strong></div>
+    </div>
+  }
+
+  @if (isLoading()) {
+    <div class="loading-state"><ng-icon name="lucideLoader" class="spin"></ng-icon> Chargement...</div>
+  } @else {
+    
+    <ng-container *ngIf="activeTab() === 'PENDING'">
+      <div class="host-view-grid">
+        @for (req of pending(); track req.id) {
+          <div class="host-card zir-card">
+            <div class="host-card-header">
+              <div class="host-avatar">{{ req.requester_name?.charAt(0) || '?' }}</div>
+              <div class="host-info">
+                <h4>{{ req.requester_name }}</h4>
+                <p>Nouveau client • {{ req.governorate }}</p>
+              </div>
+            </div>
+            <div class="host-card-body">
+              <div class="info-row">
+                <span class="label">Matériel</span>
+                <span class="value font-bold">{{ req.equipment_name }}</span>
+              </div>
+              <div class="info-row">
+                <span class="label">Dates</span>
+                <span class="value">{{ req.start_date | date:'dd MMM' }} - {{ req.end_date | date:'dd MMM yyyy' }}</span>
+              </div>
+              <div class="info-row highlight">
+                <span class="label">Montant Total estimé</span>
+                <span class="value font-bold emerald">{{ getTotalDays(req) * (req.proposed_price_tnd || 1) | number:'1.0-0' }} TND</span>
+              </div>
+            </div>
+            <div class="host-card-actions">
+              <button class="zir-btn zir-btn--danger-ghost flex-1" (click)="rejectRequest(req)" [disabled]="req._rejecting || req._accepting">
+                Refuser
+              </button>
+              <button class="zir-btn zir-btn--primary flex-1" (click)="acceptRequest(req)" [disabled]="req._rejecting || req._accepting">
+                Accepter
+              </button>
+            </div>
+          </div>
+        } @empty {
+          <div class="empty-state-card">
+            <div class="icon"><ng-icon name="lucideCheckCircle"></ng-icon></div>
+            <h3>Vous êtes à jour !</h3>
+            <p>Aucune demande de location en attente.</p>
+          </div>
+        }
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="activeTab() === 'ACTIVE'">
+      <div class="active-rentals-grid">
+        @for (r of active(); track r.id) {
+          <div class="rental-progress-card zir-card">
+            <div class="rental-header">
+              <div class="machine-details">
+                <h4>{{ r.equipment_name }}</h4>
+                <p>Loué à {{ r.requester_name }}</p>
+              </div>
+              <div class="days-remaining">
+                <strong>{{ getDaysRemaining(r) }}</strong>
+                <span>jours restants</span>
+              </div>
+            </div>
+            <div class="progress-container">
+              <div class="progress-bar" [style.width.%]="getProgressPercentage(r)"></div>
+            </div>
+            <div class="rental-footer">
+              <span class="date">{{ r.start_date | date:'dd/MM' }}</span>
+              <span class="status-badge active-badge">En cours</span>
+              <span class="date">{{ r.end_date | date:'dd/MM' }}</span>
+            </div>
+          </div>
+        } @empty {
+          <div class="empty-state-card">
+            <p>Aucune location en cours actuellement.</p>
+          </div>
+        }
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="activeTab() === 'HISTORY'">
+      <div class="zir-card">
+        <div class="table-wrapper">
+          <table class="zir-table">
+            <thead><tr><th>Locataire</th><th>Matériel</th><th>Période</th><th>Statut</th><th>Lieu</th></tr></thead>
+            <tbody>
+              @for (r of history(); track r.id) {
+                <tr>
+                  <td class="font-semibold">{{ r.requester_name || '—' }}</td>
+                  <td>{{ r.equipment_name || '—' }}</td>
+                  <td class="text-muted text-sm">{{ r.start_date | date:'dd/MM' }} → {{ r.end_date | date:'dd/MM/yyyy' }}</td>
+                  <td>
+                    <span class="status-badge" [ngClass]="r.status.toLowerCase()">{{ r.status }}</span>
+                  </td>
+                  <td class="text-muted">{{ r.governorate }}</td>
+                </tr>
+              } @empty {
+                <tr><td colspan="5" style="text-align:center; padding: 20px;">Aucun historique.</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </ng-container>
+
+  }
+</div>

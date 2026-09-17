@@ -1,0 +1,930 @@
+<div class="erp-container fade-in">
+  <!-- TOAST NOTIFICATION -->
+  <div *ngIf="toastMessage" class="toast-notification" [ngClass]="toastType">
+    <ng-icon [name]="toastType === 'success' ? 'lucideCheckCircle' : 'lucideAlertTriangle'"></ng-icon>
+    <span>{{ toastMessage }}</span>
+  </div>
+
+  <header class="erp-header">
+    <div class="title-area">
+      <div class="header-icon-wrapper">
+        <ng-icon name="lucideBuilding2" class="header-icon"></ng-icon>
+      </div>
+      <div>
+        <h1>Mon Bureau</h1>
+        <span class="subtitle">Tableau de bord de gestion & ERP</span>
+      </div>
+    </div>
+
+    <!-- TABS -->
+    <nav class="erp-tabs">
+      <button class="tab-btn" [class.active]="activeTab === 'invoices'" (click)="setTab('invoices')">
+        <ng-icon name="lucideFileText"></ng-icon>
+        <span class="tab-label">Factures</span>
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'purchases'" (click)="setTab('purchases')">
+        <ng-icon name="lucideShoppingCart"></ng-icon>
+        <span class="tab-label">Achats</span>
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'stock'" (click)="setTab('stock')">
+        <ng-icon name="lucideBoxes"></ng-icon>
+        <span class="tab-label">Stock</span>
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'finances'" (click)="setTab('finances')">
+        <ng-icon name="lucideBarChart3"></ng-icon>
+        <span class="tab-label">Finances</span>
+      </button>
+    </nav>
+  </header>
+
+  <main class="erp-content">
+    <div *ngIf="isLoading" class="skeleton-loader">
+      <div class="skeleton-row" *ngFor="let i of [1,2,3,4]"></div>
+    </div>
+
+    <!-- ==================== TAB 1: FACTURES ==================== -->
+    <section *ngIf="!isLoading && activeTab === 'invoices'" class="tab-section fade-in">
+      
+      <!-- STATS BAR -->
+      <div class="stats-grid grid-4">
+        <div class="stat-card border-emerald">
+          <div class="stat-icon-wrapper text-emerald"><ng-icon name="lucideBanknote"></ng-icon></div>
+          <div class="stat-info">
+            <span class="stat-title">Total facturé (Ce mois)</span>
+            <span class="stat-value text-emerald">{{ invoiceStats.total_invoiced_this_month | number:'1.2-2' }} <span class="currency">TND</span></span>
+          </div>
+        </div>
+        <div class="stat-card border-green">
+          <div class="stat-icon-wrapper text-green"><ng-icon name="lucideWallet"></ng-icon></div>
+          <div class="stat-info">
+            <span class="stat-title">Total payé</span>
+            <span class="stat-value text-green">{{ invoiceStats.total_paid_this_month | number:'1.2-2' }} <span class="currency">TND</span></span>
+          </div>
+        </div>
+        <div class="stat-card border-amber">
+          <div class="stat-icon-wrapper text-amber"><ng-icon name="lucideClock"></ng-icon></div>
+          <div class="stat-info">
+            <span class="stat-title">En attente</span>
+            <span class="stat-value text-amber">{{ invoiceStats.total_pending | number:'1.2-2' }} <span class="currency">TND</span></span>
+          </div>
+        </div>
+        <div class="stat-card border-red">
+          <div class="stat-icon-wrapper text-red"><ng-icon name="lucideCircleAlert"></ng-icon></div>
+          <div class="stat-info">
+            <span class="stat-title">En retard</span>
+            <span class="stat-value text-red">{{ invoiceStats.overdue_count }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-toolbar">
+        <div class="toolbar-filters">
+          <div class="search-box">
+            <ng-icon name="lucideSearch"></ng-icon>
+            <input type="text" placeholder="Rechercher (client, N°)..." [(ngModel)]="invoiceSearchTerm" />
+          </div>
+          <div class="filter-box">
+            <ng-icon name="lucideFilter"></ng-icon>
+            <select [(ngModel)]="invoiceStatusFilter">
+              <option value="">Tous les statuts</option>
+              <option value="DRAFT">Brouillon</option>
+              <option value="SENT">Envoyée</option>
+              <option value="PAID">Payée</option>
+              <option value="PARTIAL">Partielle</option>
+              <option value="CANCELLED">Annulée</option>
+            </select>
+          </div>
+        </div>
+        <button class="zir-btn--primary shadow-btn" (click)="openInvoiceDrawer()">
+          <ng-icon name="lucidePlus"></ng-icon> <span>Créer facture</span>
+        </button>
+      </div>
+
+      <div class="table-container">
+        <table class="zir-table">
+          <thead>
+            <tr>
+              <th>Numéro</th>
+              <th>Client</th>
+              <th>Type</th>
+              <th>Montant TTC</th>
+              <th>Payé / Reste</th>
+              <th>Statut</th>
+              <th class="text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="filteredInvoices.length === 0">
+              <td colspan="7" class="empty-state">
+                <ng-icon name="lucideFileText" class="empty-icon"></ng-icon>
+                <p>Aucune facture trouvée.</p>
+              </td>
+            </tr>
+            <tr *ngFor="let inv of filteredInvoices" class="table-row">
+              <td class="font-mono text-emerald font-semibold">{{ inv.invoice_number }}</td>
+              <td>
+                <div class="flex items-center gap-2">
+                  <div class="avatar-sm bg-accent text-primary"><ng-icon name="lucideUser"></ng-icon></div>
+                  <span class="font-bold">{{ inv.client_name }}</span>
+                </div>
+              </td>
+              <td>
+                <span class="badge" [class.badge-platform]="inv.invoice_type === 'PLATFORM_ORDER'">
+                  <ng-icon [name]="inv.invoice_type === 'PLATFORM_ORDER' ? 'lucideGlobe' : 'lucideEdit'"></ng-icon>
+                  {{ inv.invoice_type === 'PLATFORM_ORDER' ? 'Plateforme' : 'Manuelle' }}
+                </span>
+              </td>
+              <td class="font-bold text-lg">{{ inv.total_tnd | number:'1.2-2' }} <span class="text-sm text-muted">TND</span></td>
+              <td>
+                <div class="flex-col gap-1">
+                  <span class="text-green text-sm flex items-center gap-1"><ng-icon name="lucideCircleCheck" size="14"></ng-icon> {{ inv.amount_paid_tnd | number:'1.2-2' }}</span>
+                  <span class="text-red text-sm flex items-center gap-1"><ng-icon name="lucideClock" size="14"></ng-icon> {{ (inv.total_tnd - inv.amount_paid_tnd) | number:'1.2-2' }}</span>
+                </div>
+              </td>
+              <td>
+                <span class="status-badge" [ngClass]="getStatusBadgeColor(inv.status)">
+                  <ng-icon [name]="getStatusIcon(inv.status)"></ng-icon>
+                  {{ getStatusLabel(inv.status) }}
+                </span>
+              </td>
+              <td class="actions justify-end">
+                <button class="icon-btn tooltip-trigger" (click)="viewInvoice(inv.id)">
+                  <ng-icon name="lucideEye"></ng-icon>
+                  <span class="tooltip">Voir</span>
+                </button>
+                <button class="icon-btn tooltip-trigger" (click)="downloadPdf(inv.id)">
+                  <ng-icon name="lucideDownload"></ng-icon>
+                  <span class="tooltip">PDF</span>
+                </button>
+                <button *ngIf="inv.status === 'DRAFT'" class="icon-btn text-red tooltip-trigger" (click)="deleteInvoice(inv.id)">
+                  <ng-icon name="lucideTrash2"></ng-icon>
+                  <span class="tooltip">Supprimer</span>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 2: ACHATS ==================== -->
+    <section *ngIf="!isLoading && activeTab === 'purchases'" class="tab-section fade-in">
+      <div class="stats-grid">
+        <div class="stat-card border-amber">
+          <div class="stat-icon-wrapper text-amber"><ng-icon name="lucideShoppingCart"></ng-icon></div>
+          <div class="stat-info">
+            <span class="stat-title">Dépenses ce mois</span>
+            <span class="stat-value text-amber">{{ purchaseStats.spent_this_month | number:'1.2-2' }} <span class="currency">TND</span></span>
+          </div>
+        </div>
+        <div class="stat-card border-blue">
+          <div class="stat-icon-wrapper text-blue"><ng-icon name="lucidePackage"></ng-icon></div>
+          <div class="stat-info">
+            <span class="stat-title">Livraisons en attente</span>
+            <span class="stat-value text-blue">{{ purchaseStats.pending_deliveries }}</span>
+          </div>
+        </div>
+        <div class="stat-card border-red">
+          <div class="stat-icon-wrapper text-red"><ng-icon name="lucideAlertTriangle"></ng-icon></div>
+          <div class="stat-info">
+            <span class="stat-title">Produits stock faible</span>
+            <span class="stat-value text-red">{{ purchaseStats.low_stock_count }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-toolbar justify-end">
+        <button class="zir-btn--primary shadow-btn" (click)="openPurchaseDrawer()">
+          <ng-icon name="lucidePlus"></ng-icon> <span>Nouvelle commande</span>
+        </button>
+      </div>
+
+      <div class="table-container">
+        <table class="zir-table">
+          <thead>
+            <tr>
+              <th>Fournisseur</th>
+              <th>Réf</th>
+              <th>Montant</th>
+              <th>Statut</th>
+              <th>Date livraison prévue</th>
+              <th class="text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="purchases.length === 0">
+              <td colspan="6" class="empty-state">
+                <ng-icon name="lucideShoppingCart" class="empty-icon"></ng-icon>
+                <p>Aucune commande d'achat.</p>
+              </td>
+            </tr>
+            <tr *ngFor="let po of purchases" class="table-row">
+              <td>
+                <div class="flex items-center gap-2">
+                  <div class="avatar-sm bg-accent text-primary"><ng-icon name="lucideBuilding2"></ng-icon></div>
+                  <span class="font-bold">{{ po.vendor_name }}</span>
+                </div>
+              </td>
+              <td class="font-mono text-sm">{{ po.reference_number || '-' }}</td>
+              <td class="font-bold text-lg">{{ po.total_tnd | number:'1.2-2' }} <span class="text-sm text-muted">TND</span></td>
+              <td>
+                <span class="status-badge" [ngClass]="getStatusBadgeColor(po.status)">
+                  <ng-icon [name]="getStatusIcon(po.status)"></ng-icon>
+                  {{ getStatusLabel(po.status) }}
+                </span>
+              </td>
+              <td class="text-muted">
+                <div class="flex items-center gap-1" *ngIf="po.expected_delivery_date">
+                  <ng-icon name="lucideCalendar" size="14"></ng-icon>
+                  {{ po.expected_delivery_date | date:'dd/MM/yyyy' }}
+                </div>
+                <span *ngIf="!po.expected_delivery_date">-</span>
+              </td>
+              <td class="actions justify-end">
+                <button *ngIf="po.status === 'ORDERED' || po.status === 'PARTIAL_RECEIVED'" class="zir-btn--outline-green btn-sm" (click)="openReceiveModal(po)">
+                  <ng-icon name="lucideCheckCircle"></ng-icon> Réceptionner
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 3: STOCK ==================== -->
+    <section *ngIf="!isLoading && activeTab === 'stock'" class="tab-section fade-in">
+      <div class="stats-grid">
+        <div class="stat-card border-emerald">
+          <div class="stat-icon-wrapper text-emerald"><ng-icon name="lucideDollarSign"></ng-icon></div>
+          <div class="stat-info">
+            <span class="stat-title">Total Valeur Stock</span>
+            <span class="stat-value text-emerald">{{ stockReport.summary.total_stock_value | number:'1.2-2' }} <span class="currency">TND</span></span>
+          </div>
+        </div>
+        <div class="stat-card border-red">
+          <div class="stat-icon-wrapper text-red"><ng-icon name="lucideAlertTriangle"></ng-icon></div>
+          <div class="stat-info">
+            <span class="stat-title">Produits en rupture</span>
+            <span class="stat-value text-red">{{ stockReport.summary.out_of_stock_count }}</span>
+          </div>
+        </div>
+        <div class="stat-card border-amber">
+          <div class="stat-icon-wrapper text-amber"><ng-icon name="lucidePackage"></ng-icon></div>
+          <div class="stat-info">
+            <span class="stat-title">Produits stock faible</span>
+            <span class="stat-value text-amber">{{ stockReport.summary.low_stock_count }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-container mt-8">
+        <div class="section-header p-6 pb-2 border-b border-accent">
+          <h3 class="font-bold text-lg m-0 flex items-center gap-2"><ng-icon name="lucideBoxes"></ng-icon> État du Stock</h3>
+        </div>
+        <table class="zir-table">
+          <thead>
+            <tr>
+              <th>Produit</th>
+              <th>Stock actuel</th>
+              <th>Stock min</th>
+              <th>Valeur</th>
+              <th>Dernier mvt</th>
+              <th class="text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let p of stockReport.products" class="table-row">
+              <td class="font-bold flex items-center gap-2">
+                <div class="icon-avatar bg-secondary"><ng-icon name="lucideTag"></ng-icon></div>
+                {{ p.name }}
+              </td>
+              <td>
+                <div class="stock-level-indicator" [ngClass]="getStockLevel(p)">
+                  <span class="font-mono text-lg font-bold">{{ p.stock_qty }}</span> <span class="text-sm">{{ p.unit }}</span>
+                </div>
+              </td>
+              <td class="text-muted">{{ p.min_stock_alert_qty }}</td>
+              <td class="font-bold">{{ p.total_value_tnd | number:'1.2-2' }} <span class="text-sm text-muted">TND</span></td>
+              <td class="text-muted text-sm">
+                <div class="flex items-center gap-1" *ngIf="p.last_movement_date">
+                  <ng-icon name="lucideHistory" size="14"></ng-icon>
+                  {{ p.last_movement_date | date:'dd/MM/yyyy HH:mm' }}
+                </div>
+                <span *ngIf="!p.last_movement_date">-</span>
+              </td>
+              <td class="actions justify-end relative">
+                <button class="zir-btn--outline btn-sm" (click)="openStockAdjust(p)">
+                  <ng-icon name="lucideEdit"></ng-icon> Ajuster
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="mt-8 bg-card border border-accent rounded-xl p-6 shadow-sm">
+        <h3 class="font-bold text-lg mb-6 flex items-center gap-2"><ng-icon name="lucideHistory"></ng-icon> Historique des Mouvements</h3>
+        <div class="timeline">
+          <div *ngIf="stockMovements.length === 0" class="text-center text-muted p-4">Aucun mouvement récent.</div>
+          <div class="timeline-item" *ngFor="let m of stockMovements">
+            <div class="timeline-icon" [ngClass]="getMovementColor(m.movement_type)">
+              <ng-icon [name]="getMovementIcon(m.movement_type)" size="14"></ng-icon>
+            </div>
+            <div class="timeline-content">
+              <div class="timeline-header">
+                <span class="font-bold text-primary">{{ m.product?.name }}</span>
+                <span class="text-muted text-sm flex items-center gap-1"><ng-icon name="lucideClock" size="12"></ng-icon> {{ m.created_at | date:'dd/MM/yyyy HH:mm' }}</span>
+              </div>
+              <div class="timeline-body">
+                <span class="badge badge-light">{{ m.movement_type }}</span>
+                <div class="qty-change" [ngClass]="m.quantity_change > 0 ? 'text-green' : 'text-red'">
+                  {{ m.quantity_change > 0 ? '+' : '' }}{{ m.quantity_change }}
+                </div>
+                <div class="qty-flow text-muted text-sm">
+                  {{ m.quantity_before }} <ng-icon name="lucideArrowDownRight" size="12"></ng-icon> {{ m.quantity_after }}
+                </div>
+              </div>
+              <p class="timeline-notes text-sm text-muted italic" *ngIf="m.notes"><ng-icon name="lucideFileText" size="12"></ng-icon> {{ m.notes }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 4: FINANCES ==================== -->
+    <section *ngIf="!isLoading && activeTab === 'finances'" class="tab-section fade-in">
+      <div class="stats-grid grid-4">
+        <div class="stat-card border-emerald">
+          <div class="stat-icon-wrapper text-emerald"><ng-icon name="lucideTrendingUp"></ng-icon></div>
+          <div class="stat-info w-full">
+            <span class="stat-title">CA ce mois</span>
+            <div class="flex-between items-end">
+              <span class="stat-value text-emerald">{{ erpDashboard.revenue_this_month | number:'1.2-2' }} <span class="text-sm">TND</span></span>
+              <span class="trend badge" [ngClass]="erpDashboard.revenue_growth_pct >= 0 ? 'bg-green-light text-green' : 'bg-red-light text-red'">
+                <ng-icon [name]="erpDashboard.revenue_growth_pct >= 0 ? 'lucideTrendingUp' : 'lucideTrendingDown'" size="14"></ng-icon>
+                {{ erpDashboard.revenue_growth_pct > 0 ? '+' : '' }}{{ erpDashboard.revenue_growth_pct | number:'1.0-1' }}%
+              </span>
+            </div>
+          </div>
+        </div>
+        <div class="stat-card border-amber">
+          <div class="stat-icon-wrapper text-amber"><ng-icon name="lucideShoppingCart"></ng-icon></div>
+          <div class="stat-info">
+            <span class="stat-title">Achats ce mois</span>
+            <span class="stat-value text-amber">{{ erpDashboard.purchase_spending_this_month | number:'1.2-2' }} <span class="text-sm">TND</span></span>
+          </div>
+        </div>
+        <div class="stat-card border-green">
+          <div class="stat-icon-wrapper text-green"><ng-icon name="lucideZap"></ng-icon></div>
+          <div class="stat-info">
+            <span class="stat-title">Marge brute</span>
+            <span class="stat-value text-green">{{ erpDashboard.gross_margin_pct | number:'1.0-1' }}%</span>
+          </div>
+        </div>
+        <div class="stat-card border-red">
+          <div class="stat-icon-wrapper text-red"><ng-icon name="lucideAlertTriangle"></ng-icon></div>
+          <div class="stat-info">
+            <span class="stat-title">Impayés en retard</span>
+            <span class="stat-value text-red">{{ erpDashboard.overdue_amount | number:'1.2-2' }} <span class="text-sm">TND</span></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="charts-grid mt-8">
+        <div class="chart-card shadow-sm">
+          <div class="chart-header">
+            <div class="icon-box"><ng-icon name="lucideBarChart3"></ng-icon></div>
+            <h3>Chiffre d'affaires — 6 derniers mois</h3>
+          </div>
+          <div class="canvas-container">
+            <canvas id="revenueChart"></canvas>
+          </div>
+        </div>
+        <div class="chart-card shadow-sm">
+          <div class="chart-header">
+            <div class="icon-box bg-amber-light text-amber"><ng-icon name="lucidePieChart"></ng-icon></div>
+            <h3>Répartition CA (Ce mois)</h3>
+          </div>
+          <div class="canvas-container split-canvas">
+            <canvas id="splitChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="top-clients mt-8 shadow-sm">
+        <div class="section-header mb-6">
+          <h3 class="font-bold text-lg m-0 flex items-center gap-2"><ng-icon name="lucideStar" class="text-amber"></ng-icon> Top 5 Clients</h3>
+        </div>
+        <div class="client-row" *ngFor="let client of erpDashboard.top_clients; let i = index">
+          <div class="client-rank">#{{ i + 1 }}</div>
+          <div class="client-info">
+            <span class="font-bold text-primary">{{ client.client_name }}</span>
+            <span class="text-sm text-muted flex items-center gap-1"><ng-icon name="lucideFileText" size="12"></ng-icon> {{ client.invoices }} factures</span>
+          </div>
+          <div class="client-bar-container">
+            <div class="client-amount font-bold text-emerald">{{ client.total | number:'1.2-2' }} TND</div>
+            <div class="bar-track">
+              <div class="bar-fill" [style.width.%]="(client.total / erpDashboard.top_clients[0].total) * 100"></div>
+            </div>
+          </div>
+        </div>
+        <div *ngIf="!erpDashboard.top_clients?.length" class="text-muted text-center p-4">Pas de données clients ce mois.</div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==================== DRAWER: CREATE INVOICE ==================== -->
+  <div class="drawer-overlay" *ngIf="showInvoiceDrawer" (click)="showInvoiceDrawer = false"></div>
+  <div class="drawer-panel" [class.open]="showInvoiceDrawer">
+    <div class="drawer-header">
+      <div class="drawer-title-group">
+        <div class="drawer-icon-badge emerald"><ng-icon name="lucideReceipt"></ng-icon></div>
+        <div class="drawer-title-text">
+          <h2>Créer une facture</h2>
+          <p>Générez et envoyez vos factures à vos clients</p>
+        </div>
+      </div>
+      <button class="icon-btn-circle" (click)="showInvoiceDrawer = false"><ng-icon name="lucideX"></ng-icon></button>
+    </div>
+    
+    <div class="drawer-body">
+      <div class="mode-toggles">
+        <button class="mode-btn" [class.active]="invoiceMode === 'order'" (click)="invoiceMode = 'order'">
+          <ng-icon name="lucideGlobe"></ng-icon> Depuis Plateforme
+        </button>
+        <button class="mode-btn" [class.active]="invoiceMode === 'manual'" (click)="invoiceMode = 'manual'">
+          <ng-icon name="lucideEdit"></ng-icon> Saisie Manuelle
+        </button>
+      </div>
+
+      <!-- FROM ORDER -->
+      <div *ngIf="invoiceMode === 'order'" class="fade-in">
+        <div class="form-card accent-emerald">
+          <div class="form-card-header">
+            <div class="form-card-icon emerald"><ng-icon name="lucideShoppingCart"></ng-icon></div>
+            <div>
+              <h3>Sélectionner une commande livrée</h3>
+              <p>Choisissez une commande finalisée pour générer la facture correspondante</p>
+            </div>
+          </div>
+          <div class="form-field">
+            <div class="custom-select-wrapper">
+              <span class="select-icon"><ng-icon name="lucideSearch"></ng-icon></span>
+              <select class="zir-input with-icon" [(ngModel)]="selectedOrderId">
+                <option value="" disabled selected>-- Choisir une commande dans la liste --</option>
+                <option *ngFor="let order of deliveredOrders" [value]="order.id">
+                  {{ order.ordered_at | date:'dd/MM/yy' }} | {{ order.buyer?.name }} | {{ order.total_tnd }} TND
+                </option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <button class="zir-btn--primary w-full mt-6" (click)="submitInvoice('SENT')" [disabled]="!selectedOrderId">
+          <ng-icon name="lucideSend"></ng-icon> Générer et Envoyer la facture
+        </button>
+      </div>
+
+      <!-- MANUAL -->
+      <div *ngIf="invoiceMode === 'manual'" class="fade-in">
+        
+        <!-- Informations Client -->
+        <div class="form-card accent-blue">
+          <div class="form-card-header">
+            <div class="form-card-icon blue"><ng-icon name="lucideUser"></ng-icon></div>
+            <div>
+              <h3>Informations Client</h3>
+              <p>Détails du destinataire de la facture</p>
+            </div>
+          </div>
+          <div class="form-grid-2">
+            <div class="form-field span-2">
+              <label>Nom du client <span class="required">*</span></label>
+              <input type="text" class="zir-input" placeholder="Ex: Coopérative Agricole El Fellah" [(ngModel)]="manualInvoiceForm.client_name">
+            </div>
+            <div class="form-field">
+              <label>Téléphone</label>
+              <div class="input-wrapper">
+                <span class="input-icon"><ng-icon name="lucidePhone"></ng-icon></span>
+                <input type="text" class="zir-input has-icon" placeholder="+216 ..." [(ngModel)]="manualInvoiceForm.client_phone">
+              </div>
+            </div>
+            <div class="form-field">
+              <label>Email</label>
+              <div class="input-wrapper">
+                <span class="input-icon"><ng-icon name="lucideMail"></ng-icon></span>
+                <input type="email" class="zir-input has-icon" placeholder="contact@..." [(ngModel)]="manualInvoiceForm.client_email">
+              </div>
+            </div>
+            <div class="form-field span-2">
+              <label>Adresse complète</label>
+              <div class="input-wrapper">
+                <span class="input-icon"><ng-icon name="lucideMapPin"></ng-icon></span>
+                <input type="text" class="zir-input has-icon" placeholder="Rue, Ville, Code postal" [(ngModel)]="manualInvoiceForm.client_address">
+              </div>
+            </div>
+            <div class="form-field span-2">
+              <label>Matricule Fiscal (MF)</label>
+              <input type="text" class="zir-input" placeholder="Optionnel" [(ngModel)]="manualInvoiceForm.client_tax_id">
+            </div>
+          </div>
+        </div>
+
+        <!-- Articles -->
+        <div class="form-card accent-emerald">
+          <div class="form-card-header">
+            <div class="form-card-icon emerald"><ng-icon name="lucideClipboardList"></ng-icon></div>
+            <div>
+              <h3>Articles & Prestations</h3>
+              <p>Détaillez les produits et services facturés</p>
+            </div>
+          </div>
+          
+          <div class="articles-table-wrap">
+            <div class="articles-thead invoice-cols hidden md:grid">
+              <div>Description</div>
+              <div class="text-center">Quantité</div>
+              <div class="text-center">Unité</div>
+              <div class="text-right">Prix Unit. (TND)</div>
+              <div></div>
+            </div>
+            <div class="articles-row invoice-cols" *ngFor="let item of manualInvoiceForm.items; let i = index">
+              <input type="text" class="row-input" placeholder="Nom du produit ou service" [(ngModel)]="item.description">
+              <input type="number" class="row-input text-center" placeholder="0" [(ngModel)]="item.quantity" min="0.01" step="0.01">
+              <input type="text" class="row-input text-center" placeholder="Kg, L..." [(ngModel)]="item.unit">
+              <input type="number" class="row-input text-right" placeholder="0.00" [(ngModel)]="item.unit_price" min="0" step="0.1">
+              <button class="row-delete-btn" (click)="removeInvoiceItem(i)" [disabled]="manualInvoiceForm.items.length === 1">
+                <ng-icon name="lucideTrash2" class="w-4.5 h-4.5"></ng-icon>
+              </button>
+            </div>
+            <button class="add-row-btn" (click)="addInvoiceItem()">
+              <ng-icon name="lucidePlus"></ng-icon> Ajouter une nouvelle ligne
+            </button>
+          </div>
+        </div>
+
+        <!-- Règlement & Détails -->
+        <div class="form-card accent-amber">
+          <div class="form-card-header">
+            <div class="form-card-icon amber"><ng-icon name="lucideSettings2"></ng-icon></div>
+            <div>
+              <h3>Règlement & Conditions</h3>
+              <p>Taxes, remises et conditions de paiement</p>
+            </div>
+          </div>
+          <div class="form-grid-2">
+            <div class="form-field">
+              <label>Remise globale</label>
+              <div class="input-wrapper">
+                <input type="number" class="zir-input has-suffix text-right" placeholder="0.00" [(ngModel)]="manualInvoiceForm.discount_amount_tnd">
+                <span class="input-suffix">TND</span>
+              </div>
+            </div>
+            <div class="form-field">
+              <label>Taux de TVA</label>
+              <select class="zir-input" [(ngModel)]="manualInvoiceForm.tax_rate">
+                <option [ngValue]="0">0% (Exonéré)</option>
+                <option [ngValue]="7">7%</option>
+                <option [ngValue]="13">13%</option>
+                <option [ngValue]="19">19%</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label>Méthode de paiement</label>
+              <select class="zir-input" [(ngModel)]="manualInvoiceForm.payment_method">
+                <option value="CASH">Espèces</option>
+                <option value="CHEQUE">Chèque</option>
+                <option value="VIREMENT">Virement Bancaire</option>
+                <option value="CREDIT">À Crédit</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label>Date d'échéance</label>
+              <input type="date" class="zir-input" [(ngModel)]="manualInvoiceForm.due_date">
+            </div>
+            <div class="form-field span-2 mt-2">
+              <label>Notes & Mentions légales (Apparaîtra sur le PDF)</label>
+              <textarea class="zir-input" rows="3" placeholder="Ex: Pénalités de retard applicables après échéance. RIB: TN59..." [(ngModel)]="manualInvoiceForm.notes"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Totals Summary -->
+        <div class="totals-box">
+          <div class="totals-row">
+            <span>Sous-total HT</span> 
+            <span class="font-bold">{{ calcInvoiceTotals().subtotal | number:'1.3-3' }} TND</span>
+          </div>
+          <div class="totals-row discount" *ngIf="calcInvoiceTotals().discount > 0">
+            <span>Remise appliquée</span> 
+            <span class="font-bold">-{{ calcInvoiceTotals().discount | number:'1.3-3' }} TND</span>
+          </div>
+          <div class="totals-row">
+            <span>TVA ({{ manualInvoiceForm.tax_rate }}%)</span> 
+            <span class="font-bold">{{ calcInvoiceTotals().tax | number:'1.3-3' }} TND</span>
+          </div>
+          <div class="totals-row total-row">
+            <span class="total-label">TOTAL TTC</span> 
+            <span class="total-value">{{ calcInvoiceTotals().total | number:'1.3-3' }} <span class="text-sm ml-1 opacity-80">TND</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="drawer-footer" *ngIf="invoiceMode === 'manual'">
+      <button class="zir-btn--ghost flex-1" (click)="submitInvoice('DRAFT')">
+        <ng-icon name="lucideArchive"></ng-icon> Enregistrer en Brouillon
+      </button>
+      <button class="zir-btn--primary flex-1" (click)="submitInvoice('SENT')" [disabled]="!manualInvoiceForm.client_name || manualInvoiceForm.items.length === 0">
+        <ng-icon name="lucideSend"></ng-icon> Créer & Finaliser
+      </button>
+    </div>
+  </div>
+
+  <!-- ==================== DRAWER: CREATE PURCHASE ORDER ==================== -->
+  <div class="drawer-overlay" *ngIf="showPurchaseDrawer" (click)="showPurchaseDrawer = false"></div>
+  <div class="drawer-panel" [class.open]="showPurchaseDrawer">
+    <div class="drawer-header">
+      <div class="drawer-title-group">
+        <div class="drawer-icon-badge amber"><ng-icon name="lucideShoppingCart"></ng-icon></div>
+        <div class="drawer-title-text">
+          <h2>Nouvelle Commande</h2>
+          <p>Créez un bon de commande fournisseur (Achat)</p>
+        </div>
+      </div>
+      <button class="icon-btn-circle" (click)="showPurchaseDrawer = false"><ng-icon name="lucideX"></ng-icon></button>
+    </div>
+    
+    <div class="drawer-body">
+      <div class="form-card accent-blue">
+        <div class="form-card-header">
+          <div class="form-card-icon blue"><ng-icon name="lucideBuilding2"></ng-icon></div>
+          <div>
+            <h3>Fournisseur & Références</h3>
+            <p>Informations générales sur la commande d'achat</p>
+          </div>
+        </div>
+        
+        <div class="form-grid-2">
+          <div class="form-field span-2">
+            <label>Nom du fournisseur <span class="required">*</span></label>
+            <input type="text" class="zir-input" placeholder="Ex: AgroFournitures SA" [(ngModel)]="purchaseForm.vendor_name">
+          </div>
+          <div class="form-field">
+            <label>Référence (Devis/Cmd)</label>
+            <input type="text" class="zir-input" placeholder="CMD-2026-..." [(ngModel)]="purchaseForm.reference_number">
+          </div>
+          <div class="form-field">
+            <label>Date de livraison prévue</label>
+            <input type="date" class="zir-input" [(ngModel)]="purchaseForm.expected_delivery_date">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-card accent-amber">
+        <div class="form-card-header">
+          <div class="form-card-icon amber"><ng-icon name="lucideBoxes"></ng-icon></div>
+          <div>
+            <h3>Articles à commander</h3>
+            <p>Détaillez les produits ou fournitures agricoles</p>
+          </div>
+        </div>
+        
+        <div class="articles-table-wrap">
+          <div class="articles-thead purchase-cols hidden md:grid">
+            <div>Description</div>
+            <div class="text-center">Quantité</div>
+            <div class="text-right">Prix Unit. (TND)</div>
+            <div></div>
+          </div>
+          <div class="articles-row purchase-cols" *ngFor="let item of purchaseForm.items; let i = index">
+            <input type="text" class="row-input" placeholder="Description de l'article" [(ngModel)]="item.description">
+            <input type="number" class="row-input text-center" placeholder="0" [(ngModel)]="item.quantity" min="0.01" step="0.01">
+            <input type="number" class="row-input text-right" placeholder="0.00" [(ngModel)]="item.unit_price" min="0" step="0.1">
+            <button class="row-delete-btn" (click)="removePurchaseItem(i)" [disabled]="purchaseForm.items.length === 1">
+              <ng-icon name="lucideTrash2" class="w-4.5 h-4.5"></ng-icon>
+            </button>
+          </div>
+          <button class="add-row-btn" (click)="addPurchaseItem()">
+            <ng-icon name="lucidePlus"></ng-icon> Ajouter un article
+          </button>
+        </div>
+      </div>
+      
+      <div class="purchase-total-banner">
+        <span class="banner-label">Total Estimé HT</span>
+        <span class="banner-value text-amber">{{ calcPurchaseTotal() | number:'1.3-3' }} <span class="text-sm opacity-80">TND</span></span>
+      </div>
+    </div>
+
+    <div class="drawer-footer">
+      <button class="zir-btn--ghost flex-1" (click)="showPurchaseDrawer = false">Annuler</button>
+      <button class="zir-btn--primary flex-1" (click)="submitPurchase()" [disabled]="!purchaseForm.vendor_name">
+        <ng-icon name="lucideSave"></ng-icon> Valider la commande
+      </button>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: RECEIVE PURCHASE ==================== -->
+  <div class="modal-overlay" *ngIf="showReceiveModal">
+    <div class="modal-content glass-panel p-8 max-w-lg mx-auto rounded-2xl shadow-2xl relative top-20 border border-white border-opacity-20">
+      <div class="flex items-center gap-3 mb-6">
+        <div class="icon-avatar bg-blue text-white"><ng-icon name="lucidePackage"></ng-icon></div>
+        <h2 class="text-2xl font-bold m-0">Réception de Commande</h2>
+      </div>
+      
+      <p class="text-muted mb-6">Ajustez les quantités reçues. Les produits correspondants verront leur stock incrémenté automatiquement.</p>
+      
+      <div class="receive-items max-h-96 overflow-y-auto pr-2 space-y-4 mb-6">
+        <div class="receive-item bg-card p-4 rounded-xl border border-accent flex-between items-center" *ngFor="let item of receiveFormItems; let i = index">
+          <div>
+            <div class="font-bold text-primary mb-1">{{ item.description }}</div>
+            <div class="text-sm text-muted">Commandé: <span class="font-bold">{{ selectedPurchaseForReceive.items[i].quantity }}</span></div>
+          </div>
+          <div class="flex items-center gap-3">
+            <label class="text-sm font-bold">Reçu:</label>
+            <input type="number" class="zir-input w-24 text-center font-bold text-lg" [(ngModel)]="item.quantity_received" min="0">
+          </div>
+        </div>
+      </div>
+      
+      <div class="mb-6">
+        <label class="font-bold block mb-2">Notes de réception</label>
+        <textarea class="zir-input w-full" rows="2" placeholder="Ex: Manque 2 articles, carton endommagé..." [(ngModel)]="receiveNotes"></textarea>
+      </div>
+      
+      <div class="flex justify-end gap-4 mt-8">
+        <button class="zir-btn--ghost" (click)="showReceiveModal = false">Annuler</button>
+        <button class="zir-btn--primary shadow-btn" (click)="submitReceive()"><ng-icon name="lucideCheckCircle"></ng-icon> Valider la réception</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: INVOICE HTML PREVIEW ==================== -->
+  <div class="modal-overlay full-screen" *ngIf="showInvoicePreview">
+    <div class="invoice-preview-modal bg-card shadow-2xl rounded-2xl overflow-hidden flex flex-col">
+      <div class="modal-header flex-between p-6 border-b border-accent bg-secondary">
+        <div class="flex items-center gap-3">
+          <div class="icon-avatar bg-emerald-light text-emerald"><ng-icon name="lucideFileText"></ng-icon></div>
+          <h2 class="text-xl font-bold m-0">Aperçu Facture <span class="text-emerald">#{{ previewInvoice?.invoice_number }}</span></h2>
+        </div>
+        <div class="flex gap-3">
+          <button class="zir-btn--ghost" (click)="showInvoicePreview = false">Fermer</button>
+          <button class="zir-btn--primary" (click)="downloadPdf(previewInvoice.id)">
+            <ng-icon name="lucideDownload"></ng-icon> Télécharger PDF
+          </button>
+        </div>
+      </div>
+      
+      <div class="modal-body p-8 invoice-html-body flex-1 overflow-y-auto" *ngIf="previewInvoice">
+        <!-- The Paper Document Wrapper -->
+        <div class="invoice-paper mx-auto bg-white text-slate-800 p-10 rounded-xl shadow-lg relative" style="max-width: 800px; min-height: 1050px;">
+          
+          <!-- Header -->
+          <div class="flex-between mb-10 border-b-2 border-emerald border-opacity-30 pb-6">
+            <div>
+              <h1 class="text-5xl font-black text-slate-800 mb-2 tracking-tight">FACTURE</h1>
+              <p class="mt-2">
+                <span class="status-badge" [ngClass]="getStatusBadgeColor(previewInvoice.status)">
+                  <ng-icon [name]="getStatusIcon(previewInvoice.status)"></ng-icon> {{ getStatusLabel(previewInvoice.status) }}
+                </span>
+              </p>
+            </div>
+            <div class="text-right">
+              <h3 class="font-bold text-2xl text-emerald tracking-tight">ZirIA</h3>
+              <p class="text-slate-500 text-sm mt-1">Émise le: <strong>{{ previewInvoice.created_at | date:'dd/MM/yyyy' }}</strong></p>
+            </div>
+          </div>
+          
+          <!-- Parties Details -->
+          <div class="grid grid-cols-2 gap-12 mb-10">
+            <!-- Client Info -->
+            <div class="bg-slate-50 p-6 rounded-xl border border-slate-100">
+              <h3 class="font-bold text-slate-400 text-xs uppercase tracking-wider mb-4 flex items-center gap-2"><ng-icon name="lucideUser"></ng-icon> Facturé à</h3>
+              <p class="font-black text-2xl text-slate-800 mb-3">{{ previewInvoice.client_name }}</p>
+              <div class="space-y-1">
+                <p class="text-slate-600 flex items-center gap-2 text-sm" *ngIf="previewInvoice.client_phone"><ng-icon name="lucidePhone" size="14" class="text-slate-400"></ng-icon> {{ previewInvoice.client_phone }}</p>
+                <p class="text-slate-600 flex items-center gap-2 text-sm" *ngIf="previewInvoice.client_address"><ng-icon name="lucideMapPin" size="14" class="text-slate-400"></ng-icon> {{ previewInvoice.client_address }}</p>
+                <p class="text-slate-600 flex items-center gap-2 text-sm" *ngIf="previewInvoice.client_email"><ng-icon name="lucideGlobe" size="14" class="text-slate-400"></ng-icon> {{ previewInvoice.client_email }}</p>
+                <p class="mt-3 font-mono text-xs bg-slate-200 text-slate-700 py-1 px-2 rounded inline-block" *ngIf="previewInvoice.client_tax_id">MF: {{ previewInvoice.client_tax_id }}</p>
+              </div>
+            </div>
+            
+            <!-- Invoice Meta -->
+            <div class="flex flex-col justify-center text-right space-y-6">
+              <div *ngIf="previewInvoice.due_date">
+                <span class="text-slate-400 text-xs uppercase tracking-wider block mb-1">Date d'échéance</span>
+                <p class="font-bold text-xl text-slate-800">{{ previewInvoice.due_date | date:'dd/MM/yyyy' }}</p>
+              </div>
+              <div *ngIf="previewInvoice.payment_method">
+                <span class="text-slate-400 text-xs uppercase tracking-wider block mb-1">Mode de règlement</span>
+                <p class="font-bold text-xl text-slate-800">{{ previewInvoice.payment_method }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Items Table -->
+          <div class="mb-10 rounded-xl overflow-hidden border border-slate-200">
+            <table class="w-full text-sm">
+              <thead class="bg-slate-800 text-white">
+                <tr>
+                  <th class="py-4 px-5 text-left font-bold tracking-wider uppercase text-xs">Description</th>
+                  <th class="py-4 px-5 text-center font-bold tracking-wider uppercase text-xs">Qté</th>
+                  <th class="py-4 px-5 text-right font-bold tracking-wider uppercase text-xs">Prix Unit.</th>
+                  <th class="py-4 px-5 text-right font-bold tracking-wider uppercase text-xs">Total</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-slate-100">
+                <tr *ngFor="let item of previewInvoice.items" class="hover:bg-slate-50 transition-colors">
+                  <td class="py-4 px-5 font-medium text-slate-700">{{ item.description }}</td>
+                  <td class="py-4 px-5 text-center text-slate-600"><span class="bg-slate-100 text-slate-700 px-2 py-1 rounded text-xs font-bold">{{ item.quantity }} {{ item.unit }}</span></td>
+                  <td class="py-4 px-5 text-right font-mono text-slate-600">{{ item.unit_price | number:'1.3-3' }} TND</td>
+                  <td class="py-4 px-5 text-right font-bold font-mono text-slate-800">{{ item.total | number:'1.3-3' }} TND</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Totals -->
+          <div class="flex justify-end mb-12">
+            <div class="w-80 bg-slate-50 p-6 rounded-xl border border-slate-100 shadow-sm">
+              <div class="flex justify-between items-center mb-3"><span class="text-slate-500 font-bold text-sm">Sous-total HT</span> <span class="font-mono text-slate-700">{{ previewInvoice.subtotal_tnd | number:'1.3-3' }}</span></div>
+              <div class="flex justify-between items-center mb-3 text-rose-500" *ngIf="previewInvoice.discount_amount_tnd > 0">
+                <span class="font-bold text-sm">Remise</span> <span class="font-mono">-{{ previewInvoice.discount_amount_tnd | number:'1.3-3' }}</span>
+              </div>
+              <div class="flex justify-between items-center mb-4"><span class="text-slate-500 font-bold text-sm">TVA ({{ previewInvoice.tax_rate }}%)</span> <span class="font-mono text-slate-700">{{ previewInvoice.tax_amount_tnd | number:'1.3-3' }}</span></div>
+              
+              <div class="flex justify-between items-center pt-4 border-t-2 border-slate-200">
+                <span class="font-black text-xl text-slate-800">TOTAL TTC</span> 
+                <span class="font-black text-2xl font-mono text-emerald">{{ previewInvoice.total_tnd | number:'1.3-3' }} <span class="text-sm">TND</span></span>
+              </div>
+              
+              <div *ngIf="previewInvoice.status === 'PARTIAL'" class="mt-5 pt-4 border-t border-slate-200">
+                <div class="flex justify-between items-center text-emerald mb-2 font-bold text-sm"><span>Déjà Payé</span> <span class="font-mono">{{ previewInvoice.amount_paid_tnd | number:'1.3-3' }} TND</span></div>
+                <div class="flex justify-between items-center text-rose-500 font-black text-lg"><span>Reste à Payer</span> <span class="font-mono">{{ (previewInvoice.total_tnd - previewInvoice.amount_paid_tnd) | number:'1.3-3' }} TND</span></div>
+              </div>
+            </div>
+          </div>
+          <!-- Notes -->
+          <div class="bg-amber-50 text-amber-800 p-5 rounded-xl text-sm italic border border-amber-100" *ngIf="previewInvoice.notes">
+            <div class="font-bold mb-1 flex items-center gap-2 not-italic"><ng-icon name="lucideInfo"></ng-icon> Notes</div>
+            {{ previewInvoice.notes }}
+          </div>
+
+          <!-- Payment Controls inside invoice-paper -->
+          <div class="mt-8 border-t pt-6 border-slate-200" *ngIf="previewInvoice.status === 'SENT' || previewInvoice.status === 'PARTIAL'">
+            <div *ngIf="!showPartialPaymentInput" class="flex justify-end">
+              <button class="zir-btn--outline-green shadow-btn" (click)="showPartialPaymentInput = true">
+                <ng-icon name="lucideBanknote"></ng-icon> Enregistrer un paiement
+              </button>
+            </div>
+            <div *ngIf="showPartialPaymentInput" class="flex items-center justify-end gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200 fade-in">
+              <label class="text-sm font-bold text-slate-700">Montant (TND):</label>
+              <input type="number" class="zir-input w-32 font-bold text-lg" [(ngModel)]="partialPaymentAmount" [max]="previewInvoice.total_tnd">
+              <button class="zir-btn--primary btn-sm" (click)="markInvoicePaid(previewInvoice.id, partialPaymentAmount)">Valider</button>
+              <button class="zir-btn--outline btn-sm" (click)="showPartialPaymentInput = false">Annuler</button>
+              <div class="h-6 w-px bg-slate-200 mx-1"></div>
+              <button class="zir-btn--outline-green btn-sm" (click)="markInvoicePaid(previewInvoice.id, previewInvoice.total_tnd)">Totalité</button>
+            </div>
+          </div>
+          
+          <!-- Footer Watermark -->
+          <div class="absolute bottom-10 left-0 right-0 text-center text-slate-300 text-xs font-mono">
+            Généré de manière sécurisée via ZirIA Platform
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: STOCK ADJUST ==================== -->
+  <div class="modal-overlay" *ngIf="showStockAdjustModal">
+    <div class="modal-content glass-panel p-8 max-w-md mx-auto rounded-2xl shadow-2xl relative top-32 border border-white border-opacity-20">
+      <div class="flex items-center gap-3 mb-6">
+        <div class="icon-avatar bg-amber-light text-amber"><ng-icon name="lucideEdit"></ng-icon></div>
+        <h2 class="text-2xl font-bold m-0">Ajuster le stock</h2>
+      </div>
+      
+      <div class="mb-6" *ngIf="selectedStockProduct">
+        <div class="font-bold text-lg text-primary">{{ selectedStockProduct.name }}</div>
+        <div class="text-sm text-muted">Stock actuel: <span class="font-mono font-bold">{{ selectedStockProduct.stock_qty }}</span> {{ selectedStockProduct.unit }}</div>
+      </div>
+
+      <div class="mb-4">
+        <label class="font-bold block mb-2">Nouvelle quantité en stock</label>
+        <input type="number" [(ngModel)]="stockAdjustForm.new_quantity" class="zir-input w-full font-bold text-lg">
+      </div>
+      
+      <div class="mb-6">
+        <label class="font-bold block mb-2">Motif (Optionnel)</label>
+        <input type="text" [(ngModel)]="stockAdjustForm.notes" class="zir-input w-full" placeholder="Ex: perte, avarie, erreur d'inventaire...">
+      </div>
+      
+      <div class="flex justify-end gap-4 mt-8">
+        <button class="zir-btn--ghost" (click)="showStockAdjustModal = false; selectedStockProduct = null">Annuler</button>
+        <button class="zir-btn--primary shadow-btn" (click)="submitStockAdjust()"><ng-icon name="lucideCheckCircle"></ng-icon> Confirmer l'ajustement</button>
+      </div>
+    </div>
+  </div>
+
+</div>

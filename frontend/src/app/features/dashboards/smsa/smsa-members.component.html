@@ -1,0 +1,161 @@
+<div class="smsa-members zir-animate-in">
+
+  <!-- Header -->
+  <header class="page-header" style="display:flex; justify-content:space-between; align-items:flex-start;">
+    <div>
+      <h2>Annuaire des Membres</h2>
+      <p>Gérez les agriculteurs rattachés à votre coopérative SMSA.</p>
+    </div>
+    <button class="zir-btn zir-btn--primary">
+       <ng-icon name="lucideUserPlus"></ng-icon>
+       Ajouter un membre
+    </button>
+  </header>
+
+  <!-- Filters / Search -->
+  <div class="smsa-members__filters">
+    <div class="zir-input-group" style="max-width: 400px; position:relative;">
+       <ng-icon name="lucideSearch" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--text-muted);"></ng-icon>
+       <input type="text" class="zir-input" placeholder="Rechercher par nom, téléphone..." 
+              [(ngModel)]="searchQuery" (keyup.enter)="onSearch()"
+              style="padding-left: 40px; width:100%;">
+    </div>
+    <button class="zir-btn zir-btn--ghost" (click)="onSearch()">Filtrer</button>
+  </div>
+
+  <!-- Content -->
+  <div class="zir-card smsa-members__card">
+    @if (isLoading()) {
+      <div style="padding: 24px; display:flex; flex-direction:column; gap: 16px;">
+        @for (_ of [1,2,3,4,5]; track $index) {
+          <div class="zir-skeleton--text" style="height: 60px; border-radius: 8px;"></div>
+        }
+      </div>
+    } @else if (hasError()) {
+      <div class="zir-alert zir-alert--danger" style="margin: 24px;">
+        <span>Erreur lors du chargement des membres.</span>
+        <button class="zir-btn zir-btn--ghost" style="margin-left:auto;" (click)="loadData(currentPage)">Réessayer</button>
+      </div>
+    } @else if (members().length > 0) {
+      <div class="smsa-members__table-wrapper">
+        <table class="zir-table">
+          <thead>
+            <tr>
+              <th>Agriculteur</th>
+              <th>Localisation</th>
+              <th>Téléphone</th>
+              <th>Statut</th>
+              <th style="text-align: right;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (m of members(); track m.id) {
+              <tr class="smsa-members__row" (click)="openMemberDetails(m)">
+                <td>
+                  <div class="smsa-members__user-info">
+                    <div class="smsa-members__avatar" [style.background-color]="getAvatarColor(m.name)">
+                      {{ getInitials(m.name) }}
+                    </div>
+                    <div>
+                      <div class="smsa-members__name">{{ m.name }}</div>
+                      <div class="smsa-members__email">{{ m.id.substring(0,8) }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div class="smsa-members__location">
+                    <ng-icon name="lucideMapPin"></ng-icon>
+                    {{ m.governorate || 'Kasserine' }}
+                  </div>
+                </td>
+                <td>{{ m.phone || '--' }}</td>
+                <td>
+                  <span class="zir-badge zir-badge--success">ACTIF</span>
+                </td>
+                <td style="text-align: right;">
+                  <button class="zir-btn zir-btn--ghost zir-btn--icon-only">
+                    <ng-icon name="lucideChevronRight"></ng-icon>
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="smsa-members__pagination">
+        <button class="zir-btn zir-btn--ghost" [disabled]="currentPage === 1" (click)="prevPage()">Précédent</button>
+        <span style="font-size:13px; color:var(--text-secondary);">Page {{ currentPage }}</span>
+        <button class="zir-btn zir-btn--ghost" (click)="nextPage()">Suivant</button>
+      </div>
+
+    } @else {
+      <div class="zir-empty" style="padding: 40px;">
+        <div class="zir-empty__icon"><ng-icon name="lucideUsers"></ng-icon></div>
+        <div class="zir-empty__desc">Aucun membre trouvé.</div>
+      </div>
+    }
+  </div>
+
+</div>
+
+<!-- Side Panel: Member Details -->
+<div class="smsa-members__side-panel" [class.is-open]="selectedMember() !== null">
+  <div class="smsa-members__side-panel-backdrop" (click)="closeMemberDetails()"></div>
+  
+  <div class="smsa-members__side-panel-content">
+    @if (selectedMember(); as member) {
+      <div class="smsa-members__side-panel-header">
+        <h3>Détails du Membre</h3>
+        <button class="zir-btn zir-btn--ghost zir-btn--icon-only" (click)="closeMemberDetails()">
+          <ng-icon name="lucideX"></ng-icon>
+        </button>
+      </div>
+      
+      <div class="smsa-members__side-panel-body">
+        <div class="smsa-members__profile">
+          <div class="smsa-members__avatar smsa-members__avatar--large" [style.background-color]="getAvatarColor(member.name)">
+            {{ getInitials(member.name) }}
+          </div>
+          <h2>{{ member.name }}</h2>
+          <span class="zir-badge zir-badge--success" style="margin-top:8px;">MEMBRE ACTIF</span>
+        </div>
+
+        <div class="smsa-members__info-grid">
+          <div class="smsa-members__info-item">
+            <label>Téléphone</label>
+            <p>{{ member.phone || 'Non renseigné' }}</p>
+          </div>
+          <div class="smsa-members__info-item">
+            <label>Localisation</label>
+            <p>{{ member.governorate || 'Kasserine' }}</p>
+          </div>
+          <div class="smsa-members__info-item" style="grid-column: span 2;">
+            <label>Parcelles Actives ({{ memberParcels().length }})</label>
+            @if (isLoadingParcels()) {
+              <div class="zir-skeleton--text" style="height: 20px; width: 50%;"></div>
+            } @else if (memberParcels().length > 0) {
+              <ul style="margin-top: 8px; padding-left: 16px; color: var(--text-secondary); font-size: 13px;">
+                @for (p of memberParcels(); track p.id) {
+                  <li>{{ p.name || 'Parcelle ' + p.id.substring(0,6) }} - {{ p.crop_type }} ({{ p.surface_ha }} ha)</li>
+                }
+              </ul>
+            } @else {
+              <p style="color: var(--text-muted); font-size: 13px; margin-top: 4px;">Aucune parcelle renseignée.</p>
+            }
+          </div>
+        </div>
+
+        <div style="margin-top: 32px; display:flex; flex-direction:column; gap:12px;">
+          <button class="zir-btn zir-btn--primary" style="width:100%; justify-content:center;">
+             <ng-icon name="lucidePhone"></ng-icon> Appeler l'agriculteur
+          </button>
+          <button class="zir-btn zir-btn--ghost" style="width:100%; justify-content:center; color:var(--error);">
+             <ng-icon name="lucideTrash2"></ng-icon> Retirer de la coopérative
+          </button>
+        </div>
+      </div>
+    }
+  </div>
+</div>

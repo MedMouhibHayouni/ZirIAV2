@@ -1,0 +1,1805 @@
+<div class="zirfeed-app animate-fade-in">
+  <!-- Top Navigation Header -->
+  <header class="zirfeed-header flex items-center justify-between px-6 py-4">
+    <div class="flex items-center gap-3">
+      <img src="assets/ziria-logo-main.png" alt="ZirFeed" class="zirfeed-logo cursor-pointer" (click)="switchTab('feed')" />
+      <span class="zirfeed-brand font-bold text-2xl tracking-wide cursor-pointer" (click)="switchTab('feed')">ZirFeed <span class="text-amber-500 text-lg">🌾</span></span>
+    </div>
+
+    <!-- Universal Search Bar -->
+    <div class="zirfeed-search-container relative flex-1 max-w-lg mx-6 hidden-mobile">
+      <input
+        type="text"
+        [(ngModel)]="searchQuery"
+        (input)="onSearchQueryChange()"
+        placeholder="Rechercher des posts, des hashtags, des agriculteurs, ou évènements..."
+        class="zirfeed-search-input w-full pl-10 pr-4 py-2 rounded-xl text-white outline-none transition"
+      />
+      <ng-icon name="lucideGlobe" class="absolute left-3 top-3 text-gray-400"></ng-icon>
+      
+      <!-- Search Dropdown Results -->
+      @if (showSearchResults()) {
+        <div class="zirfeed-search-results absolute left-0 right-0 top-12 z-50 p-4 rounded-xl shadow-2xl border border-yellow-500/20 backdrop-blur-md bg-gray-905">
+          <div class="flex justify-between items-center mb-3">
+            <span class="text-xs font-bold text-gray-400 uppercase">Résultats de recherche</span>
+            <button (click)="showSearchResults.set(false)" class="text-gray-400 hover:text-white"><ng-icon name="lucideX"></ng-icon></button>
+          </div>
+          <div class="search-tabs flex gap-2 mb-3 border-b border-gray-700 pb-2 overflow-x-auto">
+            <button (click)="activeSearchTab.set('posts')" [class.active]="activeSearchTab() === 'posts'" class="search-tab-btn text-xs px-3 py-1 rounded-lg">Posts ({{searchResults().posts?.length || 0}})</button>
+            <button (click)="activeSearchTab.set('users')" [class.active]="activeSearchTab() === 'users'" class="search-tab-btn text-xs px-3 py-1 rounded-lg">Membres ({{searchResults().users?.length || 0}})</button>
+            <button (click)="activeSearchTab.set('groups')" [class.active]="activeSearchTab() === 'groups'" class="search-tab-btn text-xs px-3 py-1 rounded-lg">Groupes ({{searchResults().groups?.length || 0}})</button>
+            <button (click)="activeSearchTab.set('pages')" [class.active]="activeSearchTab() === 'pages'" class="search-tab-btn text-xs px-3 py-1 rounded-lg">Pages ({{searchResults().pages?.length || 0}})</button>
+            <button (click)="activeSearchTab.set('events')" [class.active]="activeSearchTab() === 'events'" class="search-tab-btn text-xs px-3 py-1 rounded-lg">Événements ({{searchResults().events?.length || 0}})</button>
+          </div>
+
+          <div class="search-tab-content max-h-60 overflow-y-auto">
+            @if (activeSearchTab() === 'posts') {
+              @for (post of searchResults().posts; track post.id) {
+                <div class="search-item p-2 hover:bg-white/5 rounded-lg cursor-pointer mb-1" (click)="showSearchResults.set(false); switchTab('feed')">
+                  <div class="text-[10px] text-amber-500 uppercase font-bold">{{post.post_type}}</div>
+                  <div class="text-xs text-gray-200 truncate" [dir]="isRtlText(post.content_preview) ? 'rtl' : 'ltr'">{{post.content_preview}}</div>
+                </div>
+              }
+              @if (!searchResults().posts || searchResults().posts.length === 0) {
+                <div class="text-center text-xs text-gray-500 py-3">Aucun post trouvé.</div>
+              }
+            }
+            @if (activeSearchTab() === 'users') {
+              @for (user of searchResults().users; track user.id) {
+                <div class="search-item flex items-center justify-between p-2 hover:bg-white/5 rounded-lg cursor-pointer mb-1" (click)="showSearchResults.set(false); openFollowersModal()">
+                  <span class="text-xs font-bold text-white">{{user.name}}</span>
+                  <span class="text-[10px] bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full">{{user.role}}</span>
+                </div>
+              }
+              @if (!searchResults().users || searchResults().users.length === 0) {
+                <div class="text-center text-xs text-gray-500 py-3">Aucun membre trouvé.</div>
+              }
+            }
+            @if (activeSearchTab() === 'groups') {
+              @for (grp of searchResults().groups; track grp.id) {
+                <div class="search-item flex items-center justify-between p-2 hover:bg-white/5 rounded-lg cursor-pointer mb-1" (click)="navigateToGroup(grp.id); showSearchResults.set(false)">
+                  <span class="text-xs font-bold text-white">{{grp.name}}</span>
+                  <span class="text-[10px] text-gray-400">{{grp.category}}</span>
+                </div>
+              }
+              @if (!searchResults().groups || searchResults().groups.length === 0) {
+                <div class="text-center text-xs text-gray-500 py-3">Aucun groupe trouvé.</div>
+              }
+            }
+            @if (activeSearchTab() === 'pages') {
+              @for (pg of searchResults().pages; track pg.id) {
+                <div class="search-item flex items-center justify-between p-2 hover:bg-white/5 rounded-lg cursor-pointer mb-1" (click)="navigateToPage(pg.id); showSearchResults.set(false)">
+                  <span class="text-xs font-bold text-white">{{pg.name}}</span>
+                  <span class="text-[10px] text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded-full">{{pg.category}}</span>
+                </div>
+              }
+              @if (!searchResults().pages || searchResults().pages.length === 0) {
+                <div class="text-center text-xs text-gray-500 py-3">Aucune page trouvée.</div>
+              }
+            }
+            @if (activeSearchTab() === 'events') {
+              @for (ev of searchResults().events; track ev.id) {
+                <div class="search-item flex items-center justify-between p-2 hover:bg-white/5 rounded-lg cursor-pointer mb-1" (click)="navigateToEvent(ev.id); showSearchResults.set(false)">
+                  <span class="text-xs font-bold text-white">{{ev.name}}</span>
+                  <span class="text-[10px] text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full">{{ev.category}}</span>
+                </div>
+              }
+              @if (!searchResults().events || searchResults().events.length === 0) {
+                <div class="text-center text-xs text-gray-500 py-3">Aucun événement trouvé.</div>
+              }
+            }
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Top Action Buttons -->
+    <div class="flex items-center gap-4 relative">
+      <!-- Social Notification Bell -->
+      <button (click)="showNotifPanel.set(!showNotifPanel())" class="zirfeed-action-btn relative p-2.5 rounded-xl transition" aria-label="Notifications ZirFeed">
+        <ng-icon name="lucideBell" class="text-xl text-gray-200"></ng-icon>
+        @if (unreadCount() > 0) {
+          <span class="zirfeed-badge absolute -top-1 -right-1 bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full animate-bounce">
+            {{ unreadCount() > 9 ? '9+' : unreadCount() }}
+          </span>
+        }
+      </button>
+
+      <!-- Notifications Panel Dropdown -->
+      @if (showNotifPanel()) {
+        <div class="zirfeed-notif-dropdown absolute right-0 top-12 w-80 z-50 p-4 rounded-xl shadow-2xl border border-yellow-500/20 backdrop-blur-md bg-gray-905">
+          <div class="flex justify-between items-center mb-3">
+            <span class="text-xs font-bold text-white uppercase">Notifications</span>
+            <button (click)="markAllRead()" class="text-xs text-amber-500 hover:underline">Tout lire</button>
+          </div>
+          <div class="max-h-80 overflow-y-auto flex flex-col gap-2">
+            @for (notif of notifications(); track notif.id) {
+              <div class="notif-card p-3 rounded-xl flex gap-3 hover:bg-white/5 cursor-pointer" [class.unread]="!notif.is_read" (click)="notif.is_read = true; showNotifPanel.set(false)">
+                <div class="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-500">
+                  <ng-icon name="lucideBell"></ng-icon>
+                </div>
+                <div class="flex-1">
+                  <!-- Grouped notification support -->
+                  <div class="text-xs text-white leading-relaxed">{{ notif.grouped_text || notif.message }}</div>
+                  <div class="text-[10px] text-gray-500 mt-1 flex items-center gap-1">
+                    <ng-icon name="lucideClock"></ng-icon>
+                    <span>{{ notif.created_at | date:'shortTime' }}</span>
+                  </div>
+                </div>
+              </div>
+            }
+            @if (notifications().length === 0) {
+              <div class="text-center text-xs text-gray-500 py-6">Aucune notification.</div>
+            }
+          </div>
+        </div>
+      }
+
+      <a routerLink="/dashboard" class="exit-btn text-xs px-4 py-2 font-bold rounded-lg border border-gray-700 hover:bg-white/5 transition flex items-center gap-2">
+        <ng-icon name="lucideX"></ng-icon>Quitter ZirFeed
+      </a>
+    </div>
+  </header>
+
+  <!-- Desktop Three-Column Social Layout -->
+  <div class="zirfeed-layout grid grid-cols-12 gap-6 p-6">
+    <!-- Left Sidebar: Tab Navigation -->
+    <aside class="col-span-3 zirfeed-sidebar-left flex flex-col gap-2">
+      <button (click)="switchTab('feed')" [class.active]="activeTab() === 'feed' && !currentGroupDetails() && !currentPageDetails() && !currentEventDetails()" class="sidebar-nav-item flex items-center gap-3 px-4 py-3 rounded-xl transition">
+        <ng-icon name="lucideGlobe" class="text-xl"></ng-icon><span>Fil d'actualité</span>
+      </button>
+      <button (click)="switchTab('reels')" [class.active]="activeTab() === 'reels'" class="sidebar-nav-item flex items-center gap-3 px-4 py-3 rounded-xl transition">
+        <ng-icon name="lucideFlame" class="text-xl"></ng-icon><span>Reels Agricoles</span>
+      </button>
+      <button (click)="switchTab('groups')" [class.active]="activeTab() === 'groups' && !currentGroupDetails()" class="sidebar-nav-item flex items-center gap-3 px-4 py-3 rounded-xl transition">
+        <ng-icon name="lucideMessageSquare" class="text-xl"></ng-icon><span>Groupes</span>
+      </button>
+      <button (click)="switchTab('pages')" [class.active]="activeTab() === 'pages' && !currentPageDetails()" class="sidebar-nav-item flex items-center gap-3 px-4 py-3 rounded-xl transition">
+        <ng-icon name="lucideShield" class="text-xl"></ng-icon><span>Pages Officielles</span>
+      </button>
+      <button (click)="switchTab('events')" [class.active]="activeTab() === 'events' && !currentEventDetails()" class="sidebar-nav-item flex items-center gap-3 px-4 py-3 rounded-xl transition">
+        <ng-icon name="lucideCalendar" class="text-xl"></ng-icon><span>Évènements</span>
+      </button>
+      <button (click)="switchTab('saved')" [class.active]="activeTab() === 'saved'" class="sidebar-nav-item flex items-center gap-3 px-4 py-3 rounded-xl transition">
+        <ng-icon name="lucideBookmark" class="text-xl"></ng-icon><span>Enregistrés</span>
+      </button>
+      <button (click)="switchTab('profile')" [class.active]="activeTab() === 'profile'" class="sidebar-nav-item flex items-center gap-3 px-4 py-3 rounded-xl transition">
+        <ng-icon name="lucideUser" class="text-xl"></ng-icon><span>Mon Profil Social</span>
+      </button>
+
+      <!-- Admin Panel Section -->
+      @if (authService.currentUser()?.role === 'ADMIN') {
+        <div class="sidebar-divider my-2"></div>
+        <button (click)="switchTab('admin_mod')" [class.active]="activeTab() === 'admin_mod'" class="sidebar-nav-item sidebar-nav-item--admin flex items-center gap-3 px-4 py-3 rounded-xl transition">
+          <ng-icon name="lucideLock" class="text-xl text-yellow-500"></ng-icon><span class="text-yellow-500 font-bold">Modération Admin</span>
+        </button>
+      }
+
+      <!-- Quick Drag-Drop Collection Target Widgets -->
+      @if (activeTab() === 'feed') {
+        <div class="sidebar-collections-widget mt-6 p-4 rounded-xl border border-gray-700 bg-white/5">
+          <h4 class="text-xs font-bold text-gray-400 uppercase mb-3 flex items-center justify-between">
+            Glisser-déposer pour classer
+            <button (click)="showCollectionModal.set(true)" class="text-amber-500 hover:text-white"><ng-icon name="lucidePlus"></ng-icon></button>
+          </h4>
+          <div class="flex flex-col gap-2">
+            @for (coll of collections(); track coll.id) {
+              <div
+                class="drag-collection-target p-3 rounded-lg border border-dashed border-gray-700 hover:border-amber-500/50 transition cursor-pointer text-xs flex justify-between items-center"
+                (dragover)="allowDrop($event)"
+                (drop)="onDrop($event, coll.id)"
+              >
+                <span>📁 {{coll.collection_name}}</span>
+                <span class="text-[10px] text-gray-500 font-bold">Déposer</span>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </aside>
+
+    <!-- Center Column: Post Composer + Feeds Stream -->
+    <main class="col-span-6 zirfeed-main-content flex flex-col gap-6">
+      
+      <!-- A. GROUP INTERIOR VIEW -->
+      @if (currentGroupDetails()) {
+        <div class="group-interior rounded-2xl overflow-hidden border border-gray-700 bg-white/5 p-6 flex flex-col gap-6">
+          <div class="group-interior-header flex flex-col gap-4">
+            <div class="flex justify-between items-start">
+              <div>
+                <span class="text-xs font-bold text-amber-500 uppercase">{{currentGroupDetails().category}}</span>
+                <h1 class="text-2xl font-bold text-white mt-1">{{currentGroupDetails().name}}</h1>
+                <p class="text-xs text-gray-400 mt-2 leading-relaxed">{{currentGroupDetails().description}}</p>
+                <div class="text-[11px] text-gray-500 mt-3 flex items-center gap-3">
+                  <span>👥 {{currentGroupDetails().member_count}} Membres</span>
+                  <span>📝 {{currentGroupDetails().post_count}} Publications</span>
+                </div>
+              </div>
+              <div class="flex gap-2">
+                @if (currentGroupDetails().my_membership?.role === 'ADMIN') {
+                  <button (click)="openGroupAdminPanel()" class="bg-purple-600 text-white font-bold text-xs px-4 py-2 rounded-xl hover:bg-purple-700">Gérer le Groupe</button>
+                }
+                @if (currentGroupDetails().my_membership) {
+                  <button (click)="leaveGroup(currentGroupDetails().id)" class="border border-red-500/30 hover:bg-red-500/10 text-red-400 font-bold text-xs px-4 py-2 rounded-xl">Quitter</button>
+                } @else {
+                  <button (click)="joinGroup(currentGroupDetails().id)" class="bg-amber-500 text-black font-bold text-xs px-6 py-2.5 rounded-xl hover:bg-amber-600">Rejoindre</button>
+                }
+              </div>
+            </div>
+
+            <!-- Group Admins list -->
+            <div class="group-admins flex items-center gap-2 border-t border-gray-800 pt-3">
+              <span class="text-[11px] text-gray-500 font-bold uppercase">Administrateurs :</span>
+              <div class="flex items-center gap-3">
+                @for (adm of currentGroupDetails().admins; track adm.id) {
+                  <div class="flex items-center gap-1.5 bg-white/5 px-2.5 py-1 rounded-full border border-gray-800">
+                    <span class="text-xs font-bold text-white">{{adm.name}}</span>
+                    <span class="text-[8px] bg-purple-500/20 text-purple-400 px-1.5 py-0.5 rounded-full font-bold">{{adm.role}}</span>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+
+          <!-- Group Post Composer (posting_permission check) -->
+          @if (currentGroupDetails().posting_permission === 'ALL' || currentGroupDetails().my_membership?.role === 'ADMIN' || currentGroupDetails().my_membership?.role === 'CO_ADMIN') {
+            <div class="group-composer p-4 rounded-xl border border-dashed border-gray-700/50 flex flex-col gap-3">
+              <textarea
+                [(ngModel)]="composerText"
+                placeholder="Publiez dans ce groupe..."
+                class="composer-textarea w-full bg-transparent text-white outline-none border-none resize-none min-h-[60px] text-xs"
+                [dir]="isRtlText(composerText) ? 'rtl' : 'ltr'"
+              ></textarea>
+              <div class="flex justify-between items-center">
+                <button (click)="postType.set('TEXT')" class="text-xs text-gray-400 font-bold">Options</button>
+                <button (click)="submitPost('GROUP', currentGroupDetails().id)" class="bg-amber-500 text-black font-bold text-xs px-5 py-1.5 rounded-lg hover:bg-amber-600">Partager</button>
+              </div>
+            </div>
+          } @else {
+            <div class="text-center text-xs text-gray-500 p-4 border border-dashed border-gray-800 rounded-xl">Seuls les administrateurs peuvent publier dans ce groupe.</div>
+          }
+
+          <!-- Group Feed Posts -->
+          <div class="group-feed flex flex-col gap-4">
+            @for (post of currentGroupDetails().feed; track post.id) {
+              <div class="zirfeed-post-card p-5 rounded-2xl border border-gray-800 bg-white/5 relative">
+                <div class="flex justify-between items-center mb-3">
+                  <div class="flex items-center gap-2">
+                    <span class="font-bold text-xs text-white">{{post.author?.name}}</span>
+                    <span class="text-[9px] bg-white/10 px-1.5 py-0.5 rounded-full text-gray-400">{{post.author?.role}}</span>
+                  </div>
+                  <div class="relative flex items-center gap-2">
+                    <span class="text-[10px] text-gray-500">{{ post.created_at | date:'shortDate' }}</span>
+                    <button (click)="togglePostOptions(post.id, $event)" class="text-gray-400 hover:text-white p-1 rounded-lg" aria-label="Menu actions">
+                      <ng-icon name="lucideMoreVertical"></ng-icon>
+                    </button>
+                    @if (showPostOptions()[post.id]) {
+                      <div class="absolute right-0 top-full mt-2 w-48 rounded-2xl border border-gray-700 bg-gray-900 shadow-2xl text-left text-xs text-white z-40">
+                        <button (click)="openAccountModal(post.author)" class="w-full text-left px-4 py-3 hover:bg-white/5">À propos de ce compte</button>
+                        <button (click)="openSavePostModal(post.id)" class="w-full text-left px-4 py-3 hover:bg-white/5">Enregistrer</button>
+                        <button (click)="openReportModal(post.id)" class="w-full text-left px-4 py-3 hover:bg-white/5">Signaler</button>
+                        <button (click)="markPostInteresting(post.id)" class="w-full text-left px-4 py-3 hover:bg-white/5">Ajouter aux recommandations</button>
+                      </div>
+                    }
+                  </div>
+                </div>
+                <p class="text-xs text-gray-200 mb-3" [dir]="isRtlText(post.content_text) ? 'rtl' : 'ltr'">{{post.content_text}}</p>
+                
+                <div class="action-bar flex justify-between items-center py-2 border-t border-b border-gray-700/50 my-3">
+                  <button
+                    (pointerdown)="onReactPointerDown(post.id, $event)"
+                    (pointerup)="onReactPointerUp(post.id)"
+                    (pointerleave)="onReactPointerLeave()"
+                    class="flex items-center gap-1.5 text-xs text-gray-400 hover:text-white relative"
+                  >
+                    <ng-icon name="lucideSun" class="text-lg" [class]="post.my_reaction ? 'text-orange-400' : 'text-gray-400'"></ng-icon>
+                    <span>{{post.reaction_stats?.total || 0}}</span>
+                    @if (showReactionPicker() && showReactionPicker()?.postId === post.id) {
+                      <div class="absolute -top-12 left-0 z-50 flex gap-1 bg-gray-900/95 backdrop-blur-lg rounded-full p-1.5 border border-gray-700 shadow-2xl" (pointerdown)="$event.stopPropagation()">
+                        @for (r of REACTION_TYPES; track r.type) {
+                          <button (click)="selectReaction(post.id, r.type)" class="w-8 h-8 rounded-full flex items-center justify-center hover:scale-125 transition-transform bg-gray-800/50 hover:bg-gray-700/50" [class]="post.my_reaction === r.type ? 'ring-2 ring-amber-500' : ''">
+                            <ng-icon [name]="r.icon" class="text-base" [class]="r.color"></ng-icon>
+                          </button>
+                        }
+                      </div>
+                    }
+                  </button>
+                  <div class="flex items-center gap-3">
+                    <button (click)="toggleComments(post.id)" class="flex items-center gap-1.5 text-xs text-gray-400 hover:text-white">
+                      <ng-icon name="lucideMessageSquare"></ng-icon>{{post.comments_count || 0}}
+                    </button>
+                    <div class="relative">
+                      <button (click)="toggleShareDropdown(post.id, $event)" class="flex items-center gap-1.5 text-xs text-gray-400 hover:text-white" aria-label="Partager">
+                        <ng-icon name="lucideSend"></ng-icon>
+                      </button>
+                      @if (showShareDropdown()[post.id]) {
+                        <div class="absolute bottom-8 right-0 z-30 min-w-[160px] p-2 bg-gray-900 border border-gray-700 rounded-xl shadow-2xl flex flex-col gap-1">
+                          <button (click)="shareToFeed(post.id)" class="text-left text-xs text-white hover:bg-white/5 px-3 py-2 rounded-lg flex items-center gap-2 font-semibold">
+                            <ng-icon name="lucideGlobe" class="text-emerald-400"></ng-icon>Sur mon fil
+                          </button>
+                          <button (click)="shareToStory(post.id)" class="text-left text-xs text-white hover:bg-white/5 px-3 py-2 rounded-lg flex items-center gap-2 font-semibold">
+                            <ng-icon name="lucideFlame" class="text-rose-400"></ng-icon>Dans ma Story
+                          </button>
+                        </div>
+                      }
+                    </div>
+                    <button (click)="savePost(post.id, collections()[0]?.id)" class="flex items-center gap-1.5 text-xs text-gray-400 hover:text-white">
+                      <ng-icon name="lucideBookmark"></ng-icon>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Comment Section Inside Group Card -->
+                @if (expandedComments()[post.id]) {
+                  <div class="comments-section-container mt-4 pt-4 border-t border-gray-700/50 animate-slide-down">
+                    <div class="flex gap-3 mb-4">
+                      <div class="w-8 h-8 rounded-full bg-white/10 font-bold flex items-center justify-center text-xs text-white">
+                        {{ authService.currentUser()?.name?.charAt(0) }}
+                      </div>
+                      <div class="flex-1 relative">
+                        <input
+                          type="text"
+                          [ngModel]="newCommentText()[post.id]"
+                          (ngModelChange)="updateCommentText(post.id, $event)"
+                          (keyup.enter)="addComment(post.id)"
+                          placeholder="Ajouter un commentaire..."
+                          class="comment-input w-full bg-white/5 border border-gray-700 px-4 py-2 rounded-xl text-xs text-white outline-none focus:border-amber-500/50"
+                        />
+                        <button (click)="addComment(post.id)" class="absolute right-3 top-2.5 text-amber-500 hover:text-white text-sm">
+                          <ng-icon name="lucideSend"></ng-icon>
+                        </button>
+                      </div>
+                    </div>
+                    <div class="flex flex-col gap-3">
+                      @for (comment of postComments()[post.id]; track comment.id) {
+                        <div class="comment-item-card p-3 rounded-xl bg-white/5 border border-gray-800">
+                          <div class="flex items-center gap-2 mb-1.5">
+                            <span class="text-xs font-bold text-white">{{comment.author?.name}}</span>
+                            <span class="text-[9px] px-1.5 py-0.5 rounded-full" [class]="'badge-' + comment.author?.role">{{comment.author?.role}}</span>
+                          </div>
+                          <p class="text-xs text-gray-200" [dir]="isRtlText(comment.content_text) ? 'rtl' : 'ltr'">{{comment.content_text}}</p>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+            @if (!currentGroupDetails().feed || currentGroupDetails().feed.length === 0) {
+              <div class="text-center text-xs text-gray-500 py-6">Aucune publication dans ce groupe.</div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- B. PAGE INTERIOR VIEW -->
+      @else if (currentPageDetails()) {
+        <div class="page-interior rounded-2xl overflow-hidden border border-gray-700 bg-white/5 p-6 flex flex-col gap-6">
+          <div class="page-interior-header flex justify-between items-start">
+            <div class="flex items-center gap-4">
+              <div class="w-14 h-14 rounded-2xl bg-purple-500/10 flex items-center justify-center border border-purple-500/20 text-purple-400 font-bold text-xl">
+                {{currentPageDetails().name.charAt(0)}}
+              </div>
+              <div>
+                <h1 class="text-xl font-bold text-white flex items-center gap-2">
+                  {{currentPageDetails().name}}
+                  <ng-icon name="lucideShield" class="text-purple-400 text-sm"></ng-icon>
+                </h1>
+                <span class="text-xs text-purple-400 font-medium">{{currentPageDetails().category}} • {{currentPageDetails().follower_count || 0}} abonnés</span>
+                <p class="text-xs text-gray-400 mt-2 leading-relaxed">{{currentPageDetails().description}}</p>
+              </div>
+            </div>
+            <div class="flex gap-2">
+              @if (currentPageDetails().is_admin) {
+                <button (click)="openManagePageOverlay()" class="bg-purple-600 text-white font-bold text-xs px-4 py-2 rounded-xl hover:bg-purple-700">Manage Page</button>
+              }
+              <button (click)="followPage(currentPageDetails().id)" class="bg-amber-500 text-black font-bold text-xs px-5 py-2 rounded-xl">
+                {{currentPageDetails().is_following ? 'Abonné ✓' : "S'abonner"}}
+              </button>
+            </div>
+          </div>
+
+          <!-- Page Admin Composer -->
+          @if (currentPageDetails().is_admin) {
+            <div class="page-admin-composer p-5 rounded-xl border border-purple-500/20 bg-purple-950/5 flex flex-col gap-4">
+              <textarea
+                [(ngModel)]="composerText"
+                placeholder="Rédigez une annonce officielle au nom de la page..."
+                class="composer-textarea w-full bg-transparent text-white outline-none border-none resize-none min-h-[60px] text-xs"
+                [dir]="isRtlText(composerText) ? 'rtl' : 'ltr'"
+              ></textarea>
+              
+              <div class="flex justify-between items-center flex-wrap gap-2">
+                <!-- Scheduled datepicker -->
+                <div class="flex items-center gap-2">
+                  <span class="text-[10px] text-gray-400 uppercase font-bold">Planifier :</span>
+                  <input type="datetime-local" [(ngModel)]="scheduledTime" class="bg-black/40 border border-gray-700 text-white text-[11px] rounded-lg p-1.5 outline-none" />
+                </div>
+                <button (click)="submitPost('PAGE', currentPageDetails().id)" class="bg-purple-600 text-white font-bold text-xs px-5 py-2 rounded-xl hover:bg-purple-700">Publier</button>
+              </div>
+            </div>
+          }
+
+          <!-- Page Posts Feed -->
+          <div class="page-feed flex flex-col gap-4">
+            @for (post of currentPageDetails().feed; track post.id) {
+              <div class="zirfeed-post-card p-5 rounded-2xl border border-gray-800 bg-white/5 relative">
+                <div class="flex justify-between items-center mb-3">
+                  <div class="flex items-center gap-2">
+                    <span class="font-bold text-xs text-white">{{currentPageDetails().name}}</span>
+                    <span class="text-[8px] bg-purple-500/20 text-purple-400 px-1.5 py-0.5 rounded-full font-bold">OFFICIEL</span>
+                  </div>
+                  <div class="relative flex items-center gap-2">
+                    <span class="text-[10px] text-gray-500">{{ post.created_at | date:'shortDate' }}</span>
+                    <button (click)="togglePostOptions(post.id, $event)" class="text-gray-400 hover:text-white p-1 rounded-lg" aria-label="Menu actions">
+                      <ng-icon name="lucideMoreVertical"></ng-icon>
+                    </button>
+                    @if (showPostOptions()[post.id]) {
+                      <div class="absolute right-0 top-full mt-2 w-48 rounded-2xl border border-gray-700 bg-gray-900 shadow-2xl text-left text-xs text-white z-40">
+                        <button (click)="openAccountModal(post.author)" class="w-full text-left px-4 py-3 hover:bg-white/5">À propos de ce compte</button>
+                        <button (click)="openSavePostModal(post.id)" class="w-full text-left px-4 py-3 hover:bg-white/5">Enregistrer</button>
+                        <button (click)="openReportModal(post.id)" class="w-full text-left px-4 py-3 hover:bg-white/5">Signaler</button>
+                        <button (click)="markPostInteresting(post.id)" class="w-full text-left px-4 py-3 hover:bg-white/5">Ajouter aux recommandations</button>
+                      </div>
+                    }
+                  </div>
+                </div>
+                <p class="text-xs text-gray-200 mb-3" [dir]="isRtlText(post.content_text) ? 'rtl' : 'ltr'">{{post.content_text}}</p>
+                
+                <div class="action-bar flex justify-between items-center py-2 border-t border-b border-gray-700/50 my-3">
+                  <button
+                    (pointerdown)="onReactPointerDown(post.id, $event)"
+                    (pointerup)="onReactPointerUp(post.id)"
+                    (pointerleave)="onReactPointerLeave()"
+                    class="flex items-center gap-1.5 text-xs text-gray-400 hover:text-white relative"
+                  >
+                    <ng-icon name="lucideSun" class="text-lg" [class]="post.my_reaction ? 'text-orange-400' : 'text-gray-400'"></ng-icon>
+                    <span>{{post.reaction_stats?.total || 0}}</span>
+                    @if (showReactionPicker() && showReactionPicker()?.postId === post.id) {
+                      <div class="absolute -top-12 left-0 z-50 flex gap-1 bg-gray-900/95 backdrop-blur-lg rounded-full p-1.5 border border-gray-700 shadow-2xl" (pointerdown)="$event.stopPropagation()">
+                        @for (r of REACTION_TYPES; track r.type) {
+                          <button (click)="selectReaction(post.id, r.type)" class="w-8 h-8 rounded-full flex items-center justify-center hover:scale-125 transition-transform bg-gray-800/50 hover:bg-gray-700/50" [class]="post.my_reaction === r.type ? 'ring-2 ring-amber-500' : ''">
+                            <ng-icon [name]="r.icon" class="text-base" [class]="r.color"></ng-icon>
+                          </button>
+                        }
+                      </div>
+                    }
+                  </button>
+                  <div class="flex items-center gap-3">
+                    <button (click)="toggleComments(post.id)" class="flex items-center gap-1.5 text-xs text-gray-400 hover:text-white">
+                      <ng-icon name="lucideMessageSquare"></ng-icon>{{post.comments_count || 0}}
+                    </button>
+                    <div class="relative">
+                      <button (click)="toggleShareDropdown(post.id, $event)" class="flex items-center gap-1.5 text-xs text-gray-400 hover:text-white" aria-label="Partager">
+                        <ng-icon name="lucideSend"></ng-icon>
+                      </button>
+                      @if (showShareDropdown()[post.id]) {
+                        <div class="absolute bottom-8 right-0 z-30 min-w-[160px] p-2 bg-gray-900 border border-gray-700 rounded-xl shadow-2xl flex flex-col gap-1">
+                          <button (click)="shareToFeed(post.id)" class="text-left text-xs text-white hover:bg-white/5 px-3 py-2 rounded-lg flex items-center gap-2 font-semibold">
+                            <ng-icon name="lucideGlobe" class="text-emerald-400"></ng-icon>Sur mon fil
+                          </button>
+                          <button (click)="shareToStory(post.id)" class="text-left text-xs text-white hover:bg-white/5 px-3 py-2 rounded-lg flex items-center gap-2 font-semibold">
+                            <ng-icon name="lucideFlame" class="text-rose-400"></ng-icon>Dans ma Story
+                          </button>
+                        </div>
+                      }
+                    </div>
+                    <button (click)="savePost(post.id, collections()[0]?.id)" class="flex items-center gap-1.5 text-xs text-gray-400 hover:text-white">
+                      <ng-icon name="lucideBookmark"></ng-icon>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Comment Section Inside Page Card -->
+                @if (expandedComments()[post.id]) {
+                  <div class="comments-section-container mt-4 pt-4 border-t border-gray-700/50 animate-slide-down">
+                    <div class="flex gap-3 mb-4">
+                      <div class="w-8 h-8 rounded-full bg-white/10 font-bold flex items-center justify-center text-xs text-white">
+                        {{ authService.currentUser()?.name?.charAt(0) }}
+                      </div>
+                      <div class="flex-1 relative">
+                        <input
+                          type="text"
+                          [ngModel]="newCommentText()[post.id]"
+                          (ngModelChange)="updateCommentText(post.id, $event)"
+                          (keyup.enter)="addComment(post.id)"
+                          placeholder="Ajouter un commentaire..."
+                          class="comment-input w-full bg-white/5 border border-gray-700 px-4 py-2 rounded-xl text-xs text-white outline-none focus:border-amber-500/50"
+                        />
+                        <button (click)="addComment(post.id)" class="absolute right-3 top-2.5 text-amber-500 hover:text-white text-sm">
+                          <ng-icon name="lucideSend"></ng-icon>
+                        </button>
+                      </div>
+                    </div>
+                    <div class="flex flex-col gap-3">
+                      @for (comment of postComments()[post.id]; track comment.id) {
+                        <div class="comment-item-card p-3 rounded-xl bg-white/5 border border-gray-800">
+                          <div class="flex items-center gap-2 mb-1.5">
+                            <span class="text-xs font-bold text-white">{{comment.author?.name}}</span>
+                            <span class="text-[9px] px-1.5 py-0.5 rounded-full" [class]="'badge-' + comment.author?.role">{{comment.author?.role}}</span>
+                          </div>
+                          <p class="text-xs text-gray-200" [dir]="isRtlText(comment.content_text) ? 'rtl' : 'ltr'">{{comment.content_text}}</p>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+            @if (!currentPageDetails().feed || currentPageDetails().feed.length === 0) {
+              <div class="text-center text-xs text-gray-500 py-6">Aucune publication sur cette page.</div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- C. EVENT INTERIOR VIEW -->
+      @else if (currentEventDetails()) {
+        <div class="event-interior rounded-2xl overflow-hidden border border-gray-700 bg-white/5 p-6 flex flex-col gap-6">
+          <div class="event-interior-header flex flex-col gap-3">
+            <span class="text-xs font-bold text-amber-500 uppercase tracking-wide">{{currentEventDetails().category}}</span>
+            <h1 class="text-2xl font-bold text-white">{{currentEventDetails().name}}</h1>
+            <p class="text-xs text-gray-400 mt-1 leading-relaxed">{{currentEventDetails().description}}</p>
+          </div>
+
+          <div class="event-details-meta border-t border-b border-gray-800 py-4 flex flex-col gap-2 text-xs text-gray-300">
+            <div>📍 <strong>Lieu :</strong> {{currentEventDetails().location}}</div>
+            <div>📅 <strong>Début :</strong> {{currentEventDetails().start_date | date:'medium' }}</div>
+            @if (currentEventDetails().end_date) {
+              <div>📅 <strong>Fin :</strong> {{currentEventDetails().end_date | date:'medium' }}</div>
+            }
+            @if (currentEventDetails().register_url) {
+              <div class="mt-2">
+                <a [href]="currentEventDetails().register_url" target="_blank" class="bg-blue-600 text-white font-bold text-xs px-4 py-2 rounded-lg hover:bg-blue-700 transition">S'inscrire à l'Événement</a>
+              </div>
+            }
+          </div>
+
+          <div class="flex justify-between items-center flex-wrap gap-3">
+            <div class="text-xs text-gray-400">
+              <span class="font-bold text-white">{{currentEventDetails().going_count || 0}} participants</span> • {{currentEventDetails().interested_count || 0}} intéressés
+            </div>
+            
+            <div class="flex gap-2">
+              <button
+                (click)="toggleEventStatus(currentEventDetails().id, 'GOING')"
+                class="font-bold text-xs px-4 py-2 rounded-xl transition"
+                [class]="currentEventDetails().my_status === 'GOING' ? 'bg-emerald-600 text-white' : 'bg-white/5 text-gray-300 hover:bg-white/10'"
+              >
+                Participe
+              </button>
+              <button
+                (click)="toggleEventStatus(currentEventDetails().id, 'INTERESTED')"
+                class="font-bold text-xs px-4 py-2 rounded-xl transition"
+                [class]="currentEventDetails().my_status === 'INTERESTED' ? 'bg-amber-500 text-black' : 'bg-white/5 text-gray-300 hover:bg-white/10'"
+              >
+                Intéressé
+              </button>
+            </div>
+          </div>
+
+          <!-- Registered Attendee List -->
+          <div class="registered-attendees border-t border-gray-800 pt-4 flex flex-col gap-3">
+            <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Liste des Participants (Top 10)</h4>
+            <div class="flex flex-wrap gap-2">
+              @for (att of currentEventDetails().going_attendees; track att.id) {
+                <div class="flex items-center gap-1.5 bg-white/5 border border-gray-800 px-3 py-1.5 rounded-full">
+                  <div class="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[10px] text-white font-bold">{{att.name.charAt(0)}}</div>
+                  <span class="text-xs text-white font-medium">{{att.name}}</span>
+                </div>
+              }
+              @if (!currentEventDetails().going_attendees || currentEventDetails().going_attendees.length === 0) {
+                <div class="text-xs text-gray-500 py-2">Soyez le premier à participer !</div>
+              }
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- D. STANDARD SOCIAL TAB RENDERING -->
+      @else {
+        <!-- TAB 1: NEWS FEED -->
+        @if (activeTab() === 'feed') {
+          <!-- Stories Bar -->
+          <div class="stories-bar flex gap-4 p-4 mb-4 overflow-x-auto bg-white/5 border border-gray-700/60 rounded-2xl">
+            <!-- Create Story Bubble -->
+            <div class="story-bubble-wrapper flex flex-col items-center gap-1 cursor-pointer relative shrink-0">
+              <label class="cursor-pointer relative">
+                <input type="file" (change)="onStoryFileSelect($event)" class="hidden" accept="image/*" />
+                <div class="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center border border-dashed border-gray-500 hover:border-amber-500 transition relative">
+                  <span class="text-white text-lg font-bold">+</span>
+                </div>
+              </label>
+              <span class="text-[9px] text-gray-400 font-medium">Créer Story</span>
+            </div>
+
+            <!-- Followed Users Stories Bubbles -->
+            @for (userStories of stories(); track userStories.author.id; let uIdx = $index) {
+              <div class="story-bubble-wrapper flex flex-col items-center gap-1 cursor-pointer shrink-0" (click)="openStoryViewer(uIdx, 0)">
+                <div class="w-12 h-12 rounded-full p-[2px] bg-gradient-to-tr from-amber-500 to-rose-500 flex items-center justify-center transition-all hover:scale-105">
+                  <div class="w-full h-full rounded-full bg-black flex items-center justify-center font-bold text-white text-xs border border-black overflow-hidden">
+                    @if (userStories.author.profile_picture_url) {
+                      <img [src]="userStories.author.profile_picture_url" alt="Avatar" class="w-full h-full object-cover" />
+                    } @else {
+                      {{ userStories.author.name.charAt(0) }}
+                    }
+                  </div>
+                </div>
+                <span class="text-[9px] text-white font-medium truncate max-w-[60px]">{{ userStories.author.name.split(' ')[0] }}</span>
+              </div>
+            }
+          </div>
+
+          <!-- Post Composer Card -->
+          <div class="zirfeed-composer p-5 rounded-2xl shadow-xl border border-gray-700">
+            <div class="flex gap-4">
+              <div class="w-10 h-10 rounded-full bg-[var(--zir-emerald)] text-black font-bold flex items-center justify-center">
+                {{ authService.currentUser()?.name?.charAt(0)?.toUpperCase() }}
+              </div>
+              <div class="flex-1">
+                <textarea
+                  [(ngModel)]="composerText"
+                  placeholder="Partagez vos astuces, alertes ou opportunités agricoles..."
+                  class="composer-textarea w-full bg-transparent text-white outline-none border-none resize-none min-h-[80px]"
+                  [dir]="isRtlText(composerText) ? 'rtl' : 'ltr'"
+                ></textarea>
+
+                <!-- Post Context Chips Selector -->
+                <div class="flex items-center gap-1.5 flex-wrap mt-2">
+                  <span class="text-[10px] text-gray-500 font-bold uppercase mr-1">Contexte :</span>
+                  <button (click)="selectedPostContext() === 'CONSEIL' ? selectedPostContext.set(null) : selectedPostContext.set('CONSEIL')" [class.active]="selectedPostContext() === 'CONSEIL'" class="context-chip conseil text-[10px] px-2.5 py-1 rounded-full font-bold transition">💡 Conseil</button>
+                  <button (click)="selectedPostContext() === 'ALERTE' ? selectedPostContext.set(null) : selectedPostContext.set('ALERTE')" [class.active]="selectedPostContext() === 'ALERTE'" class="context-chip alerte text-[10px] px-2.5 py-1 rounded-full font-bold transition">⚠️ Alerte</button>
+                  <button (click)="selectedPostContext() === 'QUESTION' ? selectedPostContext.set(null) : selectedPostContext.set('QUESTION')" [class.active]="selectedPostContext() === 'QUESTION'" class="context-chip question text-[10px] px-2.5 py-1 rounded-full font-bold transition">❓ Question</button>
+                  <button (click)="selectedPostContext() === 'CELEBRATION' ? selectedPostContext.set(null) : selectedPostContext.set('CELEBRATION')" [class.active]="selectedPostContext() === 'CELEBRATION'" class="context-chip celebration text-[10px] px-2.5 py-1 rounded-full font-bold transition">🎉 Célébration</button>
+                  <button (click)="selectedPostContext() === 'ACTUALITE' ? selectedPostContext.set(null) : selectedPostContext.set('ACTUALITE')" [class.active]="selectedPostContext() === 'ACTUALITE'" class="context-chip actualite text-[10px] px-2.5 py-1 rounded-full font-bold transition">📰 Actualité</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Composer Upload Previews -->
+            @if (selectedFilesPreviews.length > 0) {
+              <div class="composer-previews grid grid-cols-3 gap-2 mt-3">
+                @for (preview of selectedFilesPreviews; track preview; let idx = $index) {
+                  <div class="relative rounded-lg overflow-hidden group border border-gray-700">
+                    <img [src]="preview" alt="Preview" class="w-full h-24 object-cover" />
+                    <button (click)="selectedFilesPreviews.splice(idx, 1); selectedFiles.splice(idx, 1)" class="absolute top-1 right-1 bg-black/60 text-white rounded-full p-1 hover:bg-red-600 transition">
+                      <ng-icon name="lucideX"></ng-icon>
+                    </button>
+                  </div>
+                }
+              </div>
+            }
+
+            <div class="composer-divider border-t border-gray-700/50 my-3"></div>
+
+            <div class="flex justify-between items-center">
+              <div class="flex items-center gap-2">
+                <label class="media-tab-btn flex items-center gap-2 text-xs font-bold text-gray-400 hover:text-white px-3 py-1.5 rounded-lg cursor-pointer transition">
+                  <input type="file" multiple (change)="onFileSelect($event)" class="hidden" accept="image/*" />
+                  <ng-icon name="lucideUpload" class="text-emerald-500"></ng-icon>Photos
+                </label>
+                <button (click)="postType.set('VOICE_NOTE'); submitPost()" class="media-tab-btn flex items-center gap-2 text-xs font-bold text-gray-400 hover:text-white px-3 py-1.5 rounded-lg transition">
+                  <ng-icon name="lucideVolume2" class="text-amber-500"></ng-icon>Audio
+                </button>
+                <button (click)="postType.set('VIDEO')" class="media-tab-btn flex items-center gap-2 text-xs font-bold text-gray-400 hover:text-white px-3 py-1.5 rounded-lg transition">
+                  <ng-icon name="lucidePlay" class="text-blue-500"></ng-icon>Vidéo
+                </button>
+              </div>
+
+              <button
+                (click)="submitPost()"
+                [disabled]="isUploading()"
+                class="composer-submit-btn bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-black font-bold px-6 py-2 rounded-xl transition flex items-center gap-2"
+              >
+                @if (isUploading()) {
+                  <span class="spinner w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin"></span>
+                  <span>Modération...</span>
+                } @else {
+                  <ng-icon name="lucideSend"></ng-icon><span>Publier</span>
+                }
+              </button>
+            </div>
+          </div>
+
+          <!-- POST STREAM LIST -->
+          <div class="post-stream flex flex-col gap-6">
+            @for (post of feedPosts(); track post.id) {
+              
+              <!-- FAO External News Card Style -->
+              @if (post.post_type === 'NEWS_CARD') {
+                <div class="news-feed-card p-5 rounded-2xl shadow-lg border border-emerald-500/30">
+                  <div class="flex items-center gap-3 mb-3">
+                    <img [src]="post.source_logo_url || 'assets/ziria-logo-main.png'" alt="Source" class="w-6 h-6 rounded-full object-contain" />
+                    <span class="text-xs font-bold text-emerald-400 uppercase tracking-wide">{{post.source_name}}</span>
+                    <span class="text-[10px] text-gray-500">• Extérieur</span>
+                  </div>
+                  <h3 class="text-base font-bold text-white mb-2 leading-snug">{{post.headline}}</h3>
+                  <p class="text-xs text-gray-300 mb-4 leading-relaxed">{{post.summary}}</p>
+                  <a [href]="post.original_url" target="_blank" class="news-card-btn text-xs font-bold text-emerald-400 hover:underline flex items-center gap-1">
+                    Lire l'article complet <ng-icon name="lucideGlobe"></ng-icon>
+                  </a>
+                </div>
+              } @else {
+                <!-- Normal Social Post Card -->
+                <div
+                  class="zirfeed-post-card p-5 rounded-2xl shadow-xl border border-gray-700/60 relative transition-all duration-350 hover:shadow-2xl"
+                  [class.promoted-post]="post.is_promoted"
+                  [class.expert-tint]="post.author?.role === 'EXPERT'"
+                  draggable="true"
+                  (dragstart)="onDragStart($event, post.id)"
+                >
+                  <!-- Role border indicator -->
+                  <div class="post-accent-left" [class]="'badge-' + post.author?.role"></div>
+
+                  <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-3">
+                      <div class="avatar-wrapper relative cursor-pointer" (click)="openUserProfile(post.author_id)">
+                        <div class="w-10 h-10 rounded-full bg-white/10 font-bold flex items-center justify-center text-white">
+                          {{post.author?.name?.charAt(0) || 'U'}}
+                        </div>
+                        @if (post.author?.verified) {
+                          <span class="absolute -bottom-1 -right-1 bg-blue-500 text-white rounded-full p-0.5 text-[8px]">
+                            <ng-icon name="lucideCheckCircle"></ng-icon>
+                          </span>
+                        }
+                      </div>
+                      <div>
+                        <div class="flex items-center gap-2">
+                          <span class="font-bold text-sm text-white cursor-pointer hover:underline" (click)="openUserProfile(post.author_id)">{{post.author?.name}}</span>
+                          <span class="role-badge text-[10px] px-2 py-0.5 rounded-full" [class]="'badge-' + post.author?.role">
+                            {{post.author?.role}}
+                          </span>
+                          @if (post.author?.role === 'EXPERT') {
+                            <span class="text-[9px] text-blue-400 font-bold bg-blue-500/10 px-1.5 py-0.5 rounded flex items-center gap-1"><ng-icon name="lucideCrown"></ng-icon>Expert certifié</span>
+                          }
+                          @if (post.post_context) {
+                            <span class="context-badge text-[9px] px-2 py-0.5 rounded-full font-bold uppercase" [class]="post.post_context.toLowerCase()">
+                              {{ post.post_context }}
+                            </span>
+                          }
+                        </div>
+                        <span class="text-[10px] text-gray-500">{{ post.created_at | date:'short' }}</span>
+                      </div>
+                    </div>
+
+                    <!-- 3-Dot Actions -->
+                    <div class="relative">
+                      <button (click)="togglePostOptions(post.id, $event)" class="text-gray-400 hover:text-white p-1 rounded-lg" aria-label="Menu actions">
+                        <ng-icon name="lucideMoreVertical"></ng-icon>
+                      </button>
+                      @if (showPostOptions()[post.id]) {
+                        <div class="absolute right-0 top-full mt-2 w-48 rounded-2xl border border-gray-700 bg-gray-900 shadow-2xl text-left text-xs text-white z-40">
+                          <button (click)="openAccountModal(post.author)" class="w-full text-left px-4 py-3 hover:bg-white/5">À propos de ce compte</button>
+                          <button (click)="openSavePostModal(post.id)" class="w-full text-left px-4 py-3 hover:bg-white/5">Enregistrer</button>
+                          <button (click)="openReportModal(post.id)" class="w-full text-left px-4 py-3 hover:bg-white/5">Signaler</button>
+                          <button (click)="markPostInteresting(post.id)" class="w-full text-left px-4 py-3 hover:bg-white/5">Ajouter aux recommandations</button>
+                        </div>
+                      }
+                    </div>
+                  </div>
+
+                  <div class="post-text-content text-sm text-gray-100 mb-4 leading-relaxed" [dir]="isRtlText(post.content_text) ? 'rtl' : 'ltr'">
+                    {{post.content_text}}
+                  </div>
+
+                  <!-- Nested original post linkage -->
+                  @if (post.shared_post) {
+                    <div class="shared-post-preview p-4 rounded-xl border border-gray-800 bg-white/5 hover:bg-white/10 transition cursor-pointer mb-4 flex flex-col gap-2" (click)="openUserProfile(post.shared_post.author_id)">
+                      <div class="flex justify-between items-center">
+                        <div class="flex items-center gap-2">
+                          <span class="text-xs font-bold text-white">{{post.shared_post.author?.name}}</span>
+                          <span class="role-badge text-[9px] px-2 py-0.5 rounded-full" [class]="'badge-' + post.shared_post.author?.role">
+                            {{post.shared_post.author?.role}}
+                          </span>
+                        </div>
+                        <span class="text-[10px] text-gray-500">{{post.shared_post.created_at | date:'shortDate'}}</span>
+                      </div>
+                      <p class="text-xs text-gray-300 leading-relaxed" [dir]="isRtlText(post.shared_post.content_text) ? 'rtl' : 'ltr'">{{post.shared_post.content_text}}</p>
+                      
+                      @if (post.shared_post.media_urls && post.shared_post.media_urls.length > 0) {
+                        <img [src]="post.shared_post.media_urls[0]" class="w-full h-32 object-cover rounded-lg border border-gray-700" alt="Shared media" />
+                      }
+                    </div>
+                  }
+
+                  @if (post.media_urls && post.media_urls.length > 0) {
+                    <div class="post-media-grid mb-4" [class.cols-2]="post.media_urls.length === 2" [class.cols-3]="post.media_urls.length >= 3">
+                      @for (media of post.media_urls.slice(0, 6); track media) {
+                        <div class="relative rounded-xl overflow-hidden aspect-video border border-gray-700 bg-black/20">
+                          @if (isYoutubeUrl(media)) {
+                            <iframe [src]="getYoutubeEmbedUrl(media) | safe" class="w-full h-full border-0" allow="autoplay; encrypted-media" allowfullscreen frameborder="0"></iframe>
+                          } @else if (isVideoUrl(media)) {
+                            <video [src]="media" class="w-full h-full object-cover" controls preload="metadata"></video>
+                          } @else {
+                            <img [src]="media" alt="Media Attachment" class="w-full h-full object-cover" />
+                          }
+                        </div>
+                      }
+                    </div>
+                  }
+
+                  @if (post.post_type === 'VOICE_NOTE' && post.voice_note_waveform) {
+                    <div class="voice-note-waveform-container p-3.5 rounded-xl border border-gray-700 bg-white/5 mb-4 flex items-center gap-3">
+                      <button class="w-9 h-9 bg-amber-500 text-black rounded-full flex items-center justify-center hover:scale-105 transition">
+                        <ng-icon name="lucidePlay" class="text-sm"></ng-icon>
+                      </button>
+                      <div class="flex-1 flex items-end gap-0.5 h-10">
+                        @for (peak of post.voice_note_waveform; track $index) {
+                          <div class="waveform-peak bg-amber-500/40 w-1 rounded-full transition-all" [style.height.%]="peak * 100"></div>
+                        }
+                      </div>
+                      <span class="text-[10px] text-gray-400">{{post.voice_note_duration || 15}}s</span>
+                    </div>
+                  }
+
+                  <div class="action-bar flex justify-between items-center py-2 border-t border-b border-gray-700/50 my-3">
+                    <button
+                      (pointerdown)="onReactPointerDown(post.id, $event)"
+                      (pointerup)="onReactPointerUp(post.id)"
+                      (pointerleave)="onReactPointerLeave()"
+                      class="flex items-center gap-1.5 text-xs text-gray-400 hover:text-white relative"
+                    >
+                      <ng-icon name="lucideSun" class="text-lg" [class]="post.my_reaction ? 'text-orange-400' : 'text-gray-400'"></ng-icon>
+                      <span>{{post.reaction_stats?.total || 0}}</span>
+                      @if (showReactionPicker() && showReactionPicker()?.postId === post.id) {
+                        <div class="absolute -top-12 left-0 z-50 flex gap-1 bg-gray-900/95 backdrop-blur-lg rounded-full p-1.5 border border-gray-700 shadow-2xl" (pointerdown)="$event.stopPropagation()">
+                          @for (r of REACTION_TYPES; track r.type) {
+                            <button (click)="selectReaction(post.id, r.type)" class="w-8 h-8 rounded-full flex items-center justify-center hover:scale-125 transition-transform bg-gray-800/50 hover:bg-gray-700/50" [class]="post.my_reaction === r.type ? 'ring-2 ring-amber-500' : ''">
+                              <ng-icon [name]="r.icon" class="text-base" [class]="r.color"></ng-icon>
+                            </button>
+                          }
+                        </div>
+                      }
+                    </button>
+                    <div class="flex items-center gap-3">
+                      <button (click)="toggleComments(post.id)" class="flex items-center gap-1.5 text-xs text-gray-400 hover:text-white">
+                        <ng-icon name="lucideMessageSquare"></ng-icon>{{post.comments_count || 0}}
+                      </button>
+                      <div class="relative">
+                        <button (click)="toggleShareDropdown(post.id, $event)" class="flex items-center gap-1.5 text-xs text-gray-400 hover:text-white" aria-label="Partager">
+                          <ng-icon name="lucideSend"></ng-icon>
+                        </button>
+                        @if (showShareDropdown()[post.id]) {
+                          <div class="absolute bottom-8 right-0 z-30 min-w-[160px] p-2 bg-gray-900 border border-gray-700 rounded-xl shadow-2xl flex flex-col gap-1">
+                            <button (click)="shareToFeed(post.id)" class="text-left text-xs text-white hover:bg-white/5 px-3 py-2 rounded-lg flex items-center gap-2 font-semibold">
+                              <ng-icon name="lucideGlobe" class="text-emerald-400"></ng-icon>Sur mon fil
+                            </button>
+                            <button (click)="shareToStory(post.id)" class="text-left text-xs text-white hover:bg-white/5 px-3 py-2 rounded-lg flex items-center gap-2 font-semibold">
+                              <ng-icon name="lucideFlame" class="text-rose-400"></ng-icon>Dans ma Story
+                            </button>
+                          </div>
+                        }
+                      </div>
+                      <button (click)="savePost(post.id, collections()[0]?.id)" class="flex items-center gap-1.5 text-xs text-gray-400 hover:text-white">
+                        <ng-icon name="lucideBookmark"></ng-icon>
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Threaded Comment Section Inline -->
+                  @if (expandedComments()[post.id]) {
+                    <div class="comments-section-container mt-4 pt-4 border-t border-gray-700/50 animate-slide-down">
+                      
+                      <!-- New Comment Form -->
+                      <div class="flex gap-3 mb-4">
+                        <div class="w-8 h-8 rounded-full bg-white/10 font-bold flex items-center justify-center text-xs text-white">
+                          {{ authService.currentUser()?.name?.charAt(0) }}
+                        </div>
+                        <div class="flex-1 relative">
+                          <input
+                            type="text"
+                            [ngModel]="newCommentText()[post.id]"
+                            (ngModelChange)="updateCommentText(post.id, $event)"
+                            (keyup.enter)="addComment(post.id)"
+                            placeholder="Ajouter un commentaire..."
+                            class="comment-input w-full bg-white/5 border border-gray-700 px-4 py-2 rounded-xl text-xs text-white outline-none focus:border-amber-500/50"
+                          />
+                          <button (click)="addComment(post.id)" class="absolute right-3 top-2.5 text-amber-500 hover:text-white text-sm">
+                            <ng-icon name="lucideSend"></ng-icon>
+                          </button>
+                        </div>
+                      </div>
+
+                      <!-- Threaded Comments Tree -->
+                      <div class="flex flex-col gap-3">
+                        @for (comment of postComments()[post.id]; track comment.id) {
+                          <div class="comment-item-card p-3 rounded-xl bg-white/5 border border-gray-800">
+                            <div class="flex items-center gap-2 mb-1.5">
+                              <span class="text-xs font-bold text-white">{{comment.author?.name}}</span>
+                              <span class="text-[9px] px-1.5 py-0.5 rounded-full" [class]="'badge-' + comment.author?.role">{{comment.author?.role}}</span>
+                            </div>
+                            <p class="text-xs text-gray-200" [dir]="isRtlText(comment.content_text) ? 'rtl' : 'ltr'">{{comment.content_text}}</p>
+                            
+                            <!-- Level 2 nested replies -->
+                            @if (comment.replies && comment.replies.length > 0) {
+                              <div class="nested-replies mt-2 pl-4 border-l border-amber-500/20 flex flex-col gap-2">
+                                @for (reply of comment.replies; track reply.id) {
+                                  <div class="nested-reply-item p-2 rounded-lg bg-black/20">
+                                    <div class="flex items-center gap-2 mb-1">
+                                      <span class="text-[11px] font-bold text-white">{{reply.author?.name}}</span>
+                                      <span class="text-[8px] px-1.5 py-0.5 rounded-full" [class]="'badge-' + reply.author?.role">{{reply.author?.role}}</span>
+                                    </div>
+                                    <p class="text-[11px] text-gray-300" [dir]="isRtlText(reply.content_text) ? 'rtl' : 'ltr'">{{reply.content_text}}</p>
+                                  </div>
+                                }
+                              </div>
+                            }
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
+            }
+
+            <!-- Infinite Scroll Loader Hook -->
+            @if (isLoadingFeed()) {
+              <div class="flex justify-center items-center py-6 text-sm text-amber-500 gap-2">
+                <span class="spinner w-5 h-5 border-2 border-amber-500 border-t-transparent rounded-full animate-spin"></span>
+                <span>Chargement de nouvelles publications...</span>
+              </div>
+            } @else if (hasMoreFeed()) {
+              <div class="flex justify-center py-4">
+                <button (click)="loadNextFeedPage()" class="text-xs font-bold text-amber-500 border border-amber-500/30 px-6 py-2 rounded-xl hover:bg-amber-500 hover:text-black transition">
+                  Charger plus de publications
+                </button>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- TAB 2: REELS SECTION -->
+        @if (activeTab() === 'reels') {
+          <div class="reels-tabs flex justify-center gap-4 mb-4 border-b border-gray-800 pb-2">
+            <button (click)="switchReelTab('foryou')" [class.active]="activeReelTab() === 'foryou'" class="reel-tab-btn font-bold text-sm px-6 py-2 transition">Pour Vous</button>
+            <button (click)="switchReelTab('following')" [class.active]="activeReelTab() === 'following'" class="reel-tab-btn font-bold text-sm px-6 py-2 transition">Abonnements</button>
+          </div>
+
+          <div class="relative flex justify-center items-center max-w-sm mx-auto mb-4">
+            <button (click)="reelUploadModal.set(true)" class="bg-purple-600 text-white font-bold text-xs px-4 py-2.5 rounded-xl hover:bg-purple-700 flex items-center gap-1.5">
+              <ng-icon name="lucidePlus"></ng-icon>Publier un Reel
+            </button>
+          </div>
+
+          @if (reels().length > 0) {
+            @let reel = reels()[currentReelIndex()];
+            <div class="reels-vertical-viewport relative rounded-3xl overflow-hidden aspect-[9/16] bg-black max-w-sm mx-auto shadow-2xl">
+              <div class="reel-item h-full w-full relative flex flex-col justify-end p-6">
+                <!-- Smart video player -->
+                @if (isYoutubeUrl(reel.media_urls?.[0])) {
+                  <iframe
+                    [src]="getYoutubeEmbedUrl(reel.media_urls?.[0]) | safe"
+                    class="absolute inset-0 w-full h-full object-cover z-0 border-0"
+                    allow="autoplay; encrypted-media"
+                    allowfullscreen
+                    frameborder="0"
+                  ></iframe>
+                } @else {
+                  <video [src]="reel.media_urls?.[0]" autoplay loop [muted]="isMuted()" class="absolute inset-0 w-full h-full object-cover z-0" playsinline></video>
+                }
+
+                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent z-10"></div>
+
+                @if (!isYoutubeUrl(reel.media_urls?.[0])) {
+                  <button (click)="isMuted.set(!isMuted())" class="absolute top-4 right-4 z-30 bg-black/50 backdrop-blur-sm p-2.5 rounded-full text-white hover:bg-white/20 transition">
+                    <ng-icon [name]="isMuted() ? 'lucideVolumeX' : 'lucideVolume2'" class="text-lg"></ng-icon>
+                  </button>
+                }
+
+                <!-- Bottom reel info -->
+                <div class="reel-details relative z-20 flex flex-col gap-2 pr-20" style="color: white;">
+                  <div class="flex items-center gap-2">
+                    <div class="w-7 h-7 rounded-full bg-white/30 flex items-center justify-center text-[10px] font-bold" style="text-shadow: 0 1px 6px rgba(0,0,0,0.9); box-shadow: 0 0 0 1.5px rgba(0,0,0,0.4);">{{reel.author?.name?.charAt(0)}}</div>
+                    <span class="font-bold text-sm" style="-webkit-text-stroke: 0.8px rgba(0,0,0,0.75); text-shadow: 0 2px 8px rgba(0,0,0,0.95);">{{reel.author?.name}}</span>
+                    <span class="text-[9px] bg-green-500 font-bold px-2 py-0.5 rounded-full" style="box-shadow: 0 0 0 1px rgba(0,0,0,0.2), 0 2px 6px rgba(0,0,0,0.3);">{{reel.author?.role}}</span>
+                    @if (reel.is_promoted) {
+                      <span class="text-[9px] bg-purple-600 font-bold px-2 py-0.5 rounded-full" style="box-shadow: 0 0 0 1px rgba(0,0,0,0.2), 0 2px 6px rgba(0,0,0,0.3);">Partenaire</span>
+                    }
+                  </div>
+                  <p class="text-xs leading-relaxed line-clamp-2" style="-webkit-text-stroke: 0.5px rgba(0,0,0,0.7); text-shadow: 0 2px 10px rgba(0,0,0,0.95);" [dir]="isRtlText(reel.content_text) ? 'rtl' : 'ltr'">{{reel.content_text}}</p>
+                </div>
+
+                <!-- Right side interaction bar -->
+                <div class="absolute right-2 bottom-6 z-20 flex flex-col items-center gap-1.5" style="color: white;">
+                  <button (click)="reactToPost(reel.id, 'ADMIRE')" class="reel-action-btn flex flex-col items-center gap-0.5 p-2 min-w-[52px]">
+                    <div class="reel-icon-wrapper">
+                      <ng-icon name="lucideSun" class="text-xl text-orange-400"></ng-icon>
+                    </div>
+                    <span class="text-[9px] font-medium">{{reel.reaction_stats?.total || 0}}</span>
+                  </button>
+                  <button (click)="toggleComments(reel.id)" class="reel-action-btn flex flex-col items-center gap-0.5 p-2 min-w-[52px]">
+                    <div class="reel-icon-wrapper">
+                      <ng-icon name="lucideMessageSquare" class="text-xl text-blue-400"></ng-icon>
+                    </div>
+                    <span class="text-[9px] font-medium">{{reel.comments_count || 0}}</span>
+                  </button>
+                  <button (click)="sharePost(reel)" class="reel-action-btn flex flex-col items-center gap-0.5 p-2 min-w-[52px]">
+                    <div class="reel-icon-wrapper">
+                      <ng-icon name="lucideSend" class="text-xl text-emerald-400"></ng-icon>
+                    </div>
+                    <span class="text-[9px] font-medium">{{reel.views_count > 0 ? 'Share' : ''}}</span>
+                  </button>
+                  <button (click)="savePost(reel.id, collections()[0]?.id)" class="reel-action-btn flex flex-col items-center gap-0.5 p-2 min-w-[52px]">
+                    <div class="reel-icon-wrapper">
+                      <ng-icon name="lucideBookmark" class="text-xl text-yellow-400"></ng-icon>
+                    </div>
+                    <span class="text-[9px] font-medium">Save</span>
+                  </button>
+                  <div class="flex flex-col items-center gap-0.5 p-2 min-w-[52px]">
+                    <ng-icon name="lucideEye" class="text-lg" style="color: rgba(255,255,255,0.7);"></ng-icon>
+                    <span class="text-[9px] font-medium" style="color: rgba(255,255,255,0.7);">{{reel.views_count || 0}}</span>
+                  </div>
+                </div>
+
+                <!-- Next/Prev Navigation -->
+                <div class="absolute left-3 top-1/2 -translate-y-1/2 flex flex-col gap-3 z-30">
+                  <button (click)="prevReel()" class="reel-nav-btn" [disabled]="currentReelIndex() === 0" style="color: white;"><ng-icon name="lucideChevronUp"></ng-icon></button>
+                  <button (click)="nextReel()" class="reel-nav-btn" [disabled]="currentReelIndex() === reels().length - 1" style="color: white;"><ng-icon name="lucideChevronDown"></ng-icon></button>
+                </div>
+
+                <!-- Comments overlay inside reel -->
+                @if (expandedComments()[reel.id]) {
+                  <div class="absolute inset-0 z-40 bg-black/80 backdrop-blur-sm flex flex-col justify-end" (click)="toggleComments(reel.id)">
+                    <div class="p-4 flex flex-col gap-3 max-h-[60%]" (click)="$event.stopPropagation()">
+                      <div class="flex justify-between items-center border-b border-white/10 pb-2">
+                        <span class="text-sm font-bold text-white">Commentaires ({{reel.comments_count || 0}})</span>
+                        <button (click)="toggleComments(reel.id)" class="text-white/60 hover:text-white"><ng-icon name="lucideX" class="text-lg"></ng-icon></button>
+                      </div>
+                      <div class="flex flex-col gap-2 overflow-y-auto flex-1">
+                        @for (comment of postComments()[reel.id]; track comment.id) {
+                          <div class="flex gap-2 items-start">
+                            <div class="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-[8px] font-bold shrink-0">{{comment.author?.name?.charAt(0)}}</div>
+                            <div>
+                              <span class="text-xs font-bold text-white">{{comment.author?.name}}</span>
+                              <p class="text-[11px] text-white/80">{{comment.content_text}}</p>
+                            </div>
+                          </div>
+                        }
+                        @if (!postComments()[reel.id]?.length) {
+                          <p class="text-xs text-white/50 text-center py-4">Aucun commentaire. Soyez le premier !</p>
+                        }
+                      </div>
+                      <div class="flex gap-2">
+                        <input
+                          type="text"
+                          [ngModel]="newCommentText()[reel.id]"
+                          (ngModelChange)="updateCommentText(reel.id, $event)"
+                          (keyup.enter)="addComment(reel.id)"
+                          placeholder="Ajouter un commentaire..."
+                          class="flex-1 bg-white/10 border border-white/10 rounded-xl px-3 py-2 text-xs text-white outline-none placeholder-white/40"
+                        />
+                        <button (click)="addComment(reel.id)" class="bg-amber-500 text-black px-3 py-2 rounded-xl text-xs font-bold hover:bg-amber-400 transition">
+                          <ng-icon name="lucideSend"></ng-icon>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          } @else {
+            <div class="text-center text-xs text-gray-500 py-12">Aucun Reel trouvé.</div>
+          }
+        }
+
+        <!-- TAB 3: GROUPS TAB -->
+        @if (activeTab() === 'groups') {
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="text-lg font-bold text-white">Groupes Communautaires</h2>
+            <button (click)="showGroupModal.set(true)" class="bg-amber-500 text-black font-bold px-4 py-2 rounded-xl text-xs hover:bg-amber-600 transition flex items-center gap-1">
+              <ng-icon name="lucidePlus"></ng-icon>Créer un Groupe
+            </button>
+          </div>
+
+          <div class="groups-grid grid grid-cols-2 gap-4">
+            @for (grp of groups(); track grp.id) {
+              <div class="group-category-card p-5 rounded-2xl border border-gray-700 bg-white/5 flex flex-col justify-between h-40 hover:border-amber-500/20 transition cursor-pointer" (click)="navigateToGroup(grp.id)">
+                <div>
+                  <div class="flex justify-between items-center mb-2">
+                    <span class="text-[10px] font-bold text-amber-500 uppercase">{{grp.category}}</span>
+                    <span class="text-[10px] text-gray-500">{{grp.privacy === 'PUBLIC' ? 'Public' : 'Privé'}}</span>
+                  </div>
+                  <h3 class="font-bold text-sm text-white mb-1">{{grp.name}}</h3>
+                  <span class="text-xs text-gray-400">{{grp.member_count || 0}} membres • {{grp.post_count || 0}} publications</span>
+                </div>
+                <button (click)="$event.stopPropagation(); grp.my_status ? navigateToGroup(grp.id) : joinGroup(grp.id)" class="join-group-btn w-full bg-[var(--zir-emerald)] text-black font-bold text-xs py-2 rounded-xl hover:opacity-90 transition">
+                  {{ grp.my_status === 'MEMBER' || grp.my_status === 'ADMIN' || grp.my_status === 'CO_ADMIN' ? 'Voir l\'intérieur' : (grp.my_status === 'PENDING' ? 'En attente...' : 'Rejoindre') }}
+                </button>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- TAB 4: PAGES TAB -->
+        @if (activeTab() === 'pages') {
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="text-lg font-bold text-white">Partenaires Institutionnels & Pages</h2>
+            <button (click)="showPageModal.set(true)" class="bg-amber-500 text-black font-bold px-4 py-2 rounded-xl text-xs hover:bg-amber-600 transition flex items-center gap-1">
+              <ng-icon name="lucidePlus"></ng-icon>Créer une Page
+            </button>
+          </div>
+
+          <div class="pages-grid flex flex-col gap-4">
+            @for (pg of pages(); track pg.id) {
+              <div class="page-official-card p-5 rounded-2xl border border-purple-500/20 bg-purple-950/5 flex items-center justify-between hover:border-purple-500/40 cursor-pointer transition" (click)="navigateToPage(pg.id)">
+                <div class="flex items-center gap-4">
+                  <div class="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center border border-purple-500/20 text-purple-400 font-bold text-xl">
+                    {{pg.name.charAt(0)}}
+                  </div>
+                  <div>
+                    <h3 class="font-bold text-sm text-white flex items-center gap-1.5">
+                      {{pg.name}}
+                      <ng-icon name="lucideShield" class="text-purple-400 text-sm"></ng-icon>
+                    </h3>
+                    <span class="text-xs text-purple-400 font-medium">{{pg.category}} • {{pg.follower_count || 0}} abonnés</span>
+                  </div>
+                </div>
+                <button
+                  (click)="$event.stopPropagation(); followPage(pg.id)"
+                  class="font-bold text-xs px-4 py-2 rounded-xl transition"
+                  [class]="pg.is_following ? 'bg-white/10 text-gray-300 hover:bg-red-600/20 hover:text-red-400' : 'bg-purple-600 text-white hover:bg-purple-700'"
+                >
+                  {{pg.is_following ? 'Abonné ✓' : "S'abonner"}}
+                </button>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- TAB 5: EVENTS TAB -->
+        @if (activeTab() === 'events') {
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="text-lg font-bold text-white">Évènements Agricoles et Foires</h2>
+            <button (click)="showEventModal.set(true)" class="bg-amber-500 text-black font-bold px-4 py-2 rounded-xl text-xs hover:bg-amber-600 transition flex items-center gap-1">
+              <ng-icon name="lucidePlus"></ng-icon>Créer un Évènement
+            </button>
+          </div>
+
+          <div class="events-grid flex flex-col gap-4">
+            @for (ev of events(); track ev.id) {
+              <div class="event-schedule-card p-5 rounded-2xl border border-gray-700 bg-white/5 flex gap-4 hover:border-amber-500/20 cursor-pointer transition" (click)="navigateToEvent(ev.id)">
+                <div class="event-date-badge w-14 h-14 bg-amber-500/10 text-amber-500 rounded-xl flex flex-col items-center justify-center font-bold">
+                  <span class="text-sm">{{ ev.start_date | date:'d' }}</span>
+                  <span class="text-[9px] uppercase">{{ ev.start_date | date:'MMM' }}</span>
+                </div>
+                <div class="flex-1">
+                  <span class="text-[10px] font-bold text-amber-500 uppercase">{{ev.category}}</span>
+                  <h3 class="font-bold text-sm text-white mt-0.5">{{ev.name}}</h3>
+                  <span class="text-xs text-gray-400 flex items-center gap-1 mt-1"><ng-icon name="lucideClock"></ng-icon>{{ev.location}}</span>
+                  
+                  <div class="flex gap-2 mt-3">
+                    <button
+                      (click)="$event.stopPropagation(); attendEvent(ev.id)"
+                      class="font-bold text-xs px-4 py-1.5 rounded-lg transition"
+                      [class]="ev.my_status === 'GOING' ? 'bg-emerald-600 text-white hover:bg-red-600/85' : 'bg-amber-500 text-black hover:bg-amber-600'"
+                    >
+                      {{ev.my_status === 'GOING' ? 'Je participe ✓ (' + (ev.going_count || 0) + ')' : 'Je Participe (' + (ev.going_count || 0) + ')'}}
+                    </button>
+                    <button (click)="$event.stopPropagation(); toggleEventStatus(ev.id, 'INTERESTED')" class="text-white text-xs px-4 py-1.5 rounded-lg border border-gray-700 hover:bg-white/5 transition">
+                      {{ ev.my_status === 'INTERESTED' ? 'Intéressé ✓ (' + (ev.interested_count || 0) + ')' : 'Intéressé' }}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- TAB 6: BOOKMARKS & SAVED POSTS -->
+        @if (activeTab() === 'saved') {
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="text-lg font-bold text-white">Vos Enregistrements & Collections</h2>
+            <button (click)="showCollectionModal.set(true)" class="bg-amber-500 text-black font-bold px-4 py-2 rounded-xl text-xs hover:bg-amber-600 transition flex items-center gap-1">
+              <ng-icon name="lucidePlus"></ng-icon>Nouvelle Collection
+            </button>
+          </div>
+
+          <div class="saved-collections-dashboard grid grid-cols-2 gap-4">
+            @for (coll of collections(); track coll.id) {
+              <div class="collection-dashboard-card p-5 rounded-2xl border border-gray-700 bg-white/5 flex items-center gap-4 hover:border-amber-500/40 transition cursor-pointer">
+                <div class="w-12 h-12 bg-amber-500/10 text-amber-500 rounded-xl flex items-center justify-center text-xl">📁</div>
+                <div>
+                  <h3 class="font-bold text-sm text-white">{{coll.collection_name}}</h3>
+                  <span class="text-xs text-gray-500">Glisser les posts ici</span>
+                </div>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- TAB 7: PROFILE TAB -->
+        @if (activeTab() === 'profile') {
+          <div class="zirfeed-profile-shell rounded-2xl overflow-hidden border border-gray-700 bg-white/5">
+            <div class="profile-banner h-32 bg-gradient-to-r from-amber-500/20 to-emerald-500/20"></div>
+            <div class="profile-body p-6 -mt-10 relative z-10 flex flex-col gap-4">
+              <div class="flex justify-between items-end">
+                <div class="w-20 h-20 rounded-full border-4 border-gray-900 bg-[var(--zir-emerald)] text-black font-bold text-3xl flex items-center justify-center">
+                  {{ authService.currentUser()?.name?.charAt(0) }}
+                </div>
+                <div class="flex gap-2">
+                  <button (click)="openFollowersModal()" class="border border-gray-700 text-white text-xs px-4 py-2 rounded-xl hover:bg-white/5 transition">Abonnés</button>
+                  <button (click)="openFollowingModal()" class="border border-gray-700 text-white text-xs px-4 py-2 rounded-xl hover:bg-white/5 transition">Abonnements</button>
+                </div>
+              </div>
+
+              <div>
+                <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                  {{ authService.currentUser()?.name }}
+                  <span class="text-[10px] bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full">{{ authService.currentUser()?.role }}</span>
+                </h2>
+                <p class="text-xs text-gray-400 mt-1">{{ profileStats()?.bio || 'Agriculteur passionné basé en Tunisie • ZirFeed Premium' }}</p>
+              </div>
+
+              @if (profileLoading()) {
+                <div class="flex items-center gap-2 text-xs text-gray-500">
+                  <span class="spinner w-3 h-3 border-2 border-amber-500 border-t-transparent rounded-full animate-spin"></span>
+                  Chargement des statistiques...
+                </div>
+              } @else {
+                <div class="profile-stats flex gap-6 border-t border-b border-gray-800 py-3 my-2 text-center">
+                  <div class="flex-1"><div class="font-bold text-white">{{ profileStats()?.posts_count ?? 0 }}</div><div class="text-[10px] text-gray-500 uppercase">Publications</div></div>
+                  <div class="flex-1"><div class="font-bold text-white">{{ profileStats()?.followers_count ?? 0 }}</div><div class="text-[10px] text-gray-500 uppercase">Abonnés</div></div>
+                  <div class="flex-1"><div class="font-bold text-white">{{ profileStats()?.following_count ?? 0 }}</div><div class="text-[10px] text-gray-500 uppercase">Abonnements</div></div>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- TAB 8: ADMIN MODERATION PANEL -->
+        @if (activeTab() === 'admin_mod') {
+          <div class="admin-mod-panel rounded-2xl border border-yellow-500/20 bg-white/5 p-6 flex flex-col gap-6">
+            <div class="flex justify-between items-center border-b border-gray-800 pb-3">
+              <h2 class="text-base font-bold text-white flex items-center gap-2">
+                <ng-icon name="lucideLock" class="text-yellow-500"></ng-icon>Console de Modération ZirFeed
+              </h2>
+              <div class="mod-nav flex gap-2">
+                <button (click)="activeModTab.set('queue')" [class.active]="activeModTab() === 'queue'" class="mod-tab-btn text-xs px-3 py-1.5 rounded-lg transition">File d'Attente ({{modQueue().length}})</button>
+                <button (click)="activeModTab.set('restrictions')" [class.active]="activeModTab() === 'restrictions'" class="mod-tab-btn text-xs px-3 py-1.5 rounded-lg transition">Restrictions</button>
+              </div>
+            </div>
+
+            @if (activeModTab() === 'queue') {
+              <div class="flex flex-col gap-4">
+                @for (item of modQueue(); track item.id) {
+                  <div class="mod-queue-item p-4 rounded-xl border border-gray-700 bg-black/20 flex flex-col gap-3">
+                    <div class="flex justify-between items-center text-xs">
+                      <span class="font-bold text-yellow-500">Signalé : {{item.reason}}</span>
+                      <span class="text-gray-500">Confiance : {{item.confidence_score * 100}}%</span>
+                    </div>
+                    <p class="text-xs text-gray-200"><strong>Auteur : {{item.author}}</strong> — "{{item.content}}"</p>
+                    
+                    <div class="flex gap-2 justify-end mt-2">
+                      <button (click)="approveItem(item.id, item.item_type)" class="bg-emerald-600 text-white font-bold text-[10px] px-4 py-1.5 rounded-lg hover:bg-emerald-700 transition">Approuver</button>
+                      <button (click)="rejectItem(item.id, item.item_type)" class="bg-red-600 text-white font-bold text-[10px] px-4 py-1.5 rounded-lg hover:bg-red-700 transition">Rejeter</button>
+                    </div>
+                  </div>
+                }
+                @if (modQueue().length === 0) {
+                  <div class="text-center text-xs text-gray-500 py-6">Aucun contenu en attente de modération.</div>
+                }
+              </div>
+            }
+          </div>
+        }
+      }
+    </main>
+
+    <!-- Right Sidebar: Hot Topics, suggested farmers -->
+    <aside class="col-span-3 zirfeed-sidebar-right flex flex-col gap-6">
+      <div class="zirfeed-right-widget p-5 rounded-2xl shadow-xl border border-gray-700">
+        <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Agriculteurs Recommandés</h4>
+        <div class="flex flex-col gap-3">
+          @for (farmer of suggestedFarmers(); track farmer.name) {
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-full bg-white/10 font-bold flex items-center justify-center text-xs text-white">{{farmer.name.charAt(0)}}</div>
+                <div>
+                  <div class="text-xs font-bold text-white">{{farmer.name}}</div>
+                  <div class="text-[9px] text-gray-500">{{farmer.region}} • {{farmer.specialty}}</div>
+                </div>
+              </div>
+              <button
+                (click)="followFarmer(farmer.name)"
+                class="font-bold text-[10px] px-3 py-1 rounded-lg transition"
+                [class]="farmer.followed ? 'bg-white/10 text-gray-400 hover:bg-red-600/20 hover:text-red-400' : 'bg-amber-500 text-black hover:bg-amber-600'"
+              >
+                {{farmer.followed ? 'Suivi ✓' : 'Suivre'}}
+              </button>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Ma Communauté Widget -->
+      @if (maCommunaute()) {
+        <div class="zirfeed-right-widget p-5 rounded-2xl shadow-xl border border-gray-700">
+          <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Ma Communauté</h4>
+          <div class="flex flex-col gap-3">
+            <!-- Groups -->
+            @for (g of maCommunaute().groups; track g.id) {
+              <div class="flex items-center gap-3 cursor-pointer p-1 rounded-lg hover:bg-white/5" (click)="navigateToGroup(g.id)">
+                <div class="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-xs font-bold text-emerald-400">👥</div>
+                <div class="flex-1 min-w-0">
+                  <div class="text-xs font-bold text-white truncate">{{g.name}}</div>
+                  <div class="text-[9px] text-gray-500">Groupe</div>
+                </div>
+              </div>
+            }
+            <!-- Pages -->
+            @for (p of maCommunaute().pages; track p.id) {
+              <div class="flex items-center gap-3 cursor-pointer p-1 rounded-lg hover:bg-white/5" (click)="navigateToPage(p.id)">
+                <div class="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center text-xs font-bold text-purple-400">🛡️</div>
+                <div class="flex-1 min-w-0">
+                  <div class="text-xs font-bold text-purple-400 truncate">{{p.name}}</div>
+                  <div class="text-[9px] text-gray-500">{{p.category}}</div>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Today in Tunisian Agriculture Widget -->
+      <div class="zirfeed-right-widget p-5 rounded-2xl shadow-xl border border-gray-700">
+        <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Today in Tunisian Agriculture</h4>
+        <div class="flex flex-col gap-3">
+          <div class="p-3 bg-white/5 rounded-xl border border-gray-800 flex flex-col gap-1.5">
+            <span class="text-[9px] text-amber-500 font-bold uppercase tracking-wide">💡 Info du Jour</span>
+            <p class="text-[11px] text-gray-200 leading-relaxed">Les barrages du Nord affichent un taux de remplissage moyen de 34,2% ce matin.</p>
+          </div>
+          <div class="p-3 bg-white/5 rounded-xl border border-gray-800 flex flex-col gap-1.5">
+            <span class="text-[9px] text-amber-500 font-bold uppercase tracking-wide">📈 Marché (Kasserine)</span>
+            <p class="text-[11px] text-gray-200 leading-relaxed">Le cageot de tomates Rio Grande s'échange à 1,850 TND au souk local.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="zirfeed-right-widget p-5 rounded-2xl shadow-xl border border-gray-700">
+        <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Tendances Actuelles (24h)</h4>
+        <div class="flex flex-col gap-3">
+          @for (tag of trendingHashtags(); track tag.id) {
+            <div class="flex justify-between items-center text-xs">
+              <span class="font-bold text-amber-500">#{{tag.tag}}</span>
+              <span class="text-[10px] text-gray-500">{{tag.usage_count}} posts</span>
+            </div>
+          }
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Toast notification -->
+  @if (toastMessage()) {
+    <div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] bg-gray-900 border border-amber-500/40 text-white text-xs font-bold px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-2 animate-fade-in">
+      <ng-icon name="lucideCheckCircle" class="text-amber-500"></ng-icon>
+      {{toastMessage()}}
+    </div>
+  }
+
+  <!-- Mobile Bottom Tab Navigation bar -->
+  <nav class="zirfeed-mobile-nav sticky bottom-0 left-0 right-0 z-40 bg-black/90 backdrop-blur-lg border-t border-gray-800 p-2 flex justify-around select-none">
+    <button (click)="switchTab('feed')" [class.active]="activeTab() === 'feed'" class="mobile-nav-btn flex flex-col items-center gap-0.5 text-gray-500 transition">
+      <ng-icon name="lucideGlobe" class="text-lg"></ng-icon><span class="text-[9px]">Flux</span>
+    </button>
+    <button (click)="switchTab('reels')" [class.active]="activeTab() === 'reels'" class="mobile-nav-btn flex flex-col items-center gap-0.5 text-gray-500 transition">
+      <ng-icon name="lucideFlame" class="text-lg"></ng-icon><span class="text-[9px]">Reels</span>
+    </button>
+    <button (click)="switchTab('groups')" [class.active]="activeTab() === 'groups'" class="mobile-nav-btn flex flex-col items-center gap-0.5 text-gray-500 transition">
+      <ng-icon name="lucideMessageSquare" class="text-lg"></ng-icon><span class="text-[9px]">Groupes</span>
+    </button>
+    <button (click)="switchTab('saved')" [class.active]="activeTab() === 'saved'" class="mobile-nav-btn flex flex-col items-center gap-0.5 text-gray-500 transition">
+      <ng-icon name="lucideBookmark" class="text-lg"></ng-icon><span class="text-[9px]">Favoris</span>
+    </button>
+  </nav>
+
+  <!-- MODALS -->
+  <!-- 1. GROUP CREATION -->
+  @if (showGroupModal()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
+      <div class="zirfeed-modal p-6 rounded-2xl w-full max-w-md border border-gray-700 bg-gray-900 shadow-2xl">
+        <h3 class="text-lg font-bold text-white mb-4">Créer un Groupe Communautaire</h3>
+        <div class="flex flex-col gap-3">
+          <input type="text" [(ngModel)]="groupName" placeholder="Nom du Groupe" class="modal-input bg-white/5 border border-gray-700 px-4 py-2.5 rounded-xl text-white outline-none" />
+          <textarea [(ngModel)]="groupDesc" placeholder="Description du groupe..." class="modal-input bg-white/5 border border-gray-700 px-4 py-2.5 rounded-xl text-white outline-none min-h-[80px]"></textarea>
+          <select [(ngModel)]="groupCategory" class="modal-input bg-gray-800 border border-gray-700 px-4 py-2.5 rounded-xl text-white outline-none">
+            <option value="Cereal Farming">Cereal Farming</option>
+            <option value="Olive Cultivation">Olive Cultivation</option>
+            <option value="Livestock">Livestock</option>
+          </select>
+          <select [(ngModel)]="groupPrivacy" class="modal-input bg-gray-800 border border-gray-700 px-4 py-2.5 rounded-xl text-white outline-none">
+            <option value="PUBLIC">Public</option>
+            <option value="MEMBERS_ONLY">Privé</option>
+          </select>
+        </div>
+        <div class="flex justify-end gap-3 mt-5">
+          <button (click)="showGroupModal.set(false)" class="text-gray-400 font-bold text-xs px-4 py-2 hover:text-white">Annuler</button>
+          <button (click)="triggerGroupCreate()" class="bg-amber-500 text-black font-bold text-xs px-6 py-2.5 rounded-xl hover:bg-amber-600 transition">Créer</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- 2. PAGE CREATION -->
+  @if (showPageModal()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
+      <div class="zirfeed-modal p-6 rounded-2xl w-full max-w-md border border-gray-700 bg-gray-900 shadow-2xl">
+        <h3 class="text-lg font-bold text-white mb-4">Enregistrer une Page Institutionnelle</h3>
+        <div class="flex flex-col gap-3">
+          <input type="text" [(ngModel)]="pageName" placeholder="Nom de l'Institution/Organisation" class="modal-input bg-white/5 border border-gray-700 px-4 py-2.5 rounded-xl text-white outline-none" />
+          <textarea [(ngModel)]="pageDesc" placeholder="Description de l'institution..." class="modal-input bg-white/5 border border-gray-700 px-4 py-2.5 rounded-xl text-white outline-none min-h-[80px]"></textarea>
+          <select [(ngModel)]="pageCategory" class="modal-input bg-gray-800 border border-gray-700 px-4 py-2.5 rounded-xl text-white outline-none">
+            <option value="Bank">Banque</option>
+            <option value="Insurance">Assurance</option>
+            <option value="Government">Gouvernement</option>
+          </select>
+          <input type="text" [(ngModel)]="pageRegion" placeholder="Région ciblée" class="modal-input bg-white/5 border border-gray-700 px-4 py-2.5 rounded-xl text-white outline-none" />
+        </div>
+        <div class="flex justify-end gap-3 mt-5">
+          <button (click)="showPageModal.set(false)" class="text-gray-400 font-bold text-xs px-4 py-2 hover:text-white">Annuler</button>
+          <button (click)="triggerPageCreate()" class="bg-amber-500 text-black font-bold text-xs px-6 py-2.5 rounded-xl hover:bg-amber-600 transition">Enregistrer</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- 3. EVENT CREATION -->
+  @if (showEventModal()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
+      <div class="zirfeed-modal p-6 rounded-2xl w-full max-w-md border border-gray-700 bg-gray-900 shadow-2xl">
+        <h3 class="text-lg font-bold text-white mb-4">Créer un Évènement Agricole</h3>
+        <div class="flex flex-col gap-3">
+          <input type="text" [(ngModel)]="eventName" placeholder="Nom de l'évènement" class="modal-input bg-white/5 border border-gray-700 px-4 py-2.5 rounded-xl text-white outline-none" />
+          <textarea [(ngModel)]="eventDesc" placeholder="Description de l'évènement..." class="modal-input bg-white/5 border border-gray-700 px-4 py-2.5 rounded-xl text-white outline-none min-h-[80px]"></textarea>
+          <input type="datetime-local" [(ngModel)]="eventStartDate" class="modal-input bg-white/5 border border-gray-700 px-4 py-2.5 rounded-xl text-white outline-none" />
+          <input type="text" [(ngModel)]="eventLocation" placeholder="Lieu" class="modal-input bg-white/5 border border-gray-700 px-4 py-2.5 rounded-xl text-white outline-none" />
+          <input type="text" [(ngModel)]="eventRegisterUrl" placeholder="Lien externe" class="modal-input bg-white/5 border border-gray-700 px-4 py-2.5 rounded-xl text-white outline-none" />
+        </div>
+        <div class="flex justify-end gap-3 mt-5">
+          <button (click)="showEventModal.set(false)" class="text-gray-400 font-bold text-xs px-4 py-2 hover:text-white">Annuler</button>
+          <button (click)="triggerEventCreate()" class="bg-amber-500 text-black font-bold text-xs px-6 py-2.5 rounded-xl hover:bg-amber-600 transition">Planifier</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- 4. SAVED COLLECTION CREATION -->
+  @if (showCollectionModal()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
+      <div class="zirfeed-modal p-6 rounded-2xl w-full max-w-sm border border-gray-700 bg-gray-900 shadow-2xl">
+        <h3 class="text-base font-bold text-white mb-3">Créer une Collection</h3>
+        <input type="text" [(ngModel)]="newCollectionName" placeholder="Nom de la collection" class="modal-input w-full bg-white/5 border border-gray-700 px-4 py-2.5 rounded-xl text-white outline-none" />
+        <div class="flex justify-end gap-3 mt-4">
+          <button (click)="showCollectionModal.set(false)" class="text-gray-400 font-bold text-xs px-4 py-2 hover:text-white">Annuler</button>
+          <button (click)="triggerCollectionCreate()" class="bg-amber-500 text-black font-bold text-xs px-6 py-2.5 rounded-xl hover:bg-amber-600 transition">Créer</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- 5. GROUP ADMIN CONTROL SLIDE-IN OVERLAY -->
+  @if (showGroupAdminOverlay()) {
+    <div class="fixed inset-0 z-50 flex justify-end bg-black/75 backdrop-blur-sm">
+      <div class="w-full max-w-md bg-gray-900 border-l border-gray-700 p-6 flex flex-col gap-6 overflow-y-auto animate-slide-in-right">
+        <div class="flex justify-between items-center border-b border-gray-800 pb-3">
+          <h3 class="text-base font-bold text-white flex items-center gap-1.5"><ng-icon name="lucideCrown" class="text-yellow-500"></ng-icon>Gérer le Groupe</h3>
+          <button (click)="showGroupAdminOverlay.set(false)" class="text-gray-400 hover:text-white"><ng-icon name="lucideX" class="text-lg"></ng-icon></button>
+        </div>
+
+        <!-- Posting Permission configuration -->
+        <div class="flex flex-col gap-2">
+          <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Autorisations du Groupe</h4>
+          <div class="flex items-center justify-between bg-white/5 p-3 rounded-xl border border-gray-800 text-xs text-white">
+            <span>Qui peut poster ?</span>
+            <select
+              [ngModel]="currentGroupDetails()?.posting_permission"
+              (ngModelChange)="toggleGroupPostingPermission($event)"
+              class="bg-gray-800 border border-gray-700 text-white rounded-lg p-1 outline-none font-bold"
+            >
+              <option value="ALL">Tous les membres</option>
+              <option value="ADMINS_ONLY">Administrateurs uniquement</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Pending membership requests -->
+        <div class="flex flex-col gap-3">
+          <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Demandes d'Adhésion ({{pendingGroupRequests().length}})</h4>
+          <div class="flex flex-col gap-2">
+            @for (req of pendingGroupRequests(); track req.user_id) {
+              <div class="flex items-center justify-between bg-black/40 border border-gray-800 p-3 rounded-xl">
+                <div>
+                  <div class="text-xs font-bold text-white">{{req.name}}</div>
+                  <div class="text-[9px] text-gray-500">{{req.governorate}} • {{req.role}}</div>
+                </div>
+                <div class="flex gap-2">
+                  <button (click)="approveGroupRequest(req.user_id)" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] px-2.5 py-1 rounded-lg">Accepter</button>
+                  <button (click)="rejectGroupRequest(req.user_id)" class="bg-red-600/20 hover:bg-red-600/40 text-red-400 font-bold text-[10px] px-2.5 py-1 rounded-lg border border-red-500/20">Refuser</button>
+                </div>
+              </div>
+            }
+            @if (pendingGroupRequests().length === 0) {
+              <div class="text-xs text-gray-500 text-center py-2">Aucune demande en attente.</div>
+            }
+          </div>
+        </div>
+
+        <!-- Group Approved Members List -->
+        <div class="flex flex-col gap-3">
+          <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Membres Actuels</h4>
+          <div class="flex flex-col gap-2">
+            @for (mem of groupMembersList(); track mem.user_id) {
+              <div class="flex items-center justify-between p-2 rounded-lg bg-white/5 border border-gray-800">
+                <div class="flex items-center gap-2">
+                  <div class="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-[10px] font-bold text-white">{{mem.name.charAt(0)}}</div>
+                  <div>
+                    <div class="text-xs font-bold text-white">{{mem.name}}</div>
+                    <div class="text-[8px] bg-purple-500/20 text-purple-400 px-1.5 py-0.5 rounded-full font-bold inline-block">{{mem.membership_role}}</div>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- 6. PAGE MANAGE OVERLAY -->
+  @if (showManagePageOverlay()) {
+    <div class="fixed inset-0 z-50 flex justify-end bg-black/75 backdrop-blur-sm">
+      <div class="w-full max-w-md bg-gray-900 border-l border-gray-700 p-6 flex flex-col gap-6 overflow-y-auto animate-slide-in-right">
+        <div class="flex justify-between items-center border-b border-gray-800 pb-3">
+          <h3 class="text-base font-bold text-white flex items-center gap-1.5"><ng-icon name="lucideShield" class="text-purple-400"></ng-icon>Gérer la Page</h3>
+          <button (click)="showManagePageOverlay.set(false)" class="text-gray-400 hover:text-white"><ng-icon name="lucideX" class="text-lg"></ng-icon></button>
+        </div>
+
+        <!-- Scheduled posts CRUD manager -->
+        <div class="flex flex-col gap-3">
+          <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Publications Planifiées ({{scheduledPosts().length}})</h4>
+          <div class="flex flex-col gap-2">
+            @for (post of scheduledPosts(); track post.id) {
+              <div class="p-3.5 rounded-xl border border-gray-800 bg-white/5 flex flex-col gap-2">
+                <div class="flex justify-between items-center text-[10px] text-purple-400">
+                  <span class="font-bold flex items-center gap-1"><ng-icon name="lucideClock"></ng-icon>Planifié pour le {{ post.scheduled_for | date:'short' }}</span>
+                  <button (click)="cancelScheduledPost(post.id)" class="text-red-400 hover:underline">Annuler</button>
+                </div>
+                <p class="text-xs text-gray-200" [dir]="isRtlText(post.content_text) ? 'rtl' : 'ltr'">{{post.content_text}}</p>
+              </div>
+            }
+            @if (scheduledPosts().length === 0) {
+              <div class="text-xs text-gray-500 text-center py-4">Aucune publication planifiée.</div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- 7. REELS UPLOAD MODAL -->
+  @if (reelUploadModal()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
+      <div class="zirfeed-modal p-6 rounded-2xl w-full max-w-md border border-gray-700 bg-gray-900 shadow-2xl">
+        <h3 class="text-lg font-bold text-white mb-4">Créer un Reel Immersif</h3>
+        <div class="flex flex-col gap-4">
+          <label class="w-full h-32 border border-dashed border-gray-700 hover:border-amber-500/50 rounded-xl flex flex-col items-center justify-center cursor-pointer transition">
+            <input type="file" (change)="onReelFileSelect($event)" accept="video/*" class="hidden" />
+            <ng-icon name="lucideUpload" class="text-3xl text-amber-500 mb-1"></ng-icon>
+            <span class="text-xs text-gray-400">Sélectionner une vidéo (15s à 3 min)</span>
+          </label>
+          
+          @if (reelDurationError()) {
+            <div class="text-xs text-red-500 font-bold">{{reelDurationError()}}</div>
+          } @else if (reelFile) {
+            <div class="text-xs text-emerald-400 font-bold">Vidéo validée : {{reelFile.name}}</div>
+          }
+
+          <input type="text" [(ngModel)]="reelCaption" placeholder="Ajouter une description ou légende..." class="modal-input bg-white/5 border border-gray-700 px-4 py-2.5 rounded-xl text-white outline-none text-xs" />
+        </div>
+        <div class="flex justify-end gap-3 mt-5">
+          <button (click)="reelUploadModal.set(false)" class="text-gray-400 font-bold text-xs px-4 py-2 hover:text-white">Annuler</button>
+          <button (click)="uploadReel()" [disabled]="!reelFile || isUploading()" class="bg-amber-500 disabled:opacity-50 text-black font-bold text-xs px-6 py-2.5 rounded-xl hover:bg-amber-600 transition">
+            @if (isUploading()) { Upload en cours... } @else { Publier le Reel }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- 8. FOLLOWERS CONNECTION OVERLAY -->
+  @if (showFollowersModal()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
+      <div class="zirfeed-modal p-6 rounded-2xl w-full max-w-sm border border-gray-700 bg-gray-900 shadow-2xl flex flex-col gap-4">
+        <div class="flex justify-between items-center border-b border-gray-800 pb-2">
+          <h3 class="text-sm font-bold text-white uppercase tracking-wider">Abonnés ({{followersList().length}})</h3>
+          <button (click)="showFollowersModal.set(false)" class="text-gray-400 hover:text-white"><ng-icon name="lucideX"></ng-icon></button>
+        </div>
+        <div class="max-h-60 overflow-y-auto flex flex-col gap-2">
+          @for (f of followersList(); track f.id) {
+            <div class="flex items-center justify-between p-2 hover:bg-white/5 rounded-lg border border-gray-800/20 bg-black/20">
+              <span class="text-xs text-white font-bold">{{f.name}}</span>
+              <span class="text-[9px] bg-amber-500/20 text-amber-500 px-2 py-0.5 rounded-full uppercase font-bold">{{f.role}}</span>
+            </div>
+          }
+          @if (followersList().length === 0) {
+            <div class="text-xs text-gray-500 text-center py-4">Aucun abonné pour le moment.</div>
+          }
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- 9. FOLLOWING CONNECTION OVERLAY -->
+  @if (showFollowingModal()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
+      <div class="zirfeed-modal p-6 rounded-2xl w-full max-w-sm border border-gray-700 bg-gray-900 shadow-2xl flex flex-col gap-4">
+        <div class="flex justify-between items-center border-b border-gray-800 pb-2">
+          <h3 class="text-sm font-bold text-white uppercase tracking-wider">Abonnements</h3>
+          <button (click)="showFollowingModal.set(false)" class="text-gray-400 hover:text-white"><ng-icon name="lucideX"></ng-icon></button>
+        </div>
+        <div class="max-h-60 overflow-y-auto flex flex-col gap-3">
+          <!-- Followed users -->
+          <div class="flex flex-col gap-2">
+            <span class="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Agriculteurs</span>
+            @for (u of followingList()?.users; track u.id) {
+              <div class="flex items-center justify-between p-2 bg-black/20 border border-gray-800/40 rounded-lg">
+                <span class="text-xs text-white font-bold">{{u.name}}</span>
+                <button (click)="unfollowUser(u.id)" class="text-[9px] text-red-400 hover:underline">Se désabonner</button>
+              </div>
+            }
+          </div>
+          <!-- Followed pages -->
+          <div class="flex flex-col gap-2">
+            <span class="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Pages Officielles</span>
+            @for (p of followingList()?.pages; track p.id) {
+              <div class="flex items-center justify-between p-2 bg-black/20 border border-gray-800/40 rounded-lg">
+                <span class="text-xs text-purple-400 font-bold">{{p.name}}</span>
+                <button (click)="followPage(p.id)" class="text-[9px] text-red-400 hover:underline">Se désabonner</button>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- 10. SAVE POST TO COLLECTION MODAL -->
+  @if (showSavePostModal()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
+      <div class="zirfeed-modal p-6 rounded-2xl w-full max-w-md border border-gray-700 bg-gray-900 shadow-2xl flex flex-col gap-4">
+        <div class="flex justify-between items-center border-b border-gray-800 pb-2">
+          <h3 class="text-sm font-bold text-white uppercase tracking-wider">Enregistrer la publication</h3>
+          <button (click)="closeSavePostModal()" class="text-gray-400 hover:text-white"><ng-icon name="lucideX"></ng-icon></button>
+        </div>
+        <div class="flex flex-col gap-2 max-h-48 overflow-y-auto">
+          @for (coll of collections(); track coll.id) {
+            <button (click)="selectedCollectionId.set(coll.id)" class="w-full text-left px-4 py-3 rounded-xl text-xs transition" [class]="selectedCollectionId() === coll.id ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-white/5 text-white hover:bg-white/10 border border-gray-800'">
+              <ng-icon name="lucideFolder" class="mr-2"></ng-icon>{{coll.name}}
+            </button>
+          }
+          @if (collections().length === 0) {
+            <div class="text-xs text-gray-500 text-center py-4">Aucune collection. Créez-en une.</div>
+          }
+        </div>
+        <div class="border-t border-gray-800 pt-3 flex gap-2">
+          <input type="text" [(ngModel)]="newSaveCollectionName" placeholder="Nouveau dossier..." class="flex-1 bg-white/5 border border-gray-700 px-3 py-2 rounded-xl text-xs text-white outline-none" />
+          <button (click)="savePostToCollection()" class="bg-amber-500 text-black font-bold text-xs px-4 py-2 rounded-xl hover:bg-amber-600 transition">Créer & Enregistrer</button>
+        </div>
+        <div class="flex justify-end gap-3">
+          <button (click)="closeSavePostModal()" class="text-gray-400 font-bold text-xs px-4 py-2 hover:text-white">Annuler</button>
+          <button (click)="savePostToCollection()" class="bg-amber-500 text-black font-bold text-xs px-6 py-2.5 rounded-xl hover:bg-amber-600 transition">Enregistrer</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- 11. REPORT POST MODAL -->
+  @if (showReportModal()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
+      <div class="zirfeed-modal p-6 rounded-2xl w-full max-w-md border border-gray-700 bg-gray-900 shadow-2xl flex flex-col gap-4">
+        <div class="flex justify-between items-center border-b border-gray-800 pb-2">
+          <h3 class="text-sm font-bold text-white uppercase tracking-wider">Signaler cette publication</h3>
+          <button (click)="closeReportModal()" class="text-gray-400 hover:text-white"><ng-icon name="lucideX"></ng-icon></button>
+        </div>
+        <div class="flex flex-col gap-2">
+          @for (reason of reportReasons; track reason.value) {
+            <button (click)="reportReason.set(reason.value)" class="w-full text-left px-4 py-3 rounded-xl text-xs transition" [class]="reportReason() === reason.value ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-white/5 text-white hover:bg-white/10 border border-gray-800'">
+              <ng-icon [name]="reason.icon" class="mr-2"></ng-icon>{{reason.label}}
+            </button>
+          }
+        </div>
+        <div class="flex justify-end gap-3 mt-2">
+          <button (click)="closeReportModal()" class="text-gray-400 font-bold text-xs px-4 py-2 hover:text-white">Annuler</button>
+          <button (click)="submitPostReport()" [disabled]="!reportReason()" class="bg-red-600 disabled:opacity-50 text-white font-bold text-xs px-6 py-2.5 rounded-xl hover:bg-red-700 transition">Signaler</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- 12. ACCOUNT INFO MODAL -->
+  @if (showAccountModal() && accountInfo()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
+      <div class="zirfeed-modal p-6 rounded-2xl w-full max-w-md border border-gray-700 bg-gray-900 shadow-2xl flex flex-col gap-4">
+        <div class="flex justify-between items-center border-b border-gray-800 pb-2">
+          <h3 class="text-sm font-bold text-white uppercase tracking-wider">À propos de ce compte</h3>
+          <button (click)="closeAccountModal()" class="text-gray-400 hover:text-white"><ng-icon name="lucideX"></ng-icon></button>
+        </div>
+        <div class="flex flex-col items-center gap-3">
+          <div class="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center text-2xl font-bold text-white">
+            {{accountInfo()?.name?.charAt(0) || 'U'}}
+          </div>
+          <div class="text-base font-bold text-white">{{accountInfo()?.name || 'Utilisateur ZirFeed'}}</div>
+          <div class="text-xs text-gray-400 uppercase tracking-wider">{{accountInfo()?.role || 'Membre'}}</div>
+          <div class="bg-white/5 p-4 rounded-2xl border border-gray-700 text-xs leading-relaxed text-gray-300">{{accountInfo()?.bio || 'Aucune description disponible.'}}</div>
+        </div>
+        <div class="flex justify-center gap-6 text-center text-xs text-gray-400 border-t border-gray-800 pt-4">
+          <div><span class="font-bold text-white">{{accountInfo()?.posts_count || '—'}}</span><br />Publications</div>
+          <div><span class="font-bold text-white">{{accountInfo()?.followers_count || '—'}}</span><br />Abonnés</div>
+          <div><span class="font-bold text-white">{{accountInfo()?.following_count || '—'}}</span><br />Abonnements</div>
+        </div>
+        <button (click)="closeAccountModal()" class="mt-2 w-full bg-white/5 border border-gray-700 text-white font-bold text-xs px-4 py-2.5 rounded-xl hover:bg-white/10 transition">Fermer</button>
+      </div>
+    </div>
+  }
+  <!-- Full-Screen Story Viewer Overlay -->
+  @if (showStoryViewer() && stories()[activeStoryUserIndex()]) {
+    @let userStories = stories()[activeStoryUserIndex()];
+    @let story = userStories.stories[activeStoryIndex()];
+    <div class="story-viewer-overlay fixed inset-0 z-[1000] flex items-center justify-center bg-black/95 backdrop-blur-md" (click)="closeStoryViewer()">
+      <div class="story-viewer-container relative w-full max-w-md h-full md:h-[90vh] md:max-h-[800px] bg-gray-950 md:rounded-3xl overflow-hidden flex flex-col justify-between p-6" (click)="$event.stopPropagation()">
+        <!-- Story Top Indicators -->
+        <div class="story-header-bar flex flex-col gap-2">
+          <!-- Progress Bars -->
+          <div class="story-progress-indicators flex gap-1.5 w-full">
+            @for (s of userStories.stories; track s.id; let sIdx = $index) {
+              <div class="story-progress-track flex-1 h-1 bg-white/20 rounded-full overflow-hidden">
+                <div class="story-progress-bar h-full bg-amber-500 transition-all duration-3000" [style.width.%]="sIdx < activeStoryIndex() ? 100 : (sIdx === activeStoryIndex() ? 100 : 0)"></div>
+              </div>
+            }
+          </div>
+          <!-- User Details & Close -->
+          <div class="flex justify-between items-center text-white mt-1">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center font-bold text-xs">
+                {{ userStories.author.name.charAt(0) }}
+              </div>
+              <span class="text-xs font-bold">{{ userStories.author.name }}</span>
+              <span class="text-[10px] text-gray-400">{{ story.created_at | date:'shortTime' }}</span>
+            </div>
+            <button (click)="closeStoryViewer()" class="text-white/80 hover:text-white"><ng-icon name="lucideX"></ng-icon></button>
+          </div>
+        </div>
+
+        <!-- Story Content (Text and/or Media) -->
+        <div class="story-body flex-1 flex flex-col items-center justify-center relative my-4">
+          <!-- Left/Right Tap Zones -->
+          <div class="absolute left-0 top-0 bottom-0 w-1/3 z-20 cursor-pointer" (click)="prevStory()"></div>
+          <div class="absolute right-0 top-0 bottom-0 w-1/3 z-20 cursor-pointer" (click)="advanceStory()"></div>
+
+          @if (story.story_media_url) {
+            <img [src]="story.story_media_url" alt="Story Media" class="w-full max-h-[60vh] object-contain rounded-2xl shadow-2xl relative z-10" />
+          }
+          @if (story.story_text) {
+            <div class="story-text bg-black/60 backdrop-blur-sm border border-gray-700/50 p-6 rounded-2xl text-white text-center font-bold text-lg max-w-[85%] mt-4 shadow-2xl relative z-10" [dir]="isRtlText(story.story_text) ? 'rtl' : 'ltr'">
+              {{ story.story_text }}
+            </div>
+          }
+          @if (story.shared_post) {
+            <!-- Shared Post Card Inside Story -->
+            <div class="story-shared-post-preview p-4 rounded-xl border border-gray-800 bg-white/5 w-[85%] mt-4 text-left cursor-pointer z-10 hover:bg-white/10 transition" (click)="closeStoryViewer(); switchTab('feed')">
+              <span class="text-[9px] text-amber-500 font-bold uppercase">Publication partagée</span>
+              <p class="text-xs text-gray-200 mt-1 truncate">{{ story.shared_post.content_text }}</p>
+            </div>
+          }
+        </div>
+
+        <!-- Footer / Message Input -->
+        <div class="story-footer flex gap-3 items-center">
+          <input type="text" placeholder="Répondre à la story..." class="flex-1 bg-white/5 border border-gray-700 rounded-full px-4 py-2.5 text-xs text-white outline-none focus:border-amber-500/50" />
+          <button class="bg-amber-500 text-black font-bold p-2.5 rounded-full hover:scale-105 transition"><ng-icon name="lucideSend"></ng-icon></button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

@@ -1,0 +1,279 @@
+<div class="driver-profile zir-animate-in">
+
+  <!-- ─── Hero Profile Banner ─── -->
+  <div class="profile-hero-card">
+    <div class="hero-cover">
+      <div class="hero-cover-pattern"></div>
+    </div>
+    <div class="hero-content">
+      <div class="avatar-wrapper">
+        <div class="avatar-circle">
+          <ng-icon name="lucideTruck"></ng-icon>
+        </div>
+        <div class="status-badge" [class.active]="profile().is_available"></div>
+      </div>
+
+      <div class="profile-info-main">
+        <div class="name-row">
+          <h1>{{ profile().user?.['name'] || 'Chauffeur Agricole' }}</h1>
+          <span class="governorate-badge">
+            <ng-icon name="lucideMapPin"></ng-icon>
+            {{ profile().governorate || 'Toute la Tunisie' }}
+          </span>
+        </div>
+
+        <p class="role-subtitle">Chauffeur Transport Agricole Certifié</p>
+
+        <div class="stats-row">
+          <div class="stat-pill rating">
+            <ng-icon name="lucideStar" class="star-icon"></ng-icon>
+            <span class="bold">{{ profile().rating || '5.0' }}</span>
+            <span class="count">/ 5</span>
+          </div>
+          <div class="stat-pill vehicle">
+            <ng-icon name="lucideTruck" class="truck-icon"></ng-icon>
+            <span class="bold">{{ getVehicleLabel(profile().vehicle_type || 'TRUCK') }}</span>
+            <span>· {{ profile().capacity_tonnes || 0 }}T</span>
+          </div>
+          <div class="stat-pill plate">
+            <ng-icon name="lucideShield" class="shield-icon"></ng-icon>
+            <span class="bold">{{ profile().vehicle_plate || 'Non immatr.' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Availability Toggle -->
+      <div class="availability-switcher-card">
+        <span class="switch-label">Disponible pour missions</span>
+        <button class="avail-switch-btn" [class.active]="profile().is_available" (click)="toggleAvailability()">
+          <span class="switch-handle"></span>
+        </button>
+        <span class="switch-status-text" [class.active]="profile().is_available">
+          {{ profile().is_available ? 'En ligne — Prêt' : 'Hors ligne' }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div class="profile-grid">
+
+    <!-- ─── Left Column ─── -->
+    <div class="main-column">
+
+      <!-- Véhicule -->
+      <section class="zir-card profile-section">
+        <div class="section-header-row">
+          <h2 class="section-title">
+            <ng-icon name="lucideTruck"></ng-icon>
+            Mon Véhicule
+          </h2>
+          @if (!isEditingVehicle()) {
+            <button class="edit-inline-btn" (click)="startEditVehicle()">
+              <ng-icon name="lucideEdit3"></ng-icon> Modifier
+            </button>
+          }
+        </div>
+        <p class="section-desc">Vos informations de transport utilisées pour les missions de fret.</p>
+
+        @if (!isEditingVehicle()) {
+          <div class="vehicle-display">
+            <div class="vehicle-visual">
+              <ng-icon name="lucideTruck" class="vehicle-bg-icon"></ng-icon>
+              <div class="vehicle-plate-chip">{{ profile().vehicle_plate || 'NON IMMATRICULÉ' }}</div>
+            </div>
+            <div class="vehicle-specs">
+              <div class="spec-row">
+                <span class="spec-label">Type</span>
+                <span class="spec-val">{{ getVehicleLabel(profile().vehicle_type || 'TRUCK') }}</span>
+              </div>
+              <div class="spec-row">
+                <span class="spec-label">Capacité</span>
+                <span class="spec-val highlight">{{ profile().capacity_tonnes || 0 }} Tonnes</span>
+              </div>
+              <div class="spec-row">
+                <span class="spec-label">Permis N°</span>
+                <span class="spec-val">{{ profile().license_number || 'Non renseigné' }}</span>
+              </div>
+              <div class="spec-row">
+                <span class="spec-label">Gouvernorat</span>
+                <span class="spec-val">{{ profile().governorate || '—' }}</span>
+              </div>
+            </div>
+          </div>
+        } @else {
+          <div class="edit-form-grid">
+            <div class="form-group">
+              <label class="zir-label">Type de véhicule</label>
+              <select class="zir-input" [(ngModel)]="editForm.vehicle_type">
+                <option value="TRUCK">Camion (Truck)</option>
+                <option value="VAN">Fourgon (Van)</option>
+                <option value="PICKUP">Pickup</option>
+                <option value="REFRIGERATED">Réfrigéré</option>
+                <option value="SEMI">Semi-remorque</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="zir-label">Capacité (Tonnes)</label>
+              <input type="number" class="zir-input" [(ngModel)]="editForm.capacity_tonnes" min="0" step="0.5">
+            </div>
+            <div class="form-group">
+              <label class="zir-label">Immatriculation</label>
+              <input type="text" class="zir-input" [(ngModel)]="editForm.vehicle_plate" placeholder="Ex: 123 TUN 4567">
+            </div>
+            <div class="form-group">
+              <label class="zir-label">N° de Permis de Conduire</label>
+              <input type="text" class="zir-input" [(ngModel)]="editForm.license_number" placeholder="Ex: B12345678">
+            </div>
+            <div class="form-group span-full">
+              <label class="zir-label">Gouvernorat principal</label>
+              <input type="text" class="zir-input" [(ngModel)]="editForm.governorate" placeholder="Ex: Tunis, Sfax...">
+            </div>
+            <div class="edit-actions span-full">
+              <button class="zir-btn zir-btn--ghost" (click)="cancelEditVehicle()">Annuler</button>
+              <button class="zir-btn zir-btn--primary" (click)="saveVehicle()" [disabled]="isSaving()">
+                @if (isSaving()) { <div class="zir-spinner zir-spinner--white"></div> }
+                @else { <ng-icon name="lucideSave"></ng-icon> }
+                Enregistrer
+              </button>
+            </div>
+          </div>
+        }
+      </section>
+
+      <!-- Documents & Licences -->
+      <section class="zir-card profile-section">
+        <div class="section-header-row">
+          <h2 class="section-title">
+            <ng-icon name="lucideAward"></ng-icon>
+            Documents & Licences
+          </h2>
+          <button class="add-cert-icon-btn" (click)="openDocModal()">
+            <ng-icon name="lucidePlus"></ng-icon>
+          </button>
+        </div>
+        <p class="section-desc">Soumettez vos documents officiels (permis, assurance, carte grise) pour obtenir le badge vérifié.</p>
+
+        <div class="docs-placeholder">
+          <ng-icon name="lucideShield"></ng-icon>
+          <p>Aucun document soumis. Ajoutez votre permis, assurance et carte grise pour débloquer les missions premium.</p>
+          <button class="zir-btn zir-btn--secondary mt-2" (click)="openDocModal()">
+            Soumettre un document
+          </button>
+        </div>
+      </section>
+    </div>
+
+    <!-- ─── Right Column ─── -->
+    <div class="side-column">
+
+      <!-- Infos personnelles -->
+      <section class="zir-card profile-section">
+        <h2 class="section-title">
+          <ng-icon name="lucideSettings"></ng-icon>
+          Informations Personnelles
+        </h2>
+        <p class="section-desc">Vos informations de contact visibles par les expéditeurs.</p>
+
+        <div class="form-group">
+          <label class="zir-label">Nom complet</label>
+          <input type="text" class="zir-input" [ngModel]="profile().user?.['name']"
+                 (ngModelChange)="updateUserName($event)" placeholder="Ex: Ahmed Ben Ali">
+        </div>
+        <div class="form-group">
+          <label class="zir-label">Numéro de téléphone</label>
+          <div class="input-icon-wrap">
+            <ng-icon name="lucidePhone"></ng-icon>
+            <input type="text" class="zir-input" [ngModel]="profile().user?.['phone']"
+                   (ngModelChange)="updateUserPhone($event)" placeholder="+216 55 123 456">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="zir-label">Gouvernorat de base</label>
+          <input type="text" class="zir-input" [ngModel]="profile().governorate"
+                 (ngModelChange)="updateGovernorate($event)" placeholder="Ex: Nabeul, Sfax...">
+        </div>
+
+        <button class="zir-btn zir-btn--primary zir-btn--large w-full mt-4"
+                [disabled]="isSaving()" (click)="savePersonalInfo()">
+          @if (isSaving()) {
+            <div class="zir-spinner zir-spinner--white"></div>
+          } @else {
+            <ng-icon name="lucideSave"></ng-icon>
+            Enregistrer les Informations
+          }
+        </button>
+      </section>
+
+      <!-- Statut & Note -->
+      <section class="zir-card profile-section">
+        <h2 class="section-title">
+          <ng-icon name="lucideStar"></ng-icon>
+          Réputation & Évaluations
+        </h2>
+        <p class="section-desc">Votre note moyenne calculée sur toutes vos missions livrées.</p>
+
+        <div class="rating-display">
+          <div class="big-rating">{{ profile().rating || '5.0' }}</div>
+          <div class="rating-stars">
+            @for (i of [1,2,3,4,5]; track i) {
+              <ng-icon name="lucideStar" [class.gold]="i <= (profile().rating || 5)" class="star-i"></ng-icon>
+            }
+          </div>
+          <p class="rating-label">Note globale sur 5</p>
+        </div>
+
+        <div class="rating-note-box">
+          <ng-icon name="lucideInfo"></ng-icon>
+          <p>Vos évaluations s'améliorent avec chaque mission complétée à temps. Une note ≥ 4.5 vous donne accès aux missions premium.</p>
+        </div>
+      </section>
+    </div>
+
+  </div>
+
+  <!-- ─── Document Modal ─── -->
+  @if (showDocModal()) {
+    <div class="zir-modal-overlay">
+      <div class="zir-modal doc-modal zir-animate-scale">
+        <div class="modal-header">
+          <h2><ng-icon name="lucideShield"></ng-icon> Soumettre un document</h2>
+          <button class="close-modal-btn" (click)="closeDocModal()"><ng-icon name="lucideX"></ng-icon></button>
+        </div>
+        <div class="modal-body">
+          <p class="modal-intro">Nos équipes vérifieront le document sous 24-48h et activeront votre badge vérifié.</p>
+          <div class="form-group">
+            <label class="zir-label">Nom du document *</label>
+            <input type="text" class="zir-input" [(ngModel)]="docForm.doc_name" placeholder="Ex: Permis B, Assurance Véhicule, Carte Grise...">
+          </div>
+          <div class="form-group">
+            <label class="zir-label">Numéro du document</label>
+            <input type="text" class="zir-input" [(ngModel)]="docForm.doc_number" placeholder="Ex: B-12345678">
+          </div>
+          <div class="form-group">
+            <label class="zir-label">Autorité délivrante</label>
+            <input type="text" class="zir-input" [(ngModel)]="docForm.issuing_authority" placeholder="Ex: Ministère du Transport, ANTT...">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="zir-label">Date d'émission</label>
+              <input type="date" class="zir-input" [(ngModel)]="docForm.issued_date">
+            </div>
+            <div class="form-group">
+              <label class="zir-label">Date d'expiration</label>
+              <input type="date" class="zir-input" [(ngModel)]="docForm.expiry_date">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="zir-label">Lien vers le document (PDF / Image)</label>
+            <input type="url" class="zir-input" [(ngModel)]="docForm.document_url" placeholder="https://drive.google.com/...">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="zir-btn zir-btn--secondary" (click)="closeDocModal()">Annuler</button>
+          <button class="zir-btn zir-btn--primary" (click)="submitDocument()">Soumettre la vérification</button>
+        </div>
+      </div>
+    </div>
+  }
+
+</div>

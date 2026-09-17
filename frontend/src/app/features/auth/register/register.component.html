@@ -1,0 +1,165 @@
+<div class="auth-page">
+  <div class="auth-bg">
+    <div class="orb orb--1"></div>
+    <div class="orb orb--2"></div>
+  </div>
+
+  <div class="auth-container">
+    <div class="auth-card">
+      
+      <!-- HEADER -->
+      <div class="auth-header">
+        <a routerLink="/" class="auth-logo">
+          <div class="auth-logo__icon">
+            <img src="assets/ziria-icon.png" alt="ZirIA" class="auth-logo__img" />
+          </div>
+          <span class="auth-logo__text">Zir<span class="auth-logo__ia">IA</span></span>
+        </a>
+        <div class="auth-header__links">
+          <span class="auth-header__text">Déjà un compte ?</span>
+          <a routerLink="/login" class="auth-header__link" style="cursor:pointer; position:relative; z-index:1">Se connecter</a>
+        </div>
+      </div>
+
+      <!-- PROGRESS DOTS -->
+      <div class="progress-bar">
+        <div class="progress-dot" [class.active]="step() >= 1" [class.completed]="step() > 1">
+          <ng-icon *ngIf="step() > 1" name="lucideCheckCircle2"></ng-icon>
+          <span *ngIf="step() === 1">1</span>
+        </div>
+        <div class="progress-line" [class.active]="step() >= 2"></div>
+        <div class="progress-dot" [class.active]="step() >= 2" [class.completed]="step() > 2">
+          <ng-icon *ngIf="step() > 2" name="lucideCheckCircle2"></ng-icon>
+          <span *ngIf="step() === 2">2</span>
+          <span *ngIf="step() < 2">2</span>
+        </div>
+        <div class="progress-line" [class.active]="step() === 3"></div>
+        <div class="progress-dot" [class.active]="step() === 3">
+          <span>3</span>
+        </div>
+      </div>
+
+      <div class="auth-body">
+        <h2 class="auth-title">
+          {{ step() === 1 ? 'Créer un compte' : step() === 2 ? 'Choisir un rôle' : 'Dernière étape' }}
+        </h2>
+        <p class="auth-subtitle">
+          {{ step() === 1 ? 'Rejoignez la plateforme agricole de référence.' : step() === 2 ? 'Sélectionnez le profil qui correspond à votre activité.' : 'Où êtes-vous situé ?' }}
+        </p>
+
+        <div class="error-msg" *ngIf="errorMsg()">
+          {{ errorMsg() }}
+        </div>
+
+        <!-- STEP 1: Basic Info -->
+        <div class="step-content" *ngIf="step() === 1">
+          <div class="input-group">
+            <label>Nom complet</label>
+            <div class="input-wrapper">
+              <ng-icon name="lucideUser" class="input-icon"></ng-icon>
+              <input type="text" [(ngModel)]="name" placeholder="Foulen Ben Foulen">
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label>Email</label>
+            <div class="input-wrapper">
+              <ng-icon name="lucideMail" class="input-icon"></ng-icon>
+              <input type="email" [(ngModel)]="email" placeholder="contact@exemple.tn">
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label>Téléphone (Optionnel)</label>
+            <div class="input-wrapper">
+              <ng-icon name="lucidePhone" class="input-icon"></ng-icon>
+              <input type="tel" [(ngModel)]="phone" placeholder="2X XXX XXX">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="input-group">
+              <label>Mot de passe</label>
+              <div class="input-wrapper">
+                <ng-icon name="lucideLock" class="input-icon"></ng-icon>
+                <input [type]="showPassword() ? 'text' : 'password'" [(ngModel)]="password" placeholder="••••••••">
+                <button type="button" class="toggle-password" (click)="togglePasswordVisibility()">
+                  <ng-icon [name]="showPassword() ? 'lucideEyeOff' : 'lucideEye'"></ng-icon>
+                </button>
+              </div>
+            </div>
+            <div class="input-group">
+              <label>Confirmer</label>
+              <div class="input-wrapper">
+                <ng-icon name="lucideLock" class="input-icon"></ng-icon>
+                <input [type]="showConfirmPassword() ? 'text' : 'password'" [(ngModel)]="confirmPassword" placeholder="••••••••">
+                <button type="button" class="toggle-password" (click)="toggleConfirmPasswordVisibility()">
+                  <ng-icon [name]="showConfirmPassword() ? 'lucideEyeOff' : 'lucideEye'"></ng-icon>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 2: Roles -->
+        <div class="step-content" *ngIf="step() === 2">
+          <div class="roles-selection">
+            <div class="role-item" *ngFor="let r of roles" 
+                 [class.selected]="role === r.id"
+                 (click)="role = r.id"
+                 [style.--r-color]="r.color">
+              <div class="role-item__radio"></div>
+              <div class="role-item__name">{{ r.name }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 3: Governorate -->
+        <div class="step-content" *ngIf="step() === 3">
+          <div class="input-group">
+            <label>Gouvernorat</label>
+            <div class="input-wrapper">
+              <ng-icon name="lucideMapPin" class="input-icon"></ng-icon>
+              <select [(ngModel)]="governorate">
+                <option value="" disabled selected>Sélectionner...</option>
+                <option *ngFor="let gov of governorates" [value]="gov">{{ gov }}</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="input-group" *ngIf="role === 'COOP_PRESIDENT'">
+            <label>Nom de la SMSA / Coopérative</label>
+            <div class="input-wrapper">
+              <ng-icon name="lucideBuilding" class="input-icon"></ng-icon>
+              <input type="text" [(ngModel)]="coopName" placeholder="SMSA Ennajah">
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- FOOTER / ACTIONS -->
+      <div class="auth-actions">
+        <button class="zir-btn zir-btn--ghost" *ngIf="step() > 1" (click)="prevStep()" [disabled]="loading()">
+          <ng-icon name="lucideChevronLeft"></ng-icon> Retour
+        </button>
+        <div class="spacer" *ngIf="step() > 1"></div>
+
+        <button class="zir-btn zir-btn--primary full-w-if-step1" *ngIf="step() < 3" (click)="nextStep()">
+          Suivant <ng-icon name="lucideArrowRight"></ng-icon>
+        </button>
+
+        <button class="zir-btn zir-btn--primary" *ngIf="step() === 3" (click)="submit()" [disabled]="loading()">
+          <span *ngIf="loading()" class="spinner"></span>
+          <span *ngIf="!loading()">Terminer l'inscription</span>
+        </button>
+      </div>
+
+      <div class="auth-footer" style="text-align:center; margin-top:20px; font-size:13px; color:#94a3b8;">
+        <span>Déjà un compte ? </span>
+        <a routerLink="/login" class="auth-header__link">Se connecter</a>
+      </div>
+
+    </div>
+  </div>
+</div>

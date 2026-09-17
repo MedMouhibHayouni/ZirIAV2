@@ -1,0 +1,29 @@
+.vitrine-container {
+  min-height: 100vh;
+  background-color: var(--bg-primary);
+  /* The theme color is dynamically injected into style attribute as --supplier-accent */
+}
+
+.active-tab {
+  color: var(--text-primary) !important;
+}
+
+.product-card {
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  transition: all var(--t-base);
+  
+  &:hover {
+    border-color: var(--supplier-accent);
+    background: var(--bg-card-hover);
+    box-shadow: var(--shadow-md), var(--shadow-glow);
+  }
+}
+
+.btn-theme-primary {
+  background-color: var(--supplier-accent);
+  color: black;
+  &:hover {
+    opacity: 0.9;
+  }
+}

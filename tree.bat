@@ -1,0 +1,2 @@
+@echo off
+powershell -NoProfile -ExecutionPolicy Bypass -Command "& { function Show-Tree { param($p,$pre) $ex=@('node_modules','data','.git','dist','build','__pycache__','.angular','coverage','venv','.venv','tmp','out-tsc','.idea','.vscode','.pytest_cache'); Get-ChildItem -LiteralPath $p -Directory -Force | Where-Object { $ex -notcontains $_.Name } | Sort-Object Name | ForEach-Object { Write-Host ($pre + '+-- ' + $_.Name); Show-Tree $_.FullName ($pre + '    ') } }; Show-Tree (Get-Location).Path '' }"

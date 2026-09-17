@@ -1,0 +1,352 @@
+.driver-current {
+  padding: 2rem;
+  max-width: 900px;
+  margin: 0 auto;
+
+  .current-header {
+    margin-bottom: 2rem;
+
+    h1 {
+      font-size: 1.75rem; font-weight: 800; color: var(--text-primary);
+      display: flex; align-items: center; gap: 12px; margin: 0 0 4px;
+      ng-icon { color: var(--zir-emerald); }
+    }
+    p { font-size: 0.95rem; color: var(--text-muted); margin: 0; }
+  }
+
+  .loading-state {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 16px; padding: 80px 24px; color: var(--text-muted);
+    p { font-size: 0.95rem; margin: 0; }
+  }
+
+  .active-mission-layout {
+    display: flex; flex-direction: column; gap: 20px;
+  }
+
+  // ── Status Tracker ──
+  .status-tracker-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 1.5rem 2rem;
+
+    h3 { font-size: 0.95rem; font-weight: 700; color: var(--text-primary); margin: 0 0 1.5rem; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    .steps {
+      display: flex; align-items: center; gap: 0;
+
+      .step {
+        display: flex; flex-direction: column; align-items: center; gap: 8px;
+
+        .step-icon {
+          width: 44px; height: 44px; border-radius: 50%;
+          background: var(--bg-primary);
+          border: 2px solid var(--border-color);
+          display: flex; align-items: center; justify-content: center;
+          color: var(--text-muted); font-size: 18px;
+          transition: all 0.3s ease;
+        }
+
+        .step-label { font-size: 12px; font-weight: 600; color: var(--text-muted); white-space: nowrap; }
+
+        &.done .step-icon {
+          background: rgba(16,185,129,0.1);
+          border-color: var(--zir-emerald);
+          color: var(--zir-emerald);
+        }
+
+        &.active .step-icon {
+          background: rgba(16,185,129,0.15);
+          border-color: var(--zir-emerald);
+          color: var(--zir-emerald);
+          box-shadow: 0 0 0 4px rgba(16,185,129,0.15);
+          animation: pulse 2s infinite;
+        }
+      }
+
+      .step-line {
+        flex: 1; height: 2px;
+        background: var(--border-color);
+        margin-bottom: 20px;
+        transition: background 0.3s ease;
+
+        &.done { background: var(--zir-emerald); }
+      }
+    }
+  }
+
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(16,185,129,0.3); }
+    50% { box-shadow: 0 0 0 8px rgba(16,185,129,0); }
+  }
+
+  // ── Mission Detail Card ──
+  .mission-detail-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    overflow: hidden;
+
+    .contract-status-bar {
+      background: var(--bg-primary);
+      border-bottom: 1px solid var(--border-color);
+      padding: 1rem 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.9rem;
+
+      .bar-label {
+        font-weight: 600;
+        color: var(--text-muted);
+      }
+
+      .zir-badge {
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+
+        &.zir-badge--info {
+          background: rgba(59, 130, 246, 0.1);
+          color: #3b82f6;
+        }
+        &.zir-badge--success {
+          background: rgba(16, 185, 129, 0.1);
+          color: var(--zir-emerald);
+        }
+        &.zir-badge--danger {
+          background: rgba(239, 68, 68, 0.1);
+          color: #ef4444;
+        }
+        &.zir-badge--default {
+          background: var(--bg-primary);
+          color: var(--text-muted);
+          border: 1px solid var(--border-color);
+        }
+      }
+
+      .accept-contract-inline-btn {
+        margin-left: auto;
+        background: var(--zir-emerald);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 6px 12px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background 0.2s ease;
+        &:hover {
+          background: #059669;
+        }
+      }
+    }
+  }
+
+  .route-display {
+    background: linear-gradient(135deg, #0f2027, #203a43);
+    padding: 2rem;
+    display: flex; align-items: center; gap: 16px;
+
+    .route-node {
+      flex: 1; display: flex; align-items: flex-start; gap: 12px;
+
+      .node-pulse {
+        position: relative;
+
+        &::after {
+          content: ''; position: absolute;
+          width: 24px; height: 24px; border-radius: 50%;
+          background: rgba(16,185,129,0.3);
+          top: -6px; left: -6px;
+          animation: pulse-ring 2s infinite;
+        }
+      }
+
+      .node-dot {
+        width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; margin-top: 4px;
+        &.green { background: #10b981; }
+        &.amber { background: #f59e0b; }
+      }
+
+      .node-info {
+        label { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 4px; }
+        h3 { font-size: 1rem; font-weight: 700; color: white; margin: 0; }
+      }
+    }
+
+    .route-connector {
+      display: flex; flex-direction: column; align-items: center; gap: 4px; flex-shrink: 0;
+
+      .connector-line { width: 60px; height: 2px; background: rgba(255,255,255,0.2); }
+      .truck-on-road { font-size: 1.5rem; color: var(--zir-emerald); }
+    }
+  }
+
+  @keyframes pulse-ring {
+    0% { transform: scale(0.8); opacity: 1; }
+    100% { transform: scale(1.5); opacity: 0; }
+  }
+
+  .detail-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px;
+    border-bottom: 1px solid var(--border-color);
+
+    @media (max-width: 600px) { grid-template-columns: 1fr; }
+
+    .detail-item {
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 1.25rem 1.5rem;
+      border-right: 1px solid var(--border-color);
+      border-bottom: 1px solid var(--border-color);
+
+      &:nth-child(2n) { border-right: none; }
+      &:nth-last-child(-n+2) { border-bottom: none; }
+
+      ng-icon { font-size: 18px; color: var(--text-muted); flex-shrink: 0; margin-top: 2px; }
+
+      div {
+        display: flex; flex-direction: column; gap: 3px;
+
+        label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        span { font-size: 14px; font-weight: 700; color: var(--text-primary); }
+        span.highlight { color: var(--zir-emerald); }
+
+        .call-link {
+          display: inline-flex; align-items: center; gap: 4px;
+          color: #3b82f6; font-size: 13px; font-weight: 600; text-decoration: none;
+          &:hover { text-decoration: underline; }
+          ng-icon { font-size: 13px; }
+        }
+      }
+    }
+  }
+
+  .action-row {
+    padding: 1.25rem 1.5rem;
+    display: flex; justify-content: center;
+  }
+
+  .action-btn {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 14px 36px; border-radius: 12px;
+    border: none; cursor: pointer;
+    font-size: 15px; font-weight: 700;
+    transition: all 0.2s ease;
+
+    &:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .zir-spinner { width: 16px; height: 16px; }
+    ng-icon { font-size: 18px; }
+
+    &.start-btn {
+      background: #3b82f6; color: white;
+      &:hover:not(:disabled) { background: #2563eb; }
+    }
+
+    &.complete-btn {
+      background: var(--zir-emerald); color: white;
+      &:hover:not(:disabled) { background: #059669; }
+    }
+  }
+
+  .delivered-banner {
+    margin: 1.25rem 1.5rem;
+    display: flex; align-items: center; gap: 10px;
+    padding: 14px 20px; border-radius: 12px;
+    background: rgba(16,185,129,0.08);
+    border: 1px solid rgba(16,185,129,0.2);
+    color: var(--zir-emerald); font-size: 15px; font-weight: 700;
+    ng-icon { font-size: 20px; }
+  }
+
+  // ── No Mission ──
+  .no-mission-state {
+    display: flex; flex-direction: column; align-items: center;
+    padding: 80px 24px; text-align: center;
+    background: var(--bg-card);
+    border: 1px dashed var(--border-color);
+    border-radius: 20px;
+
+    .no-mission-icon {
+      width: 80px; height: 80px; border-radius: 50%;
+      background: rgba(16,185,129,0.06);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 1.5rem;
+      ng-icon { font-size: 2.2rem; color: var(--zir-emerald); }
+    }
+
+    h2 { font-size: 1.4rem; font-weight: 800; color: var(--text-primary); margin: 0 0 8px; }
+    p { font-size: 0.95rem; color: var(--text-muted); margin: 0 0 1.75rem; max-width: 380px; line-height: 1.5; }
+  }
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+    .route-display { flex-direction: column; .route-connector { transform: rotate(90deg); } }
+  }
+
+  // ── GPS Tracking ──
+  .tracking-btn {
+    background: linear-gradient(135deg, #1e40af, #3b82f6);
+    color: #fff;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    display: flex; align-items: center; gap: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover { opacity: 0.9; transform: translateY(-1px); }
+    &:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    &.tracking-active {
+      background: linear-gradient(135deg, #dc2626, #ef4444);
+      animation: pulse-border 2s infinite;
+    }
+  }
+
+  .tracking-live-badge {
+    display: flex; align-items: center; gap: 10px;
+    background: rgba(59, 130, 246, 0.08);
+    border: 1px solid rgba(59, 130, 246, 0.25);
+    border-radius: 10px;
+    padding: 10px 16px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #3b82f6;
+    margin-top: 12px;
+  }
+
+  .pulse-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: #3b82f6;
+    position: relative;
+    flex-shrink: 0;
+
+    &::before {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: 50%;
+      background: rgba(59, 130, 246, 0.3);
+      animation: pulse-ring 1.5s ease-out infinite;
+    }
+  }
+
+  @keyframes pulse-ring {
+    0%   { transform: scale(0.8); opacity: 0.8; }
+    100% { transform: scale(2.2); opacity: 0; }
+  }
+
+  @keyframes pulse-border {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+    50%       { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
+  }
+}
+

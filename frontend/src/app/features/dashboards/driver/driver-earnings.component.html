@@ -1,0 +1,107 @@
+<div class="driver-earnings zir-animate-in">
+
+  <div class="earnings-header">
+    <div class="header-info">
+      <h1><ng-icon name="lucideDollarSign"></ng-icon> Mes Revenus & Portefeuille</h1>
+      <p>Suivez en temps réel le solde disponible, les gains en attente et l'historique financier.</p>
+    </div>
+    <button class="export-btn" (click)="exportReport()">
+      <ng-icon name="lucideDownload"></ng-icon>
+      Télécharger le relevé
+    </button>
+  </div>
+
+  @if (isLoading()) {
+    <div class="loading-state">
+      <div class="zir-spinner"></div>
+      <p>Chargement de vos revenus...</p>
+    </div>
+  } @else {
+    <!-- KPI Cards -->
+    <div class="kpi-grid">
+      <div class="kpi-card green">
+        <div class="kpi-icon"><ng-icon name="lucideDollarSign"></ng-icon></div>
+        <div class="kpi-body">
+          <span class="kpi-label">Solde Disponible</span>
+          <div class="kpi-value">{{ formatAmount(wallet()?.balance_available_tnd) }} <span>TND</span></div>
+        </div>
+        <div class="kpi-trend">Prêt au retrait</div>
+      </div>
+
+      <div class="kpi-card orange">
+        <div class="kpi-icon"><ng-icon name="lucideCalendar"></ng-icon></div>
+        <div class="kpi-body">
+          <span class="kpi-label">En attente (bloqué 48h)</span>
+          <div class="kpi-value">{{ formatAmount(wallet()?.balance_pending_tnd) }} <span>TND</span></div>
+        </div>
+      </div>
+
+      <div class="kpi-card emerald">
+        <div class="kpi-icon"><ng-icon name="lucideCheckCircle"></ng-icon></div>
+        <div class="kpi-body">
+          <span class="kpi-label">Total gagné</span>
+          <div class="kpi-value">{{ formatAmount(wallet()?.total_earned_all_time_tnd) }} <span>TND</span></div>
+        </div>
+      </div>
+
+      <div class="kpi-card purple">
+        <div class="kpi-icon"><ng-icon name="lucideActivity"></ng-icon></div>
+        <div class="kpi-body">
+          <span class="kpi-label">Commissions déduites</span>
+          <div class="kpi-value">{{ formatAmount(wallet()?.total_platform_commission_deducted_tnd) }} <span>TND</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chart -->
+    <div class="chart-card">
+      <div class="chart-header">
+        <h3>Historique de paiement mensuel</h3>
+        <span class="chart-sub">Revenus estimés par mois</span>
+      </div>
+      <div class="bar-chart">
+        @for (h of barHeights; track $index) {
+          <div class="bar-col">
+            <div class="bar" [style.height.%]="h" [title]="months[$index]"></div>
+            <span class="bar-label">{{ months[$index] }}</span>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- History Table -->
+    <div class="history-card">
+      <h3>Historique du portefeuille</h3>
+      @if (!wallet()?.transactions?.length) {
+        <div class="empty-history">
+          <ng-icon name="lucideTruck"></ng-icon>
+          <p>Aucune transaction enregistrée pour le moment.</p>
+        </div>
+      } @else {
+        <div class="table-wrap">
+          <table class="earnings-table">
+            <thead>
+              <tr>
+                <th>Type de Transaction</th>
+                <th>Description / Référence</th>
+                <th>Date</th>
+                <th>Montant</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (tx of wallet()?.transactions; track tx.id) {
+                <tr>
+                  <td><span class="cargo-badge">{{ tx.transaction_type }}</span></td>
+                  <td>{{ tx.description || '—' }}</td>
+                  <td class="date-cell">{{ tx.created_at | date:'dd MMM yyyy HH:mm' }}</td>
+                  <td class="amount-cell" [class.negative]="tx.amount_tnd < 0">{{ formatAmount(tx.amount_tnd) }} TND</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  }
+
+</div>

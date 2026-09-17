@@ -1,0 +1,310 @@
+.smsa-overview {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+
+  &__stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+
+    @media (max-width: 1200px) { grid-template-columns: repeat(2, 1fr); }
+    @media (max-width: 640px)  { grid-template-columns: 1fr; }
+  }
+
+  &__main-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 24px;
+
+    @media (max-width: 1024px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  &__card-header {
+    margin-bottom: 24px;
+    h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+  }
+
+  &__feed {
+    display: flex;
+    flex-direction: column;
+    min-height: 400px;
+  }
+
+  &__feed-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  &__feed-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+
+    &:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+  }
+
+  &__feed-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+
+    &.sale {
+      background: rgba(34, 197, 94, 0.15);
+      color: var(--zir-emerald);
+    }
+    &.disease {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--error);
+    }
+    &.job {
+      background: rgba(249, 115, 22, 0.15);
+      color: #f97316;
+    }
+    &.other {
+      background: rgba(59, 130, 246, 0.15);
+      color: #3b82f6;
+    }
+  }
+
+  &__feed-content {
+    p {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+  }
+
+  &__feed-time {
+    display: block;
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-top: 4px;
+    text-transform: uppercase;
+  }
+
+  &__weather-card {
+    background: linear-gradient(135deg, var(--bg-card) 0%, rgba(34, 197, 94, 0.05) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative;
+    overflow: hidden;
+
+    .smsa-overview__card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      
+      .location-badge {
+        font-size: 10px;
+        background: rgba(34, 197, 94, 0.1);
+        color: var(--zir-emerald);
+        padding: 4px 8px;
+        border-radius: 20px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+    }
+  }
+
+  .weather-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .weather-day-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 16px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+
+    &:hover {
+      transform: translateX(8px);
+      background: rgba(255, 255, 255, 0.06);
+      border-color: var(--zir-emerald);
+    }
+
+    &.is-today {
+      background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(34, 197, 94, 0.05) 100%);
+      border-color: rgba(34, 197, 94, 0.2);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+
+    .day-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-primary);
+      text-transform: capitalize;
+    }
+
+    .day-date {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .weather-main {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin: 12px 0;
+    }
+
+    .weather-icon-wrapper {
+      position: relative;
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      .weather-icon {
+        font-size: 32px;
+        color: var(--zir-emerald);
+        z-index: 2;
+      }
+
+      .icon-glow {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background: var(--zir-emerald);
+        filter: blur(15px);
+        opacity: 0.2;
+        border-radius: 50%;
+      }
+    }
+
+    .temp-display {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+
+      .current-temp {
+        font-size: 32px;
+        font-weight: 800;
+        color: var(--text-primary);
+        letter-spacing: -1px;
+      }
+
+      .temp-range {
+        display: flex;
+        flex-direction: column;
+        font-size: 11px;
+        line-height: 1.2;
+
+        .max { color: #f87171; font-weight: 600; }
+        .min { color: #60a5fa; font-weight: 600; }
+      }
+    }
+
+    .weather-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+
+      .weather-desc {
+        font-size: 12px;
+        color: var(--text-secondary);
+        font-weight: 500;
+      }
+
+      .weather-stats {
+        display: flex;
+        gap: 12px;
+        font-size: 11px;
+        color: var(--text-muted);
+
+        span {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          ng-icon { font-size: 14px; }
+        }
+      }
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SPRINT 13 — Mobile Responsiveness
+// ═══════════════════════════════════════════════════════════════
+
+@media (max-width: 767px) {
+  .smsa-overview {
+    gap: 16px;
+
+    // KPI stats: 4→2 cols at 768px, 1 col at 480px
+    &__stats-grid {
+      grid-template-columns: 1fr 1fr !important;
+      gap: 12px;
+    }
+
+    // Main grid: stack vertically
+    &__main-grid {
+      grid-template-columns: 1fr !important;
+    }
+
+    // Activity feed: ensure vertical scroll
+    &__feed {
+      min-height: auto;
+      max-height: 400px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    // Weather card: single full-width column (already vertical list)
+    &__weather-card {
+      width: 100%;
+    }
+  }
+
+  // Page header: stack buttons below title
+  .smsa-overview header.page-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+
+    > div:last-child {
+      width: 100%;
+      flex-wrap: wrap;
+      button { flex: 1; min-height: 44px; }
+    }
+  }
+
+  // Broadcast modal textarea: full-width
+  textarea.zir-input {
+    width: 100%;
+  }
+}
+
+@media (max-width: 479px) {
+  .smsa-overview__stats-grid {
+    grid-template-columns: 1fr !important;
+  }
+}

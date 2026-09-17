@@ -1,0 +1,73 @@
+<div class="amb-shell">
+
+  <!-- ══ LEFT ICON SIDEBAR ══════════════════════════════════════════════════ -->
+  <nav class="amb-sidebar">
+    <!-- Logo / Brand -->
+    <div class="amb-brand">
+      <div class="amb-brand-icon">
+        <ng-icon name="lucideShield"></ng-icon>
+      </div>
+    </div>
+
+    <!-- Zone Health Indicator -->
+    @if (stats()) {
+      <div class="amb-health-ring" [class.health-good]="stats()!.zone_health_score >= 70"
+           [class.health-warn]="stats()!.zone_health_score >= 50 && stats()!.zone_health_score < 70"
+           [class.health-bad]="stats()!.zone_health_score < 50"
+           [title]="'Santé Zone: ' + stats()!.zone_health_score + '/100'">
+        <span class="health-score">{{ stats()!.zone_health_score }}</span>
+      </div>
+    }
+
+    <!-- Nav Items -->
+    <ul class="amb-nav">
+      @for (item of navItems; track item.route) {
+        <li class="amb-nav-item">
+          <a class="amb-nav-link" [routerLink]="item.route" routerLinkActive="active"
+             [title]="item.label">
+            <ng-icon [name]="item.icon"></ng-icon>
+            @if (item.badgeSignal && item.badgeSignal() > 0) {
+              <span class="amb-badge" [class]="'badge-' + item.badgeColor">
+                {{ item.badgeSignal() > 99 ? '99+' : item.badgeSignal() }}
+              </span>
+            }
+          </a>
+          <div class="amb-tooltip">{{ item.label }}</div>
+        </li>
+      }
+    </ul>
+
+    <!-- Bottom: Profile + Logout -->
+    <div class="amb-sidebar-bottom">
+      <div class="amb-avatar" [title]="user()?.name ?? 'Ambassadeur'">
+        {{ getInitials() }}
+      </div>
+      <button class="amb-logout" (click)="logout()" title="Déconnexion">
+        <ng-icon name="lucideLogOut"></ng-icon>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ══ MAIN CONTENT ═══════════════════════════════════════════════════════ -->
+  <main class="amb-main">
+    <!-- Zone Banner -->
+    @if (stats()?.zone) {
+      <div class="amb-zone-banner">
+        <ng-icon name="lucideMap"></ng-icon>
+        <span class="zone-name">{{ stats()!.zone.name }}</span>
+        <span class="zone-meta">{{ stats()!.zone.delegation }} · {{ stats()!.zone.governorate }}</span>
+        @if (criticalCount() > 0) {
+          <span class="zone-alert-chip">
+            <ng-icon name="lucideAlertTriangle"></ng-icon>
+            {{ criticalCount() }} alerte{{ criticalCount() > 1 ? 's' : '' }} critique{{ criticalCount() > 1 ? 's' : '' }}
+          </span>
+        }
+      </div>
+    }
+
+    <div class="amb-content">
+      <router-outlet></router-outlet>
+    </div>
+  </main>
+
+</div>

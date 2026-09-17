@@ -1,0 +1,246 @@
+<div class="vitrine-container" *ngIf="!loading && !error && data">
+  
+  <!-- Cover Area -->
+  <div class="cover-area relative h-64 md:h-80 bg-gray-800 overflow-hidden">
+    <img [src]="data.supplier.vitrine_cover_url || 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?q=80&w=1200'" class="w-full h-full object-cover">
+    <div class="absolute inset-0 bg-gradient-to-t from-[var(--bg-primary)] via-transparent to-black/30"></div>
+  </div>
+
+  <!-- Profile Header -->
+  <div class="profile-header max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative -mt-16 md:-mt-24 z-10">
+    <div class="flex flex-col md:flex-row gap-6 items-start md:items-center">
+      <div class="w-28 h-28 md:w-40 md:h-40 rounded-2xl overflow-hidden border-4 border-[var(--bg-primary)] bg-gray-800 flex-shrink-0 shadow-xl">
+        <img *ngIf="data.supplier.vitrine_photo_url" [src]="data.supplier.vitrine_photo_url" class="w-full h-full object-cover">
+        <div *ngIf="!data.supplier.vitrine_photo_url" class="w-full h-full flex items-center justify-center text-5xl font-bold text-white bg-gradient-to-br from-[var(--supplier-accent)] to-gray-800">
+          {{(data.supplier.business_name || data.supplier.name)?.[0]?.toUpperCase()}}
+        </div>
+      </div>
+      
+      <div class="flex-1 pb-2">
+        <h1 class="text-3xl md:text-4xl font-bold text-white md:text-[var(--text-primary)] mb-2 drop-shadow-md md:drop-shadow-none">
+          {{data.supplier.business_name || data.supplier.name}}
+        </h1>
+        <div class="flex flex-wrap items-center gap-4 text-gray-200 md:text-[var(--text-secondary)]">
+          <div class="flex items-center">
+            <ng-icon name="lucideMapPin" class="w-4 h-4 mr-1 text-[var(--supplier-accent)]"></ng-icon>
+            {{data.supplier.delegation ? data.supplier.delegation + ', ' : ''}}{{data.supplier.governorate}}
+          </div>
+          <div class="flex items-center text-yellow-500 cursor-pointer" (click)="switchTab('reviews')">
+            <ng-icon name="lucideStar" class="w-4 h-4 mr-1 fill-current"></ng-icon>
+            <span class="font-bold mr-1">{{data.supplier.average_rating | number:'1.1-1'}}</span>
+            <span class="text-gray-300 md:text-[var(--text-muted)] text-sm">({{data.supplier.total_reviews}} avis)</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="pb-2 flex flex-wrap gap-3 w-full md:w-auto">
+        <a *ngIf="data.supplier.phone" [href]="'tel:' + data.supplier.phone" 
+           class="flex-1 md:flex-none btn-theme-secondary flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors border border-[var(--border)] hover:bg-[var(--bg-card-hover)] text-[var(--text-primary)]">
+          <ng-icon name="lucidePhone" class="text-[var(--supplier-accent)]"></ng-icon>
+          Appeler ({{data.supplier.phone}})
+        </a>
+        <a *ngIf="data.supplier.whatsapp_number" [href]="'https://wa.me/' + data.supplier.whatsapp_number" target="_blank" 
+           class="flex-1 md:flex-none btn-theme-primary flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors">
+          <ng-icon name="lucideMessageCircle"></ng-icon>
+          WhatsApp
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <!-- Tabs -->
+    <div class="flex border-b border-[var(--border)] mb-8 overflow-x-auto">
+      <button 
+        (click)="switchTab('products')"
+        [class.active-tab]="activeTab === 'products'"
+        class="px-6 py-4 text-[var(--text-muted)] font-medium hover:text-[var(--text-primary)] transition-colors whitespace-nowrap relative">
+        Catalogue ({{data.stats.active_products_count}})
+        <div *ngIf="activeTab === 'products'" class="absolute bottom-0 left-0 w-full h-0.5 bg-[var(--supplier-accent)]"></div>
+      </button>
+      <button 
+        (click)="switchTab('about')"
+        [class.active-tab]="activeTab === 'about'"
+        class="px-6 py-4 text-[var(--text-muted)] font-medium hover:text-[var(--text-primary)] transition-colors whitespace-nowrap relative">
+        À Propos
+        <div *ngIf="activeTab === 'about'" class="absolute bottom-0 left-0 w-full h-0.5 bg-[var(--supplier-accent)]"></div>
+      </button>
+      <button 
+        (click)="switchTab('reviews')"
+        [class.active-tab]="activeTab === 'reviews'"
+        class="px-6 py-4 text-[var(--text-muted)] font-medium hover:text-[var(--text-primary)] transition-colors whitespace-nowrap relative">
+        Avis ({{data.supplier.total_reviews}})
+        <div *ngIf="activeTab === 'reviews'" class="absolute bottom-0 left-0 w-full h-0.5 bg-[var(--supplier-accent)]"></div>
+      </button>
+    </div>
+
+    <!-- Tab: Products -->
+    <div *ngIf="activeTab === 'products'" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div *ngIf="data.products.length === 0" class="col-span-full py-12 text-center text-[var(--text-muted)] zir-card">
+        Ce fournisseur n'a pas encore ajouté de produits.
+      </div>
+      <div *ngFor="let product of data.products" class="zir-card product-card group overflow-hidden flex flex-col">
+        <div class="h-48 bg-gray-800 relative overflow-hidden">
+          <img *ngIf="product.photo_url" [src]="product.photo_url" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+          <div *ngIf="!product.photo_url" class="w-full h-full flex items-center justify-center">
+            <ng-icon name="lucideShoppingCart" class="text-4xl text-gray-600"></ng-icon>
+          </div>
+        </div>
+        <div class="p-4 flex flex-col flex-1">
+          <h3 class="text-lg font-bold text-[var(--text-primary)] mb-1">{{product.name}}</h3>
+          <p class="text-[var(--text-secondary)] text-sm mb-4 line-clamp-2">{{product.description}}</p>
+          <div class="mt-auto flex items-center justify-between">
+            <span class="text-xl font-bold text-[var(--supplier-accent)]">{{product.price_tnd}} TND</span>
+            <button class="text-sm bg-[var(--border)] hover:bg-[var(--bg-card-hover)] text-[var(--text-primary)] px-3 py-1.5 rounded-lg border border-[var(--border)] transition-colors">
+              Détails
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: About -->
+    <div *ngIf="activeTab === 'about'" class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div class="md:col-span-2 space-y-6">
+        <div class="zir-card p-6 md:p-8">
+          <h2 class="text-2xl font-bold text-[var(--text-primary)] mb-4">Présentation</h2>
+          <p class="text-[var(--text-secondary)] leading-relaxed whitespace-pre-wrap">
+            {{data.supplier.business_description || 'Aucune présentation fournie.'}}
+          </p>
+        </div>
+
+        <div class="zir-card p-6">
+          <h3 class="text-lg font-bold text-[var(--text-primary)] mb-4 flex items-center gap-2">
+            <ng-icon name="lucideMapPin" class="text-[var(--supplier-accent)]"></ng-icon>
+            Localisation de l'entreprise
+          </h3>
+          <div class="w-full h-80 md:h-96 rounded-xl overflow-hidden border border-[var(--border)] relative z-0">
+            <div #vitrineMap class="w-full h-full"></div>
+          </div>
+          <span class="text-xs text-[var(--text-muted)] block mt-2">
+            * Indication géographique approximative basée sur la délégation : {{data.supplier.delegation ? data.supplier.delegation + ', ' : ''}}{{data.supplier.governorate}}
+          </span>
+        </div>
+      </div>
+      
+      <div class="space-y-6">
+        <div class="zir-card p-6">
+          <h3 class="text-lg font-bold text-[var(--text-primary)] mb-4">Coordonnées</h3>
+          <ul class="space-y-4">
+            <li class="flex items-start gap-3 text-[var(--text-secondary)]">
+              <ng-icon name="lucideMapPin" class="text-[var(--supplier-accent)] mt-1"></ng-icon>
+              <span>{{data.supplier.delegation ? data.supplier.delegation + ', ' : ''}}{{data.supplier.governorate}}</span>
+            </li>
+            <li *ngIf="data.supplier.phone" class="flex items-center gap-3 text-[var(--text-secondary)]">
+              <ng-icon name="lucidePhone" class="text-[var(--supplier-accent)]"></ng-icon>
+              <a [href]="'tel:' + data.supplier.phone" class="hover:text-[var(--text-primary)] transition-colors">{{data.supplier.phone}}</a>
+            </li>
+            <li *ngIf="data.supplier.email" class="flex items-center gap-3 text-[var(--text-secondary)]">
+              <ng-icon name="lucideMail" class="text-[var(--supplier-accent)]"></ng-icon>
+              <a [href]="'mailto:' + data.supplier.email" class="hover:text-[var(--text-primary)] transition-colors">{{data.supplier.email}}</a>
+            </li>
+          </ul>
+        </div>
+        
+        <div *ngIf="data.supplier.website_url || data.supplier.facebook_url" class="zir-card p-6">
+          <h3 class="text-lg font-bold text-[var(--text-primary)] mb-4">Liens</h3>
+          <ul class="space-y-4">
+            <li *ngIf="data.supplier.website_url" class="flex items-center gap-3 text-[var(--text-secondary)]">
+              <ng-icon name="lucideGlobe" class="text-[var(--supplier-accent)]"></ng-icon>
+              <a [href]="data.supplier.website_url" target="_blank" class="hover:text-[var(--text-primary)] transition-colors truncate">Site Web</a>
+            </li>
+            <li *ngIf="data.supplier.facebook_url" class="flex items-center gap-3 text-[var(--text-secondary)]">
+              <ng-icon name="lucideFacebook" class="text-[var(--supplier-accent)]"></ng-icon>
+              <a [href]="data.supplier.facebook_url" target="_blank" class="hover:text-[var(--text-primary)] transition-colors truncate">Facebook</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: Reviews -->
+    <div *ngIf="activeTab === 'reviews'" class="space-y-6 max-w-4xl mx-auto">
+      <div class="flex items-center justify-between mb-8 zir-card p-6">
+        <div>
+          <div class="text-4xl font-bold text-[var(--text-primary)] mb-1">{{data.supplier.average_rating | number:'1.1-1'}}</div>
+          <div class="flex text-yellow-500 mb-1">
+            <ng-icon *ngFor="let i of [1,2,3,4,5]" name="lucideStar" [class.fill-current]="i <= data.supplier.average_rating"></ng-icon>
+          </div>
+          <div class="text-[var(--text-muted)] text-sm">{{data.supplier.total_reviews}} avis client(s)</div>
+        </div>
+        <button (click)="toggleReviewModal(true)" class="btn-theme-outline px-6 py-3 rounded-lg font-medium border border-[var(--supplier-accent)] text-[var(--supplier-accent)] hover:bg-[var(--supplier-accent)] hover:text-black transition-colors">
+          Laisser un avis
+        </button>
+      </div>
+
+      <div *ngIf="data.reviews.length === 0" class="text-center py-12 text-[var(--text-muted)]">
+        Soyez le premier à donner votre avis sur ce fournisseur.
+      </div>
+
+      <div *ngFor="let review of data.reviews" class="zir-card p-6">
+        <div class="flex items-start justify-between mb-4">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center text-white font-bold">
+              {{review.reviewer_name[0]}}
+            </div>
+            <div>
+              <div class="text-[var(--text-primary)] font-medium flex items-center gap-2">
+                {{review.reviewer_name}}
+                <span *ngIf="review.is_verified_purchase" class="text-xs bg-green-900/50 text-green-400 px-2 py-0.5 rounded-full border border-green-800">Achat vérifié</span>
+              </div>
+              <div class="text-[var(--text-muted)] text-sm">{{review.created_at | date:'mediumDate'}}</div>
+            </div>
+          </div>
+          <div class="flex text-yellow-500">
+            <ng-icon *ngFor="let i of [1,2,3,4,5]" name="lucideStar" [class.fill-current]="i <= review.rating" class="w-4 h-4"></ng-icon>
+          </div>
+        </div>
+        <p class="text-[var(--text-secondary)] leading-relaxed" *ngIf="review.comment">{{review.comment}}</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Loading / Error States -->
+<div *ngIf="loading" class="min-h-screen flex items-center justify-center bg-[var(--bg-primary)]">
+  <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[var(--supplier-accent, var(--zir-emerald))]"></div>
+</div>
+
+<div *ngIf="error" class="min-h-screen flex items-center justify-center flex-col text-center px-4 bg-[var(--bg-primary)]">
+  <ng-icon name="lucideMapPin" class="text-6xl text-gray-600 mb-4"></ng-icon>
+  <h2 class="text-2xl font-bold text-[var(--text-primary)] mb-2">Vitrine Introuvable</h2>
+  <p class="text-[var(--text-muted)] mb-6">Ce fournisseur n'existe pas ou sa vitrine n'est pas encore publiée.</p>
+  <a routerLink="/suppliers" class="text-[var(--zir-emerald)] hover:underline">Retour à l'annuaire</a>
+</div>
+
+<!-- Modal Review -->
+<div *ngIf="showReviewModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+  <div class="zir-card w-full max-w-md p-6 relative">
+    <h3 class="text-xl font-bold text-[var(--text-primary)] mb-6">Évaluer {{data.supplier.business_name || data.supplier.name}}</h3>
+    
+    <div class="mb-6">
+      <label class="block text-[var(--text-secondary)] mb-2">Note sur 5</label>
+      <div class="flex gap-2">
+        <button *ngFor="let i of [1,2,3,4,5]" (click)="newReview.rating = i" class="text-3xl transition-colors"
+                [class.text-yellow-500]="i <= newReview.rating"
+                [class.text-gray-600]="i > newReview.rating">
+          ★
+        </button>
+      </div>
+    </div>
+
+    <div class="mb-6">
+      <label class="block text-[var(--text-secondary)] mb-2">Votre avis (optionnel)</label>
+      <textarea [(ngModel)]="newReview.comment" class="zir-input w-full h-24 resize-none" placeholder="Partagez votre expérience..."></textarea>
+    </div>
+
+    <div class="flex gap-3 justify-end">
+      <button (click)="toggleReviewModal(false)" class="px-4 py-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)]">Annuler</button>
+      <button (click)="submitReview()" [disabled]="reviewSubmitting" class="btn-theme-primary px-6 py-2 rounded-lg font-medium disabled:opacity-50 text-black animate-pulse" [style.backgroundColor]="'var(--supplier-accent)'">
+        {{ reviewSubmitting ? 'Envoi...' : 'Envoyer' }}
+      </button>
+    </div>
+  </div>
+</div>

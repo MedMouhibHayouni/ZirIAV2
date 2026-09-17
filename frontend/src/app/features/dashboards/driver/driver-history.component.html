@@ -1,0 +1,86 @@
+<div class="driver-history zir-animate-in">
+
+  <div class="history-header">
+    <h1><ng-icon name="lucideHistory"></ng-icon> Historique des Missions</h1>
+    <p>Consultez l'ensemble de vos missions de transport complétées ou annulées.</p>
+  </div>
+
+  @if (isLoading()) {
+    <div class="loading-state">
+      <div class="zir-spinner"></div>
+      <p>Chargement de votre historique...</p>
+    </div>
+  } @else {
+    <!-- Summary Stats -->
+    <div class="summary-row">
+      <div class="summary-item">
+        <ng-icon name="lucideCheckCircle" class="icon green"></ng-icon>
+        <div>
+          <span class="val">{{ totalDelivered() }}</span>
+          <span class="lbl">Livrées</span>
+        </div>
+      </div>
+      <div class="summary-item">
+        <ng-icon name="lucideDollarSign" class="icon green"></ng-icon>
+        <div>
+          <span class="val">{{ formatAmount(totalEarned()) }}</span>
+          <span class="lbl">TND gagnés</span>
+        </div>
+      </div>
+      <div class="summary-item">
+        <ng-icon name="lucideStar" class="icon amber"></ng-icon>
+        <div>
+          <span class="val">{{ avgRating() }}</span>
+          <span class="lbl">Note moy.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mission List -->
+    <div class="missions-list">
+      @for (m of history(); track m.id) {
+        <div class="history-card">
+          <div class="card-left">
+            <div class="status-icon-wrap" [ngClass]="getStatusClass(m.status)">
+              @if (m.status === 'DELIVERED') {
+                <ng-icon name="lucideCheckCircle"></ng-icon>
+              } @else if (m.status === 'CANCELLED') {
+                <ng-icon name="lucideX"></ng-icon>
+              } @else {
+                <ng-icon name="lucideClock"></ng-icon>
+              }
+            </div>
+          </div>
+
+          <div class="card-body">
+            <div class="route-row">
+              <span class="city">{{ m.origin_address }}</span>
+              <ng-icon name="lucideArrowRight" class="route-arrow"></ng-icon>
+              <span class="city">{{ m.destination_address }}</span>
+            </div>
+            <div class="meta-chips">
+              <span class="chip cargo">{{ m.cargo_type || '—' }}</span>
+              <span class="chip weight">{{ m.weight_tonnes }}T</span>
+              <span class="chip date">{{ m.created_at | date:'dd MMM yyyy' }}</span>
+            </div>
+            <span class="status-badge" [ngClass]="getStatusClass(m.status)">
+              {{ getStatusLabel(m.status) }}
+            </span>
+          </div>
+
+          <div class="card-right">
+            <div class="amount">{{ formatAmount(m.accepted_price_tnd || m.proposed_price_tnd || 0) }}</div>
+            <div class="currency">TND</div>
+          </div>
+        </div>
+      } @empty {
+        <div class="empty-state">
+          <ng-icon name="lucideHistory"></ng-icon>
+          <h3>Aucune mission dans l'historique</h3>
+          <p>Vos missions complétées et annulées apparaîtront ici.</p>
+        </div>
+      }
+    </div>
+  }
+
+</div>

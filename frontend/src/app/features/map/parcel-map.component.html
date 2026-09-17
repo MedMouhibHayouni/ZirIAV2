@@ -1,0 +1,530 @@
+<div class="map-shell">
+
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <!-- LEFT SIDEBAR                                                           -->
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <aside class="map-sidebar" [class.map-sidebar--collapsed]="sidebarCollapsed()">
+
+    <!-- Sidebar Header — premium -->
+    <div class="map-sidebar__head">
+      <div class="map-sidebar__title" *ngIf="!sidebarCollapsed()">
+        <div class="map-sidebar__icon">
+          <ng-icon name="lucideMap" [size]="'18'"/>
+        </div>
+        <div class="map-sidebar__title-text">
+          <span class="map-sidebar__title-label">Mes Parcelles</span>
+          <span class="map-sidebar__title-sub">{{ parcels().length }} terrain{{ parcels().length !== 1 ? 's' : '' }} • {{ totalArea() | number:'1.1-1' }} ha</span>
+        </div>
+      </div>
+      <button class="map-sidebar__collapse-btn" (click)="sidebarCollapsed.set(!sidebarCollapsed())"
+              [attr.data-tooltip]="sidebarCollapsed() ? 'Ouvrir le panneau' : 'Réduire'">
+        <ng-icon [name]="sidebarCollapsed() ? 'lucideChevronRight' : 'lucideX'" [size]="'16'"/>
+      </button>
+    </div>
+
+    <ng-container *ngIf="!sidebarCollapsed()">
+
+      <!-- KPI Strip — elegant cards -->
+      <div class="map-sidebar__kpis">
+        <div class="map-kpi">
+          <div class="map-kpi__icon map-kpi__icon--emerald">
+            <ng-icon name="lucideHexagon" [size]="'18'"/>
+          </div>
+          <span class="map-kpi__value">{{ parcels().length }}</span>
+          <span class="map-kpi__label">Parcelles</span>
+        </div>
+        <div class="map-kpi">
+          <div class="map-kpi__icon map-kpi__icon--teal">
+            <ng-icon name="lucideRuler" [size]="'18'"/>
+          </div>
+          <span class="map-kpi__value">{{ totalArea() | number:'1.1-1' }}</span>
+          <span class="map-kpi__label">Hectares</span>
+        </div>
+        <div class="map-kpi map-kpi--alert" *ngIf="criticalCount() > 0">
+          <div class="map-kpi__icon map-kpi__icon--rose">
+            <ng-icon name="lucideAlertTriangle" [size]="'18'"/>
+          </div>
+          <span class="map-kpi__value map-kpi__value--alert">{{ criticalCount() }}</span>
+          <span class="map-kpi__label">Critiques</span>
+        </div>
+        <div class="map-kpi map-kpi--warn" *ngIf="warningCount() > 0 && criticalCount() === 0">
+          <div class="map-kpi__icon map-kpi__icon--amber">
+            <ng-icon name="lucideAlertTriangle" [size]="'18'"/>
+          </div>
+          <span class="map-kpi__value map-kpi__value--warn">{{ warningCount() }}</span>
+          <span class="map-kpi__label">Alertes</span>
+        </div>
+      </div>
+
+      <!-- Coop President Filter -->
+      <div class="map-sidebar__filter" *ngIf="auth.currentUser()?.role === 'COOP_PRESIDENT'">
+        <select class="zir-input" [ngModel]="selectedMemberId()" (ngModelChange)="selectedMemberId.set($event)" style="width: 100%; border: none; border-bottom: 1px solid rgba(255,255,255,0.1); border-radius: 0; padding: 12px 16px; background: transparent; color: white;">
+          <option value="all" style="color: #000;">Tous les membres</option>
+          <option *ngFor="let m of members()" [value]="m.id" style="color: #000;">{{ m.name }}</option>
+        </select>
+      </div>
+
+      <!-- Search — pill elegant -->
+      <div class="map-sidebar__search">
+        <div class="map-sidebar__search-wrap">
+          <div class="map-sidebar__search-icon">
+            <ng-icon name="lucideSearch" [size]="'15'"/>
+          </div>
+          <input
+            class="map-sidebar__search-input"
+            type="text"
+            placeholder="Rechercher une parcelle..."
+            [ngModel]="searchQuery()"
+            (ngModelChange)="searchQuery.set($event)"
+          />
+          <button *ngIf="searchQuery()" class="map-sidebar__search-clear" (click)="searchQuery.set('')">
+            <ng-icon name="lucideX" [size]="'14'"/>
+          </button>
+        </div>
+      </div>
+
+      <!-- Parcel List -->
+      <div class="map-sidebar__list">
+
+        <!-- Loading State -->
+        <ng-container *ngIf="isLoading()">
+          <div class="parcel-card-skeleton" *ngFor="let i of [1,2,3]"></div>
+        </ng-container>
+
+        <!-- Empty State -->
+        <div class="map-empty" *ngIf="!isLoading() && parcels().length === 0">
+          <div class="map-empty__icon">
+            <ng-icon name="lucideMap" [size]="'28'"/>
+          </div>
+          <p class="map-empty__title">Aucune parcelle</p>
+          <p class="map-empty__desc">Dessinez votre première parcelle avec le bouton +</p>
+        </div>
+
+        <!-- No Results -->
+        <div class="map-empty" *ngIf="!isLoading() && parcels().length > 0 && filteredParcels().length === 0">
+          <ng-icon name="lucideSearch" [size]="'22'"/>
+          <p class="map-empty__title">Aucun résultat</p>
+        </div>
+
+        <!-- Parcel Cards -->
+        <div class="parcel-card"
+             *ngFor="let parcel of filteredParcels()"
+             [class.parcel-card--active]="selectedParcel()?.id === parcel.id"
+             (click)="flyToParcel(parcel)">
+          <div class="parcel-card__accent" [style.background]="parcel.color_hex"></div>
+          <div class="parcel-card__body">
+            <div class="parcel-card__row">
+              <span class="parcel-card__name">{{ parcel.name || 'Parcelle sans nom' }}</span>
+              <span class="parcel-card__area">{{ parcel.area_ha | number:'1.1-1' }} ha</span>
+            </div>
+            <div class="parcel-card__row parcel-card__row--sub">
+              <span class="parcel-card__zones">
+                <ng-icon name="lucideLayers" [size]="'11'"/>
+                {{ parcel.crop_zones.length }} zone{{ parcel.crop_zones.length !== 1 ? 's' : '' }}
+              </span>
+              <span class="parcel-card__alert"
+                    [class.parcel-card__alert--warn]="parcel.alert_level === 'WARNING'"
+                    [class.parcel-card__alert--crit]="parcel.alert_level === 'CRITICAL'"
+                    [class.parcel-card__alert--ok]="parcel.alert_level === 'NORMAL'">
+                <ng-icon [name]="parcel.alert_level === 'NORMAL' ? 'lucideCheckCircle' : 'lucideAlertTriangle'" [size]="'11'"/>
+                {{ getAlertBadge(parcel.alert_level).label }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /list -->
+
+      <!-- Refresh -->
+      <div class="map-sidebar__foot">
+        <button class="zir-btn zir-btn--ghost map-sidebar__refresh" (click)="loadMapData()">
+          <ng-icon name="lucideRefreshCw" [size]="'13'"/>
+          Actualiser
+        </button>
+      </div>
+
+    </ng-container>
+  </aside>
+
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <!-- MAP AREA                                                               -->
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <div class="map-viewport">
+
+    <!-- Map Loading Skeleton -->
+    <div class="map-loading-overlay" *ngIf="isLoading()">
+      <div class="zir-spinner map-loading-overlay__spin"></div>
+      <span>Chargement de la carte…</span>
+    </div>
+
+    <!-- Error Banner -->
+    <div class="map-error-banner" *ngIf="error()">
+      <ng-icon name="lucideAlertCircle" [size]="'16'"/>
+      {{ error() }}
+      <button class="zir-btn--icon" (click)="loadMapData()">
+        <ng-icon name="lucideRefreshCw" [size]="'14'"/>
+      </button>
+    </div>
+
+    <!-- Map Canvas -->
+    <div #mapContainer class="map-canvas"></div>
+
+    <!-- Empty State Overlay (no parcels + not loading) — hidden during draw -->
+    <div class="map-first-use" *ngIf="!isLoading() && parcels().length === 0 && !error() && drawMode() === 'idle'">
+      <div class="map-first-use__card">
+        <div class="map-first-use__icon">
+          <ng-icon name="lucideCrop" [size]="'32'"/>
+        </div>
+        <h3>Dessinez votre première parcelle</h3>
+        <p>Cliquez sur le bouton <strong>+</strong> en bas à droite pour commencer à délimiter votre terrain.</p>
+        <button class="zir-btn zir-btn--primary map-first-use__cta" (click)="startDrawParcel()">
+          <ng-icon name="lucidePlus" [size]="'16'"/>
+          Créer ma première parcelle
+        </button>
+      </div>
+    </div>
+
+    <!-- ── Map Controls (top-right floating) ─────────────────────────────── -->
+    <div class="map-controls">
+      <!-- Layer Toggle -->
+      <button class="map-ctrl-btn" (click)="toggleLayer()"
+              [attr.data-tooltip]="layerMode() === 'street' ? 'Vue satellite' : 'Vue carte'">
+        <ng-icon [name]="layerMode() === 'street' ? 'lucideSatellite' : 'lucideMap'" [size]="'16'"/>
+      </button>
+    </div>
+
+    <!-- ── Draw Mode HUD ──────────────────────────────────────────────────── -->
+    <div class="draw-hud" *ngIf="drawMode() !== 'idle'">
+      <div class="draw-hud__left">
+        <div class="draw-hud__dot"></div>
+        <span>
+          {{ drawMode() === 'zone' ? 'Mode zone de culture' : 'Mode dessin parcelle' }}
+          — Cliquez pour placer les points.
+        </span>
+        <span class="draw-hud__area" *ngIf="realTimeArea() > 0">
+          <ng-icon name="lucideRuler" [size]="'12'"/>
+          {{ realTimeArea() | number:'1.2-2' }} ha
+        </span>
+      </div>
+      <div class="draw-hud__actions">
+        <button class="zir-btn zir-btn--primary draw-hud__finish"
+                (click)="finishDraw()">
+          <ng-icon name="lucideCheckCircle" [size]="'14'"/>
+          Terminer
+        </button>
+        <button class="zir-btn zir-btn--ghost" (click)="cancelDraw()">
+          <ng-icon name="lucideX" [size]="'14'"/>
+          Annuler
+        </button>
+      </div>
+    </div>
+
+    <!-- ── FAB — New Parcel ───────────────────────────────────────────────── -->
+    <button class="map-fab" *ngIf="drawMode() === 'idle'"
+            (click)="startDrawParcel()"
+            data-tooltip="Nouvelle parcelle">
+      <ng-icon name="lucidePlus" [size]="'22'"/>
+    </button>
+
+  </div><!-- /map-viewport -->
+
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <!-- RIGHT DETAIL PANEL                                                     -->
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <aside class="detail-panel" [class.detail-panel--open]="selectedParcel() !== null">
+    <ng-container *ngIf="selectedParcel() as parcel">
+
+      <!-- Panel Header -->
+      <div class="detail-panel__head">
+        <div class="detail-panel__swatch" [style.background]="parcel.color_hex"></div>
+        <div class="detail-panel__title-block">
+          <h3 class="detail-panel__name">{{ parcel.name || 'Parcelle sans nom' }}</h3>
+          <span class="detail-panel__area">
+            <ng-icon name="lucideRuler" [size]="'12'"/>
+            {{ parcel.area_ha | number:'1.2-2' }} ha
+          </span>
+          <span class="detail-panel__member" *ngIf="auth.currentUser()?.role === 'COOP_PRESIDENT' && parcel.user_name" style="font-size: 11px; color: var(--zir-emerald); margin-top: 4px;">
+            <ng-icon name="lucideActivity" [size]="'10'"/> {{ parcel.user_name }}
+          </span>
+        </div>
+        <span class="zir-badge zir-badge--{{ getAlertBadge(parcel.alert_level).cls }}">
+          {{ getAlertBadge(parcel.alert_level).label }}
+        </span>
+        <button class="zir-btn--icon detail-panel__close" (click)="closeDetail()">
+          <ng-icon name="lucideX" [size]="'15'"/>
+        </button>
+      </div>
+
+      <!-- Tab Bar -->
+      <div class="detail-tabs">
+        <button class="detail-tab" [class.detail-tab--active]="activeTab() === 'zones'"
+                (click)="activeTab.set('zones')">
+          <ng-icon name="lucideLayers" [size]="'13'"/>
+          Zones
+          <span class="detail-tab__count">{{ parcel.crop_zones.length }}</span>
+        </button>
+        <button class="detail-tab" [class.detail-tab--active]="activeTab() === 'weather'"
+                (click)="activeTab.set('weather')">
+          <ng-icon name="lucideZap" [size]="'13'"/>
+          Météo
+        </button>
+        <button class="detail-tab" [class.detail-tab--active]="activeTab() === 'actions'"
+                (click)="activeTab.set('actions')">
+          <ng-icon name="lucideSettings" [size]="'13'"/>
+          Actions
+        </button>
+      </div>
+
+      <!-- Tab: Zones -->
+      <div class="detail-panel__body" *ngIf="activeTab() === 'zones'">
+
+        <div class="detail-empty" *ngIf="parcel.crop_zones.length === 0">
+          <ng-icon name="lucideLayers" [size]="'24'"/>
+          <p>Aucune zone de culture définie</p>
+        </div>
+
+        <div class="zone-card" *ngFor="let zone of parcel.crop_zones">
+          <div class="zone-card__accent" [style.background]="zone.color_hex"></div>
+          <div class="zone-card__body">
+            <div class="zone-card__header">
+              <div class="zone-card__crop-dot" [style.background]="zone.color_hex"></div>
+              <span class="zone-card__crop">{{ getCropLabel(zone.crop_type) }}</span>
+              <span class="zone-card__surface">{{ zone.surface_ha | number:'1.2-2' }} ha</span>
+              <span class="zir-badge zir-badge--{{ getAlertBadge(zone.alert_level).cls }} zone-card__badge">
+                {{ getAlertBadge(zone.alert_level).label }}
+              </span>
+            </div>
+
+            <!-- GDD Progress Bar -->
+            <div class="gdd-bar">
+              <div class="gdd-bar__track">
+                <div class="gdd-bar__fill"
+                     [style.width.%]="zone.gdd_percentage"
+                     [style.background]="getGddColor(zone.gdd_percentage)">
+                </div>
+              </div>
+              <div class="gdd-bar__labels">
+                <span class="gdd-bar__label">GDD {{ zone.gdd_accumulated | number:'1.0-0' }} / {{ zone.gdd_percentage | number:'1.0-0' }}%</span>
+                <span class="gdd-bar__eta" [style.color]="getGddColor(zone.gdd_percentage)">
+                  <ng-icon name="lucideCalendar" [size]="'11'"/>
+                  Récolte : {{ formatEta(zone.harvest_eta_days) }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Planting Date -->
+            <div class="zone-card__meta" *ngIf="zone.planted_at">
+              <ng-icon name="lucideActivity" [size]="'11'"/>
+              Planté le {{ zone.planted_at | date:'d MMM yyyy' }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Add Zone Button -->
+        <button class="zone-add-btn" (click)="startDrawZone(parcel)">
+          <ng-icon name="lucidePlus" [size]="'14'"/>
+          Ajouter une zone de culture
+        </button>
+
+      </div>
+
+      <!-- Tab: Weather -->
+      <div class="detail-panel__body" *ngIf="activeTab() === 'weather'">
+        <ng-container *ngIf="parcel.weather; else noWeather">
+          <div class="weather-strip">
+            <div class="weather-day" *ngFor="let day of [0,1,2]">
+              <span class="weather-day__date">
+                {{ parcel.weather.time?.[day] | date:'EEE d' }}
+              </span>
+              <ng-icon [name]="'lucideDroplets'" [size]="'20'" class="weather-day__icon"/>
+              <span class="weather-day__temp">
+                {{ parcel.weather.temperature_2m_max?.[day] | number:'1.0-0' }}° /
+                {{ parcel.weather.temperature_2m_min?.[day] | number:'1.0-0' }}°
+              </span>
+            </div>
+          </div>
+          <div class="weather-location">
+            <ng-icon name="lucideNavigation" [size]="'11'"/>
+            Centroïde : {{ parcel.center_lat | number:'1.4-4' }}, {{ parcel.center_lng | number:'1.4-4' }}
+          </div>
+        </ng-container>
+        <ng-template #noWeather>
+          <div class="detail-empty">
+            <ng-icon name="lucideDroplets" [size]="'24'"/>
+            <p>Données météo indisponibles.<br>Vérifiez que la parcelle a des coordonnées GPS.</p>
+          </div>
+        </ng-template>
+      </div>
+
+      <!-- Tab: Actions -->
+      <div class="detail-panel__body" *ngIf="activeTab() === 'actions'">
+        <div class="action-list">
+          <button class="action-btn action-btn--primary" (click)="goToDiagnostic(parcel)">
+            <div class="action-btn__icon">
+              <ng-icon name="lucideActivity" [size]="'18'"/>
+            </div>
+            <div class="action-btn__text">
+              <span class="action-btn__label">Nouveau diagnostic</span>
+              <span class="action-btn__desc">Analyser une maladie sur cette parcelle</span>
+            </div>
+            <ng-icon name="lucideChevronRight" [size]="'16'" class="action-btn__arrow"/>
+          </button>
+
+          <button class="action-btn" (click)="goToMarketplace(parcel)">
+            <div class="action-btn__icon">
+              <ng-icon name="lucideTrendingUp" [size]="'18'"/>
+            </div>
+            <div class="action-btn__text">
+              <span class="action-btn__label">Créer une annonce</span>
+              <span class="action-btn__desc">Vendre la récolte de cette parcelle</span>
+            </div>
+            <ng-icon name="lucideChevronRight" [size]="'16'" class="action-btn__arrow"/>
+          </button>
+
+          <button class="action-btn" (click)="startDrawZone(parcel)">
+            <div class="action-btn__icon">
+              <ng-icon name="lucideLayers" [size]="'18'"/>
+            </div>
+            <div class="action-btn__text">
+              <span class="action-btn__label">Ajouter une zone</span>
+              <span class="action-btn__desc">Délimiter une zone de culture</span>
+            </div>
+            <ng-icon name="lucideChevronRight" [size]="'16'" class="action-btn__arrow"/>
+          </button>
+          
+          <button class="action-btn" *ngIf="auth.currentUser()?.role === 'COOP_PRESIDENT' && parcel.user_phone" (click)="callMember(parcel.user_phone)">
+            <div class="action-btn__icon">
+              <ng-icon name="lucidePhone" [size]="'18'"/>
+            </div>
+            <div class="action-btn__text">
+              <span class="action-btn__label">Contacter le membre</span>
+              <span class="action-btn__desc">{{ parcel.user_phone }}</span>
+            </div>
+            <ng-icon name="lucideChevronRight" [size]="'16'" class="action-btn__arrow"/>
+          </button>
+        </div>
+      </div>
+
+    </ng-container>
+  </aside>
+
+</div><!-- /map-shell -->
+
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<!-- NEW PARCEL MODAL                                                           -->
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<div class="modal-backdrop" *ngIf="showNewParcelModal()" (click)="cancelDraw()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal__head">
+      <h3>Nouvelle parcelle</h3>
+      <button class="zir-btn--icon" (click)="cancelDraw()">
+        <ng-icon name="lucideX" [size]="'15'"/>
+      </button>
+    </div>
+
+    <div class="modal__body">
+      <!-- Area Preview -->
+      <div class="modal__area-preview">
+        <ng-icon name="lucideHexagon" [size]="'20'"/>
+        <span>Surface estimée : <strong>{{ realTimeArea() | number:'1.2-2' }} ha</strong></span>
+      </div>
+
+      <!-- Name -->
+      <div class="modal__field">
+        <label class="zir-label">Nom de la parcelle</label>
+        <input
+          class="zir-input"
+          type="text"
+          placeholder="ex. Champ Nord, Terrain Basse…"
+          [ngModel]="newParcelName()"
+          (ngModelChange)="newParcelName.set($event)"
+          autofocus
+        />
+      </div>
+
+      <!-- Color Picker -->
+      <div class="modal__field">
+        <label class="zir-label">Couleur d'affichage</label>
+        <div class="color-swatches">
+          <button
+            class="color-swatch"
+            *ngFor="let c of PALETTE"
+            [style.background]="c"
+            [class.color-swatch--active]="newParcelColor() === c"
+            (click)="newParcelColor.set(c)"
+          ></button>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal__foot">
+      <button class="zir-btn zir-btn--ghost" (click)="cancelDraw()">Annuler</button>
+      <button class="zir-btn zir-btn--primary"
+              [disabled]="!newParcelName().trim()"
+              (click)="confirmNewParcel()">
+        <ng-icon name="lucideCheckCircle" [size]="'15'"/>
+        Enregistrer la parcelle
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<!-- NEW ZONE MODAL                                                             -->
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<div class="modal-backdrop" *ngIf="showNewZoneModal()" (click)="cancelDraw()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal__head">
+      <div class="modal__head-meta">
+        <span class="modal__head-badge">Zone de culture</span>
+        <h3>Nouvelle zone — {{ zoneDrawParcel()?.name || 'Parcelle' }}</h3>
+      </div>
+      <button class="zir-btn--icon" (click)="cancelDraw()">
+        <ng-icon name="lucideX" [size]="'15'"/>
+      </button>
+    </div>
+
+    <div class="modal__body">
+      <!-- Area Preview -->
+      <div class="modal__area-preview">
+        <ng-icon name="lucideLayers" [size]="'20'"/>
+        <span>Surface délimitée : <strong>{{ realTimeArea() | number:'1.2-2' }} ha</strong></span>
+      </div>
+
+      <!-- Crop Type Selector -->
+      <div class="modal__field">
+        <label class="zir-label">Type de culture</label>
+        <div class="crop-type-grid">
+          <button
+            class="crop-type-btn"
+            *ngFor="let crop of CROP_TYPES"
+            [class.crop-type-btn--active]="newZoneCropType() === crop.value"
+            (click)="newZoneCropType.set(crop.value)">
+            <span class="crop-type-btn__dot" [style.background]="crop.color"></span>
+            {{ crop.label }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Notes -->
+      <div class="modal__field">
+        <label class="zir-label">Notes (optionnel)</label>
+        <input
+          class="zir-input"
+          type="text"
+          placeholder="ex. Variété précoce, irrigation goutte-à-goutte…"
+          [ngModel]="newZoneNotes()"
+          (ngModelChange)="newZoneNotes.set($event)"
+        />
+      </div>
+    </div>
+
+    <div class="modal__foot">
+      <button class="zir-btn zir-btn--ghost" (click)="cancelDraw()">Annuler</button>
+      <button class="zir-btn zir-btn--primary" (click)="confirmNewZone()">
+        <ng-icon name="lucideCheckCircle" [size]="'15'"/>
+        Enregistrer la zone
+      </button>
+    </div>
+  </div>
+</div>

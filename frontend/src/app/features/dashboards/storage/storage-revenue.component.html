@@ -1,0 +1,160 @@
+<div class="revenue-page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Revenus & Électricité STEG</h1>
+      <p class="page-sub">P&L par salle + part d'électricité pro-rata par client</p>
+    </div>
+    <button class="btn-refresh" (click)="loadAll()">
+      <ng-icon name="lucideRefreshCw" size="14" /> Actualiser
+    </button>
+  </div>
+
+  @if (loading()) {
+    <div class="loading-block"><div class="spinner"></div><p>Chargement...</p></div>
+  }
+
+  @if (!loading() && revenue()) {
+    <!-- Global KPIs -->
+    <div class="kpi-grid">
+      <div class="kpi-card green">
+        <div class="kpi-icon icon-green">
+          <ng-icon name="lucideDollarSign" size="20" />
+        </div>
+        <div class="kpi-body">
+          <span class="kpi-val">{{ revenue().monthly_revenue | number:'1.0-0' }} TND</span>
+          <span class="kpi-lbl">CA Brut Mensuel</span>
+        </div>
+      </div>
+      <div class="kpi-card yellow">
+        <div class="kpi-icon icon-amber">
+          <ng-icon name="lucideZap" size="20" />
+        </div>
+        <div class="kpi-body">
+          <span class="kpi-val">{{ revenue().monthly_electricity_cost | number:'1.0-0' }} TND</span>
+          <span class="kpi-lbl">Coût STEG Mensuel</span>
+          <span class="kpi-sub">{{ energyRatio }}% du CA brut</span>
+        </div>
+      </div>
+      <div class="kpi-card" [class.blue]="revenue().net_profit_tnd >= 0" [class.red]="revenue().net_profit_tnd < 0">
+        <div class="kpi-icon icon-blue">
+          <ng-icon name="lucideTrendingUp" size="20" />
+        </div>
+        <div class="kpi-body">
+          <span class="kpi-val">{{ revenue().net_profit_tnd | number:'1.0-0' }} TND</span>
+          <span class="kpi-lbl">Bénéfice Net Mensuel</span>
+          <span class="kpi-sub">Après déduction STEG</span>
+        </div>
+      </div>
+      <div class="kpi-card orange" [class.danger-kpi]="revenue().overdue_clients_count > 0">
+        <div class="kpi-icon icon-purple">
+          <ng-icon name="lucideUsers" size="20" />
+        </div>
+        <div class="kpi-body">
+          <span class="kpi-val">{{ revenue().overdue_clients_count }}</span>
+          <span class="kpi-lbl">Clients en Retard</span>
+          <a routerLink="/dashboard/storage/clients" class="kpi-link">Voir Clients →</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Energy Ratio Bar -->
+    <div class="energy-ratio-section">
+      <div class="energy-header">
+        <span>Part Énergie STEG dans le CA Brut</span>
+        <span [class.warn]="energyRatio > 40" [class.danger-txt]="energyRatio > 60">{{ energyRatio }}%</span>
+      </div>
+      <div class="energy-bar">
+        <div class="energy-elec" [style.width.%]="energyRatio" [class.warn-bar]="energyRatio > 40"></div>
+        <div class="energy-net" [style.width.%]="100 - energyRatio"></div>
+      </div>
+      <div class="energy-legend">
+        <span class="leg warn-leg">
+          <ng-icon name="lucideZap" size="12" /> Électricité ({{ energyRatio }}%)
+        </span>
+        <span class="leg">
+          <ng-icon name="lucideTrendingUp" size="12" /> Bénéfice Net ({{ 100 - energyRatio }}%)
+        </span>
+      </div>
+      @if (energyRatio > 40) {
+        <div class="energy-alert">
+          <ng-icon name="lucideAlertTriangle" size="16" class="alert-icon" />
+          <span>Le coût STEG dépasse 40% du CA — pensez à ajuster la consigne des compresseurs aux heures creuses (22h-06h) et à vérifier l'isolation des portes.</span>
+        </div>
+      }
+    </div>
+
+    <!-- Room by Room P&L + Client Pro-Rata -->
+    <h2 class="section-title">Détail par Salle — P&L & Part Client STEG</h2>
+    @for (room of rooms(); track room.id) {
+      <div class="room-report-card" [style.border-top-color]="room.color_hex">
+        <div class="room-report-header">
+          <div class="dot" [style.background]="room.color_hex"></div>
+          <div class="room-report-name">
+            <h3>{{ room.name }}</h3>
+            <span>{{ room.room_type }}</span>
+          </div>
+          <div class="room-pnl">
+            <span class="gross">CA: {{ room.gross_income_tnd | number:'1.0-0' }} TND</span>
+            <span class="elec">
+              <ng-icon name="lucideZap" size="12" />
+              {{ room.monthly_elec_cost_tnd | number:'1.0-0' }} TND STEG
+            </span>
+            <span class="net" [class.profit]="room.net_profit_tnd > 0" [class.loss]="room.net_profit_tnd < 0">
+              NET: {{ room.net_profit_tnd | number:'1.0-0' }} TND
+            </span>
+          </div>
+        </div>
+
+        @if (room.reservations?.length > 0) {
+          <div class="client-elec-table">
+            <div class="table-head">
+              <span>Client</span>
+              <span>Capacité Occupée</span>
+              <span>Ratio</span>
+              <span>Part STEG</span>
+              <span>Statut</span>
+            </div>
+            @for (res of room.reservations; track res.id) {
+              @if (res.status === 'CONFIRMEE' || res.status === 'EN_COURS') {
+                <div class="table-row" [class.overdue-row]="res.payment_status === 'EN_RETARD'">
+                  <span class="client-cell">{{ res.client_name || res.initial_occupant_label || 'Client' }}</span>
+                  <span>{{ res.occupied_capacity | number:'1.0-1' }} {{ getUnitLabel(room.pricing_unit) }}</span>
+                  <span>{{ room.occupied_capacity > 0 ? (res.occupied_capacity / room.occupied_capacity * 100 | number:'1.0-0') : 0 }}%</span>
+                  <span class="elec-share">{{ getClientProRataElec(room, res) | number:'1.0-0' }} TND</span>
+                  <span [class.overdue-badge]="res.payment_status === 'EN_RETARD'" [class.partial-badge]="res.payment_status === 'PAYE_PARTIEL'">
+                    {{ res.payment_status === 'EN_RETARD' ? 'Retard' : res.payment_status === 'PAYE_PARTIEL' ? 'Partiel' : 'À jour' }}
+                  </span>
+                </div>
+              }
+            }
+          </div>
+        } @else {
+          <p class="no-clients">Aucun locataire actif dans cette salle.</p>
+        }
+      </div>
+    }
+
+    <!-- Upcoming Payments from Overdue Clients -->
+    @if (revenue().upcoming_payments?.length > 0) {
+      <div class="overdue-section">
+        <h2 class="section-title">Impayés à Recouvrer</h2>
+        <div class="overdue-list">
+          @for (client of revenue().upcoming_payments; track client.phone) {
+            <div class="overdue-item">
+              <div class="overdue-avatar">{{ client.client_name?.charAt(0) || '?' }}</div>
+              <div class="overdue-info">
+                <span class="overdue-name">{{ client.client_name }}</span>
+                <span class="overdue-phone">📞 {{ client.phone }}</span>
+              </div>
+              <div class="overdue-amount">
+                <span class="amount-val">{{ client.amount | number:'1.0-0' }} TND</span>
+                <span class="amount-months">{{ client.unpaid_months }} mois de retard</span>
+              </div>
+              <a routerLink="/dashboard/storage/clients" class="btn-small-ledger">Gérer →</a>
+            </div>
+          }
+        </div>
+      </div>
+    }
+  }
+</div>

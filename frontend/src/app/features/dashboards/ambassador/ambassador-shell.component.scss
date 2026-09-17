@@ -1,0 +1,278 @@
+:host { display: block; height: 100vh; overflow: hidden; }
+
+// ── Shell Layout ──────────────────────────────────────────────────────────────
+.amb-shell {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  font-family: 'Inter', sans-serif;
+}
+
+// ── Sidebar ───────────────────────────────────────────────────────────────────
+.amb-sidebar {
+  width: 80px;
+  flex-shrink: 0;
+  background: linear-gradient(180deg, #062112 0%, #0c3e1e 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 0 16px 0;
+  position: relative;
+  z-index: 100;
+  box-shadow: 10px 0 30px rgba(0,0,0,0.15);
+  border-right: 1px solid rgba(255,255,255,0.05);
+}
+
+.amb-brand {
+  width: 100%;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  margin-bottom: 16px;
+}
+
+.amb-brand-icon {
+  width: 44px;
+  height: 44px;
+  background: linear-gradient(135deg, #10b981, #059669);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 22px;
+  box-shadow: 0 4px 12px rgba(16,185,129,0.4);
+}
+
+// Zone Health Ring
+.amb-health-ring {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  border: 3px solid;
+  cursor: default;
+
+  .health-score {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: white;
+  }
+
+  &.health-good  { border-color: #10b981; background: rgba(16,185,129,0.15); }
+  &.health-warn  { border-color: #f59e0b; background: rgba(245,158,11,0.15); }
+  &.health-bad   { border-color: #ef4444; background: rgba(239,68,68,0.15); }
+}
+
+// Nav
+.amb-nav {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex: 1;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.amb-nav-item {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+
+  &:hover .amb-tooltip { opacity: 1; pointer-events: auto; transform: translateX(0); }
+}
+
+.amb-nav-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 52px;
+  color: rgba(255,255,255,0.45);
+  text-decoration: none;
+  position: relative;
+  transition: background-color 0.2s, transform 0.2s, opacity 0.2s, border-color 0.2s;
+  font-size: 22px;
+
+  &:hover { color: rgba(255,255,255,0.85); background: rgba(255,255,255,0.06); }
+
+  &.active {
+    color: #10b981;
+    background: rgba(16,185,129,0.12);
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 3px;
+      height: 32px;
+      background: #10b981;
+      border-radius: 0 3px 3px 0;
+    }
+  }
+}
+
+// Badge
+.amb-badge {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 9px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  line-height: 1;
+
+  &.badge-red    { background: #ef4444; color: white; animation: pulse 2s infinite; }
+  &.badge-orange { background: #f59e0b; color: white; }
+  &.badge-teal   { background: #10b981; color: white; }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+// Tooltip
+.amb-tooltip {
+  position: absolute;
+  left: 88px;
+  background: #1e293b;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-8px);
+  transition: background-color 0.15s ease, transform 0.15s ease, opacity 0.15s ease, border-color 0.15s ease;
+  z-index: 200;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: -4px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 8px;
+    height: 8px;
+    background: #1e293b;
+    clip-path: polygon(100% 0, 0 50%, 100% 100%);
+  }
+}
+
+// Bottom
+.amb-sidebar-bottom {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  width: 100%;
+}
+
+.amb-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #10b981, #065f46);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.875rem;
+  cursor: default;
+  border: 2px solid rgba(255,255,255,0.15);
+}
+
+.amb-logout {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: rgba(239,68,68,0.12);
+  border: none;
+  color: rgba(239,68,68,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 18px;
+  transition: background-color 0.2s, transform 0.2s, opacity 0.2s, border-color 0.2s;
+
+  &:hover { background: rgba(239,68,68,0.25); color: #ef4444; }
+}
+
+// ── Main Content ──────────────────────────────────────────────────────────────
+.amb-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #f1f5f9;
+  overflow: hidden;
+}
+
+.amb-zone-banner {
+  background: rgba(255, 255, 255, 0.8);
+
+
+  color: #0f172a;
+  padding: 16px 32px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 0.875rem;
+  flex-shrink: 0;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+
+  ng-icon { color: #10b981; }
+
+  .zone-name { font-weight: 700; font-size: 1rem; }
+  .zone-meta { color: rgba(255,255,255,0.6); }
+
+  .zone-alert-chip {
+    margin-left: auto;
+    background: rgba(239,68,68,0.2);
+    color: #fca5a5;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid rgba(239,68,68,0.3);
+    animation: pulse 2s infinite;
+
+    ng-icon { font-size: 14px; }
+  }
+}
+
+.amb-content {
+  flex: 1;
+  overflow-y: auto;
+
+  &::-webkit-scrollbar { width: 6px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+}

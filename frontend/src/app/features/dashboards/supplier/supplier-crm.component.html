@@ -1,0 +1,609 @@
+<div class="sup-page">
+  <!-- Header Title and CRM Stats -->
+  <div class="sup-page-header">
+    <div>
+      <h2 class="sup-page-title">Gestion de la Relation Client (CRM)</h2>
+      <p class="sup-page-sub">Suivez le score de valeur (LTV), planifiez vos relances et fidélisez vos clients.</p>
+    </div>
+  </div>
+
+  <!-- KPI Cards Grid -->
+  @if (isLoadingStats()) {
+    <div class="stats-skeleton">
+      <div class="sk-card" *ngFor="let i of [1,2,3,4]"></div>
+    </div>
+  } @else if (stats(); as st) {
+    <div class="crm-stats-grid">
+      <div class="crm-stats-card main-stat">
+        <div class="stat-icon"><ng-icon name="lucideUsers"></ng-icon></div>
+        <div class="stat-content">
+          <span class="stat-value">{{ st.total_clients }}</span>
+          <span class="stat-label">Clients Actifs</span>
+        </div>
+      </div>
+      <div class="crm-stats-card vip-stat">
+        <div class="stat-icon">💎</div>
+        <div class="stat-content">
+          <span class="stat-value">{{ st.vip_count }}</span>
+          <span class="stat-label">Clients VIP</span>
+        </div>
+      </div>
+      <div class="crm-stats-card fidele-stat">
+        <div class="stat-icon">⭐</div>
+        <div class="stat-content">
+          <span class="stat-value">{{ st.fidele_count }}</span>
+          <span class="stat-label">Clients Fidèles</span>
+        </div>
+      </div>
+      <div class="crm-stats-card inactif-stat">
+        <div class="stat-icon">⚠️</div>
+        <div class="stat-content">
+          <span class="stat-value">{{ st.inactif_count }}</span>
+          <span class="stat-label">Inactifs (>180j)</span>
+        </div>
+      </div>
+      <div class="crm-stats-card revenue-stat">
+        <div class="stat-icon"><ng-icon name="lucideCircleDollarSign"></ng-icon></div>
+        <div class="stat-content">
+          <span class="stat-value">{{ st.revenue_total_tnd | number:'1.0-0' }} TND</span>
+          <span class="stat-label">Chiffre d'Affaires</span>
+        </div>
+      </div>
+      <div class="crm-stats-card ltv-stat">
+        <div class="stat-icon"><ng-icon name="lucideTrendingUp"></ng-icon></div>
+        <div class="stat-content">
+          <span class="stat-value">{{ st.average_ltv }}%</span>
+          <span class="stat-label">Score LTV Moyen</span>
+        </div>
+      </div>
+      <div class="crm-stats-card reminders-stat">
+        <div class="stat-icon"><ng-icon name="lucideCalendar"></ng-icon></div>
+        <div class="stat-content">
+          <span class="stat-value">{{ st.reminders_today }}</span>
+          <span class="stat-label">Relances aujourd'hui</span>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Advanced Toolbar Filters -->
+  <div class="crm-toolbar">
+    <div class="toolbar-search-group">
+      <div class="search-input-wrap">
+        <ng-icon name="lucideSearch" class="search-icon"></ng-icon>
+        <input 
+          type="text" 
+          placeholder="Rechercher par nom, email, téléphone..." 
+          [ngModel]="searchQuery()"
+          (ngModelChange)="searchQuery.set($event)"
+          class="cat-search"
+        />
+      </div>
+
+      <select 
+        [ngModel]="selectedSegment()" 
+        (ngModelChange)="selectedSegment.set($event)"
+        class="filter-select"
+      >
+        <option value="">Tous les segments</option>
+        <option value="VIP">💎 VIP</option>
+        <option value="FIDELE">⭐ Fidèles</option>
+        <option value="NOUVEAU">🌱 Nouveaux</option>
+        <option value="OCCASIONNEL">💼 Occasionnels</option>
+        <option value="INACTIF">⚠️ Inactifs</option>
+      </select>
+
+      <select 
+        [ngModel]="sortBy()" 
+        (ngModelChange)="sortBy.set($event)"
+        class="filter-select"
+      >
+        <option value="score">Trier par: Score LTV</option>
+        <option value="total_spent">Trier par: Montant dépensé</option>
+        <option value="last_order">Trier par: Dernière commande</option>
+        <option value="name">Trier par: Nom du client</option>
+      </select>
+
+      <button 
+        class="btn-icon-toggle"
+        (click)="sortOrder.set(sortOrder() === 'ASC' ? 'DESC' : 'ASC')"
+        title="Inverser le tri"
+      >
+        {{ sortOrder() === 'ASC' ? '↑' : '↓' }}
+      </button>
+    </div>
+
+    <div class="toolbar-actions-group">
+      <button class="btn btn-archive-toggle" (click)="toggleArchiveFilter()" [class.active]="isArchivedFilter()">
+        <ng-icon name="lucideArchive"></ng-icon>
+        <span>{{ isArchivedFilter() ? 'Voir Actifs' : 'Voir Archivés' }}</span>
+      </button>
+      <button class="btn btn-primary btn-export" (click)="exportCsv()">
+        <ng-icon name="lucideDownload"></ng-icon>
+        <span>Exporter CSV</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Tag quick-filter listing -->
+  @if (allAvailableTags().length > 0) {
+    <div class="tags-filter-bar">
+      <span class="tags-bar-label">Filtres rapides par étiquettes :</span>
+      <div class="tags-row">
+        <button 
+          *ngFor="let tag of allAvailableTags()"
+          class="tag-pill" 
+          [class.active]="selectedTagFilter().includes(tag)"
+          (click)="toggleTagFilter(tag)"
+        >
+          <ng-icon name="lucideTag"></ng-icon>
+          <span>{{ tag }}</span>
+        </button>
+        @if (selectedTagFilter().length > 0) {
+          <button class="tag-pill tag-pill--clear" (click)="clearTagFilters()">
+            <ng-icon name="lucideX"></ng-icon>
+            <span>Réinitialiser</span>
+          </button>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- Main CRM Layout Split -->
+  <div class="crm-layout" [class.has-selection]="selectedClient() !== null">
+    <!-- Left Column: Clients list -->
+    <div class="crm-list-column">
+      @if (isLoadingClients()) {
+        <div class="clients-skeleton-list">
+          <div class="sk-client-card" *ngFor="let i of [1,2,3,4,5]">
+            <div class="sk-avatar"></div>
+            <div class="sk-text-lines">
+              <div class="sk-line w-40"></div>
+              <div class="sk-line w-60"></div>
+            </div>
+          </div>
+        </div>
+      } @else if (filteredClients().length === 0) {
+        <div class="sup-empty-full">
+          <div class="empty-icon"><ng-icon name="lucideUsers"></ng-icon></div>
+          <p class="empty-title">Aucun client trouvé</p>
+          <p class="empty-desc">Aucun enregistrement client ne correspond à vos filtres de recherche.</p>
+        </div>
+      } @else {
+        <div class="crm-clients-list">
+          <div 
+            *ngFor="let c of filteredClients()" 
+            class="crm-client-item"
+            [class.selected]="selectedClient()?.id === c.id"
+            (click)="selectClient(c)"
+          >
+            <div class="client-avatar" [class.archived]="c.is_archived">
+              {{ c.full_name.charAt(0).toUpperCase() }}
+            </div>
+            
+            <div class="client-body">
+              <div class="client-title-row">
+                <span class="client-name">{{ c.full_name }}</span>
+                <span class="client-score" [title]="'Score Lifetime Value : ' + c.lifetime_value_score + '/100'">
+                  ⭐ {{ c.lifetime_value_score }}
+                </span>
+              </div>
+
+              <div class="client-subtitle-row">
+                <span class="client-company" *ngIf="c.company_name">🏢 {{ c.company_name }}</span>
+                <span class="client-location" *ngIf="c.governorate">📍 {{ c.governorate }}</span>
+              </div>
+
+              <!-- Metrics -->
+              <div class="client-metrics-row">
+                <div class="metric">
+                  <span class="label">Dépenses:</span>
+                  <span class="val">{{ c.total_spent_tnd | number:'1.2-2' }} TND</span>
+                </div>
+                <div class="metric">
+                  <span class="label">Dernière cmd:</span>
+                  <span class="val">{{ c.last_order_date ? (c.last_order_date | date:'dd/MM/yyyy') : 'Jamais' }}</span>
+                </div>
+              </div>
+
+              <!-- Badges and tags -->
+              <div class="client-footer-row">
+                <span class="sup-badge {{ segmentClass(c.segment) }}">
+                  {{ segmentLabel(c.segment) }}
+                </span>
+                
+                <div class="tags-list" *ngIf="c.tags && c.tags.length > 0">
+                  <span *ngFor="let tag of c.tags.slice(0, 3)" class="item-tag">{{ tag }}</span>
+                  <span *ngIf="c.tags.length > 3" class="item-tag-more">+{{ c.tags.length - 3 }}</span>
+                </div>
+              </div>
+            </div>
+            <ng-icon name="lucideArrowRight" class="chevron-right"></ng-icon>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Right Column: Detail side panel/drawer -->
+    <div class="crm-detail-column">
+      @if (selectedClient(); as client) {
+        <div class="crm-detail-panel">
+          <!-- Drawer Header -->
+          <div class="detail-header-card">
+            <div class="detail-header-top">
+              <div class="detail-avatar">
+                {{ client.full_name.charAt(0).toUpperCase() }}
+              </div>
+              <div class="detail-title-info">
+                <h3>{{ client.full_name }}</h3>
+                <p class="company" *ngIf="client.company_name">🏢 {{ client.company_name }}</p>
+                <p class="meta-details">
+                  <span *ngIf="client.governorate">📍 {{ client.governorate }}</span>
+                  <span *ngIf="client.phone">📞 {{ client.phone }}</span>
+                </p>
+              </div>
+              <button class="btn-close-detail" (click)="closeClientDrawer()">
+                <ng-icon name="lucideX"></ng-icon>
+              </button>
+            </div>
+
+            <div class="detail-header-actions">
+              <button class="btn btn-secondary btn-sm" (click)="startEditClient()">
+                <ng-icon name="lucideEdit"></ng-icon>
+                Modifier
+              </button>
+              <button class="btn btn-danger btn-sm" *ngIf="!client.is_archived" (click)="archiveClient()">
+                <ng-icon name="lucideArchive"></ng-icon>
+                Archiver
+              </button>
+            </div>
+          </div>
+
+          <!-- LTV Score Panel with Progress Bar -->
+          <div class="detail-ltv-section">
+            <div class="score-text-row">
+              <div class="score-lbl">
+                <span>Indicateur de Valeur Client (LTV)</span>
+                <span class="sup-badge {{ segmentClass(client.segment) }}">{{ segmentLabel(client.segment) }}</span>
+              </div>
+              <div class="score-num">{{ client.lifetime_value_score }}/100</div>
+            </div>
+            <div class="score-progress-container">
+              <div class="score-progress-bar" [style.width.%]="client.lifetime_value_score"></div>
+            </div>
+            <div class="score-explanation">
+              Score estimé basé sur {{ client.total_orders_count }} commande(s), un panier moyen de {{ client.average_order_value_tnd | number:'1.2-2' }} TND et une récurrence d'achat de {{ client.days_since_last_order !== null ? client.days_since_last_order : '0' }} jours.
+            </div>
+          </div>
+
+          <!-- Tabs header -->
+          <div class="detail-tabs">
+            <button 
+              class="tab-link" 
+              [class.active]="activeTab() === 'journal'"
+              (click)="setTab('journal')"
+            >
+              <ng-icon name="lucideFileText"></ng-icon>
+              Journal
+            </button>
+            <button 
+              class="tab-link" 
+              [class.active]="activeTab() === 'reminders'"
+              (click)="setTab('reminders')"
+            >
+              <ng-icon name="lucideCalendar"></ng-icon>
+              Rappels Relance
+            </button>
+            <button 
+              class="tab-link" 
+              [class.active]="activeTab() === 'orders'"
+              (click)="setTab('orders')"
+            >
+              <ng-icon name="lucideShoppingBag"></ng-icon>
+              Commandes ({{ client.total_orders_count }})
+            </button>
+          </div>
+
+          <!-- Details Tabs Content Container -->
+          <div class="detail-tab-content">
+            <!-- TAB 1: JOURNAL D'INTERACTIONS (NOTES) -->
+            @if (activeTab() === 'journal') {
+              <div class="tab-pane journal-pane">
+                <!-- Add New Note Form -->
+                <div class="add-note-card">
+                  <h4>Saisir une nouvelle interaction</h4>
+                  <div class="note-form-row">
+                    <select [(ngModel)]="newNoteType" class="note-type-select">
+                      <option value="NOTE">📝 Note de suivi</option>
+                      <option value="APPEL">📞 Appel Téléphonique</option>
+                      <option value="VISITE">🤝 Visite Client</option>
+                      <option value="RELANCE">🔄 Relance Commerciale</option>
+                    </select>
+                  </div>
+                  <textarea 
+                    placeholder="Saisissez le compte-rendu de votre échange (ex: Intéressé par la nouvelle gamme de blé, demande de devis en cours...)" 
+                    [(ngModel)]="newNoteContent" 
+                    rows="3"
+                    class="note-textarea"
+                  ></textarea>
+                  <div class="note-submit-row">
+                    <button class="btn btn-primary btn-sm" (click)="addNote()">
+                      <ng-icon name="lucidePlus"></ng-icon>
+                      Enregistrer dans le journal
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Notes list -->
+                <div class="notes-feed">
+                  @if (isLoadingClientDetails()) {
+                    <div class="detail-loader">
+                      <ng-icon name="lucideLoader" class="spin"></ng-icon>
+                      <span>Chargement du journal...</span>
+                    </div>
+                  } @else if (clientNotes().length === 0) {
+                    <div class="detail-empty">
+                      <p>Aucun historique enregistré pour ce client.</p>
+                    </div>
+                  } @else {
+                    <div *ngFor="let note of clientNotes()" class="note-feed-item" [class.pinned]="note.is_pinned">
+                      <div class="note-item-header">
+                        <span class="note-tag {{ noteTypeClass(note.note_type) }}">
+                          {{ note.note_type }}
+                        </span>
+                        
+                        <div class="note-actions">
+                          <button class="btn-note-pin" (click)="togglePinNote(note)" [class.active]="note.is_pinned" title="Epingler la note">
+                            <ng-icon name="lucidePin"></ng-icon>
+                          </button>
+                          <button class="btn-note-delete" (click)="deleteNote(note.id)" title="Supprimer la note">
+                            <ng-icon name="lucideTrash2"></ng-icon>
+                          </button>
+                        </div>
+                      </div>
+
+                      <div class="note-content">
+                        {{ note.content }}
+                      </div>
+
+                      <div class="note-date">
+                        {{ note.created_at | date:'dd MMMM yyyy, HH:mm' }}
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+
+            <!-- TAB 2: REMINDERS / FOLLOWUPS -->
+            @if (activeTab() === 'reminders') {
+              <div class="tab-pane reminders-pane">
+                <!-- Add Reminder Form -->
+                <div class="add-reminder-card">
+                  <h4>Planifier un rappel ou une relance</h4>
+                  <div class="reminder-inputs">
+                    <input 
+                      type="text" 
+                      placeholder="Objet de la relance (ex: Rappeler pour commande de luzerne)" 
+                      [(ngModel)]="newReminderTitle" 
+                      class="reminder-title-input"
+                    />
+                    <input 
+                      type="date" 
+                      [(ngModel)]="newReminderDate" 
+                      class="reminder-date-input"
+                    />
+                  </div>
+                  <textarea 
+                    placeholder="Description additionnelle (optionnel)" 
+                    [(ngModel)]="newReminderDesc" 
+                    rows="2"
+                    class="reminder-textarea"
+                  ></textarea>
+                  <button class="btn btn-primary btn-sm btn-full" (click)="addReminder()">
+                    <ng-icon name="lucidePlus"></ng-icon>
+                    Planifier la relance
+                  </button>
+                </div>
+
+                <!-- Reminders listing -->
+                <div class="reminders-list">
+                  @if (isLoadingClientDetails()) {
+                    <div class="detail-loader">
+                      <ng-icon name="lucideLoader" class="spin"></ng-icon>
+                      <span>Chargement des rappels...</span>
+                    </div>
+                  } @else if (clientReminders().length === 0) {
+                    <div class="detail-empty">
+                      <p>Aucun rappel planifié pour le moment.</p>
+                    </div>
+                  } @else {
+                    <div 
+                      *ngFor="let rem of clientReminders()" 
+                      class="reminder-item" 
+                      [class.completed]="rem.is_completed"
+                    >
+                      <div class="reminder-chk-col">
+                        <button 
+                          *ngIf="!rem.is_completed" 
+                          class="btn-complete-rem" 
+                          (click)="completeReminder(rem)"
+                          title="Marquer comme résolu"
+                        >
+                          <ng-icon name="lucideClock"></ng-icon>
+                        </button>
+                        <span *ngIf="rem.is_completed" class="chk-completed-icon">
+                          <ng-icon name="lucideCheckCircle"></ng-icon>
+                        </span>
+                      </div>
+
+                      <div class="reminder-content-col">
+                        <div class="reminder-title">{{ rem.title }}</div>
+                        <div class="reminder-desc" *ngIf="rem.description">{{ rem.description }}</div>
+                        <div class="reminder-date-lbl">
+                          📅 Prévu le {{ rem.reminder_date | date:'dd/MM/yyyy' }}
+                          <span *ngIf="rem.is_completed" class="comp-badge">✓ Complété</span>
+                        </div>
+                      </div>
+
+                      <button class="btn-delete-rem" (click)="deleteReminder(rem.id)">
+                        <ng-icon name="lucideTrash2"></ng-icon>
+                      </button>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+
+            <!-- TAB 3: CLIENT ORDERS HISTORY -->
+            @if (activeTab() === 'orders') {
+              <div class="tab-pane orders-pane">
+                <!-- Aggregate info -->
+                <div class="orders-aggregate-banner">
+                  <div class="agg-card">
+                    <span class="agg-label">Chiffre d'Affaires</span>
+                    <span class="agg-val">{{ client.total_spent_tnd | number:'1.2-2' }} TND</span>
+                  </div>
+                  <div class="agg-card">
+                    <span class="agg-label">Panier Moyen</span>
+                    <span class="agg-val">{{ client.average_order_value_tnd | number:'1.2-2' }} TND</span>
+                  </div>
+                  <div class="agg-card">
+                    <span class="agg-label">Total Commandes</span>
+                    <span class="agg-val">{{ client.total_orders_count }}</span>
+                  </div>
+                </div>
+
+                <!-- Orders historical list -->
+                <div class="orders-history-list">
+                  @if (isLoadingClientDetails()) {
+                    <div class="detail-loader">
+                      <ng-icon name="lucideLoader" class="spin"></ng-icon>
+                      <span>Chargement de l'historique...</span>
+                    </div>
+                  } @else if (clientOrders().length === 0) {
+                    <div class="detail-empty">
+                      <p>Aucune commande enregistrée pour ce client.</p>
+                    </div>
+                  } @else {
+                    <div *ngFor="let order of clientOrders()" class="crm-order-item-card">
+                      <div class="order-item-header">
+                        <span class="order-number">Commande #{{ order.id.slice(0, 8).toUpperCase() }}</span>
+                        <span class="order-date">{{ order.ordered_at | date:'dd/MM/yyyy' }}</span>
+                      </div>
+                      
+                      <div class="order-item-details">
+                        <div class="prod-row">
+                          <span class="prod-name">{{ order.product.name }}</span>
+                          <span class="prod-qty">x{{ order.quantity_ordered }}</span>
+                        </div>
+                        <div class="pricing-row">
+                          <span>Prix unit. : {{ order.unit_price_tnd | number:'1.2-2' }} TND</span>
+                          <span class="total-row">Total : {{ order.total_tnd | number:'1.2-2' }} TND</span>
+                        </div>
+                      </div>
+
+                      <div class="order-item-footer">
+                        <span class="sup-badge {{ orderStatusClass(order.status) }}">
+                          {{ orderStatusLabel(order.status) }}
+                        </span>
+                        
+                        <a 
+                          *ngIf="order.invoice_id" 
+                          [href]="api.apiUrl + '/supplier/invoices/' + order.invoice_id + '/pdf'"
+                          target="_blank"
+                          class="invoice-download-btn"
+                        >
+                          📄 Facture {{ order.invoice_number || '' }}
+                        </a>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      } @else {
+        <!-- Details Column Empty State -->
+        <div class="crm-detail-empty-state">
+          <div class="empty-art"><ng-icon name="lucideUsers"></ng-icon></div>
+          <h3>Fiche d'Informations Client</h3>
+          <p>Sélectionnez un client dans la liste pour afficher son profil complet, consulter le journal d'interactions, programmer des rappels de relance et examiner son historique d'achats.</p>
+        </div>
+      }
+    </div>
+  </div>
+</div>
+
+<!-- ========================================== -->
+<!-- EDIT CLIENT MODAL / OVERLAY -->
+<!-- ========================================== -->
+<div class="modal-overlay" *ngIf="isEditingClient()">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3>Modifier la Fiche Client CRM</h3>
+      <button class="btn-close-modal" (click)="cancelEditClient()">
+        <ng-icon name="lucideX"></ng-icon>
+      </button>
+    </div>
+    
+    <div class="modal-body">
+      <div class="modal-form-group">
+        <label>Nom Complet du Client *</label>
+        <input type="text" [(ngModel)]="editFullName" class="modal-input" />
+      </div>
+
+      <div class="modal-row-2">
+        <div class="modal-form-group">
+          <label>Téléphone</label>
+          <input type="text" [(ngModel)]="editPhone" class="modal-input" placeholder="+216 ..." />
+        </div>
+        <div class="modal-form-group">
+          <label>Email</label>
+          <input type="email" [(ngModel)]="editEmail" class="modal-input" placeholder="client@domaine.com" />
+        </div>
+      </div>
+
+      <div class="modal-row-2">
+        <div class="modal-form-group">
+          <label>Nom de l'Entreprise</label>
+          <input type="text" [(ngModel)]="editCompanyName" class="modal-input" />
+        </div>
+        <div class="modal-form-group">
+          <label>Identifiant Fiscal (MF)</label>
+          <input type="text" [(ngModel)]="editTaxId" class="modal-input" placeholder="1234567/A/P/M/000" />
+        </div>
+      </div>
+
+      <div class="modal-row-2">
+        <div class="modal-form-group">
+          <label>Gouvernorat</label>
+          <input type="text" [(ngModel)]="editGovernorate" class="modal-input" placeholder="ex: Béja, Jendouba..." />
+        </div>
+        <div class="modal-form-group">
+          <label>Adresse physique</label>
+          <input type="text" [(ngModel)]="editAddress" class="modal-input" />
+        </div>
+      </div>
+
+      <div class="modal-form-group">
+        <label>Étiquettes / Tags (séparés par des virgules)</label>
+        <input type="text" [(ngModel)]="editTagsString" class="modal-input" placeholder=" VIP, Elevage, Semences, Urgent" />
+        <span class="input-tip">Les étiquettes vous permettent de filtrer rapidement votre base de clients.</span>
+      </div>
+
+      <div class="modal-form-group">
+        <label>Notes internes permanentes</label>
+        <textarea [(ngModel)]="editNotes" rows="3" class="modal-textarea" placeholder="Informations importantes durables sur ce profil client..."></textarea>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="cancelEditClient()">Annuler</button>
+      <button class="btn btn-primary" (click)="saveClient()">
+        Enregistrer les modifications
+      </button>
+    </div>
+  </div>
+</div>

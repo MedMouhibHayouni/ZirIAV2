@@ -1,0 +1,42 @@
+{
+  "GLOBAL": {
+    "ZIRIA_TITLE": "زيرِيا",
+    "THEME_LIGHT": "وضع فاتح",
+    "THEME_DARK": "وضع داكن"
+  },
+  "LANDING": {
+    "TITLE": "الذكاء في خدمة أراضي القصرين",
+    "SUBTITLE": ".توقع المناخ. تحكم في محاصيلك. ادخل إلى سوق B2B الوطني في الوقت الفعلي",
+    "CTA_PORTAL": "الدخول إلى البوابة",
+    "CTA_DISCOVER": "اكتشف المشروع"
+  },
+  "SIDEBAR": {
+    "OVERVIEW": "نظرة عامة",
+    "B2B_SOURCING": "مصادر B2B",
+    "SENTINEL_EXPERT": "خبير سانتينيل",
+    "SMSA": "مركز قيادة SMSA",
+    "EQUIPMENT": "معدات",
+    "AMBASSADOR": "تشخيص الأمراض",
+    "ADMIN": "الإشراف العام",
+    "LOGOUT": "تسجيل الخروج"
+  },
+  "ROLE": {
+    "ADMIN": "المدير العام",
+    "COOP_PRESIDENT": "رئيس جمعية SMSA",
+    "B2B_BUYER": "مشترٍ B2B",
+    "EQUIP_OWNER": "مالك معدات",
+    "FARMER_AMBASSADOR": "سفير فلاحي"
+  },
+  "DASHBOARD": {
+    "AMBASSADOR": {
+      "FAB_LABEL": "تشخيص",
+      "RESULT_DISEASE": "المرض المكتشف",
+      "RESULT_CONFIDENCE": "الثقة",
+      "RESULT_SEVERITY": "الخطورة",
+      "RECOMMENDATION_FR": "التوصية",
+      "RECOMMENDATION_AR": "بالدارجة",
+      "MY_PARCELS": "قطعي",
+      "NEW_DIAGNOSIS": "تشخيص جديد"
+    }
+  }
+}

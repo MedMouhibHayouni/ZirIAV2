@@ -1,0 +1,148 @@
+<div class="equipment-fleet zir-animate-in">
+  
+  <header class="page-header" style="display:flex; justify-content:space-between; align-items:center;">
+    <div>
+      <h2 style="display:flex; align-items:center; gap: 12px;">
+        <ng-icon name="lucideTractor" style="color:var(--zir-emerald);"></ng-icon>
+        Ma Flotte de Machines
+      </h2>
+      <p style="color:var(--text-secondary); margin-top: 4px;">Gérez la disponibilité et les tarifs de vos équipements.</p>
+    </div>
+    <button class="zir-btn zir-btn--primary" (click)="showAddModal = true">
+      <ng-icon name="lucidePlus"></ng-icon>
+      Ajouter une Machine
+    </button>
+  </header>
+
+  <div class="fleet-grid" style="margin-top: 32px;">
+    @for (machine of fleet(); track machine.id) {
+      <div class="zir-card machine-card" [class.is-offline]="!machine.available">
+        <div class="machine-photo">
+          <!-- Placeholder SVG or UI when no photo -->
+          <div class="photo-placeholder">
+            <ng-icon name="lucideTractor"></ng-icon>
+          </div>
+          <div class="availability-status" [class.active]="machine.available">
+            {{ machine.available ? 'EN SERVICE' : 'HORS SERVICE' }}
+          </div>
+        </div>
+
+        <div class="card-body">
+          <div class="machine-meta">
+            <span class="type-tag">{{ machine.type }}</span>
+            <div class="daily-price">
+              <strong>{{ machine.daily_rate_tnd }}</strong>
+              <small>TND/j</small>
+            </div>
+          </div>
+          <h3>{{ machine.brand }}</h3>
+          <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">
+            @if (machine.capacity_tonnes) {
+              Capacité: {{ machine.capacity_tonnes }} Tonnes
+            } @else {
+              Modèle standard
+            }
+          </p>
+
+          <div class="card-actions" style="margin-top: 24px; display: flex; gap: 12px;">
+            <button class="zir-btn zir-btn--ghost" style="flex: 1;" (click)="openEdit(machine)">
+              Modifier
+            </button>
+            <button class="zir-btn" 
+                    [class.zir-btn--danger-ghost]="machine.available"
+                    [class.zir-btn--success-ghost]="!machine.available"
+                    (click)="toggleAvailability(machine)"
+                    style="flex: 1;">
+              <ng-icon [name]="machine.available ? 'lucidePower' : 'lucidePower'"></ng-icon>
+              {{ machine.available ? 'Désactiver' : 'Activer' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    } @empty {
+      <div class="zir-empty" style="grid-column: 1 / -1; padding: 60px;">
+        <div class="zir-empty__icon"><ng-icon name="lucideTractor"></ng-icon></div>
+        <div class="zir-empty__title">Aucune machine</div>
+        <div class="zir-empty__desc">Commencez par ajouter votre premier équipement agricole.</div>
+      </div>
+    }
+  </div>
+
+</div>
+
+<!-- Modal Ajout Machine -->
+@if (showAddModal) {
+  <div class="zir-modal">
+    <div class="zir-modal__backdrop" (click)="showAddModal = false"></div>
+    <div class="zir-modal__content zir-card">
+      <div class="zir-modal__header">
+        <h3>Nouvel Équipement</h3>
+        <button class="zir-btn zir-btn--ghost zir-btn--icon-only" (click)="showAddModal = false">
+          <ng-icon name="lucideX"></ng-icon>
+        </button>
+      </div>
+      <div class="zir-modal__body" style="display:flex; flex-direction:column; gap:16px;">
+        <div class="zir-input-group">
+          <label class="zir-label">Type de machine</label>
+          <input type="text" class="zir-input" [(ngModel)]="newMachine.type" placeholder="Ex: Tracteur, Moissonneuse...">
+        </div>
+        <div class="zir-input-group">
+          <label class="zir-label">Marque & Modèle</label>
+          <input type="text" class="zir-input" [(ngModel)]="newMachine.brand" placeholder="Ex: John Deere 6120M">
+        </div>
+        <div style="display:flex; gap:16px;">
+          <div class="zir-input-group" style="flex:1;">
+            <label class="zir-label">Tarif Journalier (TND)</label>
+            <input type="number" class="zir-input" [(ngModel)]="newMachine.daily_rate_tnd">
+          </div>
+          <div class="zir-input-group" style="flex:1;">
+            <label class="zir-label">Zone d'opération</label>
+            <select class="zir-input" [(ngModel)]="newMachine.operating_zone">
+              <option value="Kasserine">Kasserine</option>
+              <option value="Sidi Bouzid">Sidi Bouzid</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="zir-modal__footer" style="display:flex; justify-content:flex-end; gap:12px; margin-top:24px;">
+        <button class="zir-btn zir-btn--ghost" (click)="showAddModal = false">Annuler</button>
+        <button class="zir-btn zir-btn--primary" (click)="addMachine()">Enregistrer la machine</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Modal Modification Machine -->
+@if (showEditModal && editingMachine) {
+  <div class="zir-modal">
+    <div class="zir-modal__backdrop" (click)="showEditModal = false"></div>
+    <div class="zir-modal__content zir-card">
+      <div class="zir-modal__header">
+        <h3>Modifier l'Équipement</h3>
+        <button class="zir-btn zir-btn--ghost zir-btn--icon-only" (click)="showEditModal = false">
+          <ng-icon name="lucideX"></ng-icon>
+        </button>
+      </div>
+      <div class="zir-modal__body" style="display:flex; flex-direction:column; gap:16px;">
+        <div class="zir-input-group">
+          <label class="zir-label">Type de machine</label>
+          <input type="text" class="zir-input" [(ngModel)]="editingMachine.type">
+        </div>
+        <div class="zir-input-group">
+          <label class="zir-label">Marque & Modèle</label>
+          <input type="text" class="zir-input" [(ngModel)]="editingMachine.brand">
+        </div>
+        <div style="display:flex; gap:16px;">
+          <div class="zir-input-group" style="flex:1;">
+            <label class="zir-label">Tarif Journalier (TND)</label>
+            <input type="number" class="zir-input" [(ngModel)]="editingMachine.daily_rate_tnd">
+          </div>
+        </div>
+      </div>
+      <div class="zir-modal__footer" style="display:flex; justify-content:flex-end; gap:12px; margin-top:24px;">
+        <button class="zir-btn zir-btn--ghost" (click)="showEditModal = false">Annuler</button>
+        <button class="zir-btn zir-btn--primary" (click)="saveEdit()">Enregistrer</button>
+      </div>
+    </div>
+  </div>
+}

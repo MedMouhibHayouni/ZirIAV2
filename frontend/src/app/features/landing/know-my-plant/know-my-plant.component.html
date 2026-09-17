@@ -1,0 +1,248 @@
+<!-- ══════════════════════════════════════════════════════════
+     KNOW MY PLANT — Page publique ZirIA
+     Compact navbar + full-bleed hero + clean card layout
+     ══════════════════════════════════════════════════════════ -->
+<div class="kmp-page">
+
+  <app-public-navbar />
+
+  <!-- ── Hero Banner ─────────────────────────────────────── -->
+  <section class="kmp-hero">
+    <div class="kmp-hero__bg">
+      <div class="kmp-orb kmp-orb--1"></div>
+      <div class="kmp-orb kmp-orb--2"></div>
+    </div>
+    <div class="kmp-hero__content">
+      <div class="kmp-hero__badge">
+        <ng-icon name="lucideSparkles" size="13"></ng-icon>
+        Intelligence ZirIA · 100% Gratuit
+      </div>
+      <h1 class="kmp-hero__title">
+        Identifiez votre plante
+      </h1>
+      <p class="kmp-hero__title-ar" dir="rtl" lang="ar">عرف نبتتك في 5 ثواني</p>
+      <p class="kmp-hero__desc">
+        Photographiez une feuille, une tige ou un fruit —
+        ZirIA vous répond en français et en Darija tunisienne.
+      </p>
+    </div>
+  </section>
+
+  <!-- ── Main Content ────────────────────────────────────── -->
+  <div class="kmp-main">
+
+    <!-- ════ STATE: UPLOAD ════════════════════════════════ -->
+    @if (state() === 'upload') {
+      <div class="kmp-upload-card">
+
+        <!-- Drop Zone -->
+        <div
+          class="kmp-dropzone"
+          [class.kmp-dropzone--active]="isDragOver()"
+          [class.kmp-dropzone--filled]="!!previewUrl()"
+          (dragover)="onDragOver($event)"
+          (dragleave)="onDragLeave()"
+          (drop)="onDrop($event)"
+        >
+          @if (previewUrl()) {
+            <div class="kmp-preview">
+              <img [src]="previewUrl()!" class="kmp-preview__img" alt="Aperçu" />
+              <button class="kmp-preview__change" (click)="reset()">
+                <ng-icon name="lucideRefreshCw" size="13"></ng-icon>
+                Changer
+              </button>
+            </div>
+          } @else {
+            <div class="kmp-dropzone__inner">
+              <div class="kmp-dropzone__icon">
+                <ng-icon name="lucideCamera" size="30"></ng-icon>
+              </div>
+              <p class="kmp-dropzone__label">Glissez votre photo ici</p>
+              <span class="kmp-dropzone__sep">— ou —</span>
+              <label class="kmp-btn kmp-btn--upload" for="plant-file">
+                <ng-icon name="lucideUpload" size="15"></ng-icon>
+                Choisir une image
+              </label>
+              <input id="plant-file" type="file" accept="image/*" capture="environment"
+                (change)="onFileSelected($event)" class="kmp-file-input" />
+              <p class="kmp-dropzone__hint">JPEG · PNG · WebP · max 10 Mo</p>
+            </div>
+          }
+        </div>
+
+        <!-- Tips row -->
+        <div class="kmp-tips">
+          <div class="kmp-tip">
+            <ng-icon name="lucideSun" size="16"></ng-icon>
+            <span>Bonne lumière<br><em dir="rtl">ضوء مزيان</em></span>
+          </div>
+          <div class="kmp-tip">
+            <ng-icon name="lucideLeaf" size="16"></ng-icon>
+            <span>Feuille ou fleur<br><em dir="rtl">ورقة أو زهرة</em></span>
+          </div>
+          <div class="kmp-tip">
+            <ng-icon name="lucideSearch" size="16"></ng-icon>
+            <span>Un seul sujet<br><em dir="rtl">موضوع وحيد</em></span>
+          </div>
+        </div>
+
+        <!-- Error -->
+        @if (errorMsg()) {
+          <div class="kmp-alert">
+            <ng-icon name="lucideShieldAlert" size="15"></ng-icon>
+            {{ errorMsg() }}
+          </div>
+        }
+
+        <!-- Analyze CTA -->
+        <button class="kmp-btn kmp-btn--analyze" [disabled]="!previewUrl()" (click)="analyze()">
+          <ng-icon name="lucideSparkles" size="18"></ng-icon>
+          <span>Identifier ma plante</span>
+          <small dir="rtl">عرّف نبتتي</small>
+        </button>
+
+        <!-- Limit note -->
+        <p class="kmp-footnote">
+          <ng-icon name="lucideInfo" size="13"></ng-icon>
+          1 identification gratuite / jour ·
+          <a routerLink="/register">Créer un compte</a> pour un accès illimité
+        </p>
+      </div>
+    }
+
+    <!-- ════ STATE: ANALYZING ══════════════════════════════ -->
+    @if (state() === 'analyzing') {
+      <div class="kmp-state-card kmp-state-card--centered">
+        <div class="kmp-pulse">
+          <div class="kmp-pulse__inner">
+            <ng-icon name="lucideLeaf" size="32"></ng-icon>
+          </div>
+        </div>
+        <h2 class="kmp-state-title">Analyse en cours…</h2>
+        <p class="kmp-state-sub">L'IA ZirIA examine votre plante 🔬</p>
+        <p class="kmp-state-ar" dir="rtl">الذكاء الاصطناعي يحلل نبتتك...</p>
+      </div>
+    }
+
+    <!-- ════ STATE: RATE LIMITED ══════════════════════════ -->
+    @if (state() === 'limited') {
+      <div class="kmp-state-card kmp-state-card--centered">
+        <div class="kmp-limited-icon">
+          <ng-icon name="lucideSparkles" size="40"></ng-icon>
+        </div>
+        <h2 class="kmp-state-title">Quota atteint !</h2>
+        <p class="kmp-state-sub">{{ result()?.message_fr }}</p>
+        <p class="kmp-state-ar" dir="rtl">{{ result()?.message_ar }}</p>
+        <div class="kmp-state-actions">
+          <a routerLink="/register" class="kmp-btn kmp-btn--primary">
+            <ng-icon name="lucideUserPlus" size="15"></ng-icon>
+            Créer un compte gratuit
+          </a>
+          <button class="kmp-btn kmp-btn--ghost" (click)="reset()">Retour</button>
+        </div>
+      </div>
+    }
+
+    <!-- ════ STATE: RESULT ════════════════════════════════ -->
+    @if (state() === 'result' && result()) {
+      <div class="kmp-result">
+
+        <!-- Identity card -->
+        <div class="kmp-result-hero">
+          <div class="kmp-result-photo">
+            <img [src]="result()!.photo_url" [alt]="result()!.plant_name_fr" />
+          </div>
+          <div class="kmp-result-identity">
+            <span class="kmp-result-badge">
+              <ng-icon name="lucideLeaf" size="12"></ng-icon>
+              Plante identifiée
+            </span>
+            <h2 class="kmp-result-name">{{ result()!.plant_name_fr }}</h2>
+            <p class="kmp-result-name-ar" dir="rtl">{{ result()!.plant_name_ar }}</p>
+            <p class="kmp-result-lat">
+              <ng-icon name="lucideBrain" size="13"></ng-icon>
+              <em>{{ result()!.plant_name_lat }}</em>
+            </p>
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div class="kmp-section">
+          <h3 class="kmp-section__title">
+            <ng-icon name="lucideBookOpen" size="17"></ng-icon>
+            Description
+          </h3>
+          <div class="kmp-desc-grid">
+            <div class="kmp-desc-block">
+              <div class="kmp-lang-tag">🇫🇷 Français</div>
+              <p>{{ result()!.description_fr }}</p>
+            </div>
+            <div class="kmp-desc-block kmp-desc-block--ar">
+              <div class="kmp-lang-tag">🇹🇳 دارجة</div>
+              <p dir="rtl" lang="ar">{{ result()!.description_darija }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Care tips -->
+        <div class="kmp-section">
+          <h3 class="kmp-section__title">
+            <ng-icon name="lucideDroplets" size="17"></ng-icon>
+            Conseils d'entretien
+          </h3>
+          <ul class="kmp-tips-list">
+            @for (tip of result()!.care_tips; track tip) {
+              <li>
+                <span class="kmp-tip-icon"><ng-icon name="lucideCheck" size="13"></ng-icon></span>
+                {{ tip }}
+              </li>
+            }
+          </ul>
+        </div>
+
+        <!-- Agricultural relevance -->
+        <div class="kmp-section kmp-section--agri">
+          <h3 class="kmp-section__title">
+            <ng-icon name="lucideTractor" size="17"></ng-icon>
+            Intérêt agricole & commercial
+          </h3>
+          <p class="kmp-agri-text">{{ result()!.agricultural_relevance }}</p>
+        </div>
+
+        <!-- Reset -->
+        <div class="kmp-result-actions">
+          <button class="kmp-btn kmp-btn--ghost" (click)="reset()">
+            <ng-icon name="lucideRefreshCw" size="15"></ng-icon>
+            Identifier une autre plante
+          </button>
+        </div>
+
+        <!-- Conversion CTA -->
+        <div class="kmp-cta-block">
+          <div class="kmp-cta-block__icon">
+            <ng-icon name="lucideShield" size="36"></ng-icon>
+          </div>
+          <div class="kmp-cta-block__body">
+            <h3>Allez plus loin avec ZirIA</h3>
+            <p>Diagnostic de maladies, gestion de parcelles, marché B2B — tout en un tableau de bord.</p>
+            <div class="kmp-cta-feats">
+              <span><ng-icon name="lucideShieldAlert" size="12"></ng-icon> Diagnostic maladies</span>
+              <span><ng-icon name="lucideActivity" size="12"></ng-icon> Experts agronomes</span>
+              <span><ng-icon name="lucideStore" size="12"></ng-icon> Marché agricole</span>
+              <span><ng-icon name="lucideMapPin" size="12"></ng-icon> Gestion parcelles</span>
+            </div>
+          </div>
+          <div class="kmp-cta-block__btns">
+            <a routerLink="/register" class="kmp-btn kmp-btn--white">
+              <ng-icon name="lucideUserPlus" size="14"></ng-icon>
+              Créer un compte
+            </a>
+            <a routerLink="/login" class="kmp-cta-login">Se connecter</a>
+          </div>
+        </div>
+
+      </div>
+    }
+
+  </div>
+</div>

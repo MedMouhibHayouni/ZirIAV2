@@ -1,0 +1,80 @@
+{
+  "date": "2026-09-12T20:18:20Z",
+  "taxonomy_level": "disease_level",
+  "classes": [
+    "apple_black_rot",
+    "apple_cedar_rust",
+    "apple_healthy",
+    "apple_scab",
+    "cherry_healthy",
+    "cherry_powdery_mildew",
+    "corn_cercospora_leaf_spot",
+    "corn_common_rust",
+    "corn_healthy",
+    "corn_northern_leaf_blight",
+    "grape_black_rot",
+    "grape_esca",
+    "grape_healthy",
+    "grape_leaf_blight",
+    "olive_diseased",
+    "olive_healthy",
+    "peach_bacterial_spot",
+    "peach_healthy",
+    "pep_bacterial_spot",
+    "pep_healthy",
+    "pot_early_blight",
+    "pot_healthy",
+    "pot_late_blight",
+    "raspberry_healthy",
+    "soybean_healthy",
+    "squash_powdery_mildew",
+    "strawberry_healthy",
+    "strawberry_leaf_scorch",
+    "tom_bacterial_spot",
+    "tom_early_blight",
+    "tom_healthy",
+    "tom_late_blight",
+    "tom_leaf_mold",
+    "tom_mosaic_virus",
+    "tom_septoria_leaf_spot",
+    "tom_spider_mites",
+    "tom_target_spot",
+    "tom_yellow_leaf_curl"
+  ],
+  "n_classes": 38,
+  "excluded_classes": {
+    "wheat": {
+      "reason": "insufficient field images (< 30)",
+      "count": 16
+    }
+  },
+  "counts": {
+    "train": 9500,
+    "val": 2280,
+    "test": 2280
+  },
+  "best_val_acc": 0.9798,
+  "calibration_sanity_check": {
+    "perturbation_multiplier": 2.0,
+    "recovered_T_from_calibrated_baseline": 1.9952,
+    "scaling_ratio_recovered": 2.0002,
+    "status": "PASSED"
+  },
+  "temperature_Tstar": 0.5954,
+  "val_ece_before": 0.1125,
+  "val_ece_after": 0.0052,
+  "val_mce_before": 0.369,
+  "val_mce_after": 0.2846,
+  "test_acc_all": 0.9794,
+  "test_acc_lab": 0.9923,
+  "test_acc_field": 0.8465,
+  "test_n": 2280,
+  "test_n_lab": 2078,
+  "test_n_field": 202,
+  "notes": [
+    "Defect 1 resolved: Model trained on 38 disease-level classes, not collapsed crop-level classes.",
+    "Olive retained as binary classification (olive_diseased, olive_healthy) due to source annotation constraints.",
+    "Wheat excluded (16 raw images, < 30 threshold) and documented as requiring field collection.",
+    "Defect 2 resolved: Fixed temperature scaling optimizer with analytical gradients and line search, passing deliberate miscalibration recovery sanity test (recovered 2.0000x)."
+  ]
+}

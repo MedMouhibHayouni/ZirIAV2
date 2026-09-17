@@ -1,0 +1,89 @@
+{
+  "timestamp": "2026-09-12T23:04:28Z",
+  "cpu": {
+    "model": "Intel64 Family 6 Model 158 Stepping 10, GenuineIntel",
+    "logical": 12,
+    "physical": 6
+  },
+  "ram": {
+    "total_gb": 17.12,
+    "available_gb": 9.48
+  },
+  "disk": {
+    "total_gb": 178.26,
+    "free_gb": 130.05
+  },
+  "storage_cap_gb": 78.03,
+  "gpu": {
+    "present": true,
+    "name": "NVIDIA GeForce GTX 1070 Ti",
+    "total_vram_gb": 8.59,
+    "cuda_capability": [
+      6,
+      1
+    ],
+    "multiprocessor_count": 19,
+    "free_vram_gb": 7.54
+  },
+  "torch_version": "2.6.0+cu118",
+  "batch_guidance": {
+    "effnet_b2_256": 48,
+    "amp": true
+  },
+  "v4_audit": {
+    "ziria_v4_calibrated.pt": {
+      "exists": true,
+      "bytes": 32080052
+    },
+    "v4_metrics_report.json": {
+      "exists": true,
+      "bytes": 2308
+    },
+    "v4_best.pt": {
+      "exists": true,
+      "bytes": 31465210
+    },
+    "v4_ckpt.pt": {
+      "exists": true,
+      "bytes": 93365255
+    },
+    "v4_run.log": {
+      "exists": true,
+      "bytes": 44244
+    },
+    "v4_calibration_pipeline.py": {
+      "exists": true,
+      "bytes": 26142
+    },
+    "v4_report_summary": {
+      "n_classes": 38,
+      "classes_sample": [
+        "apple_black_rot",
+        "apple_cedar_rust",
+        "apple_healthy",
+        "apple_scab",
+        "cherry_healthy"
+      ],
+      "test_acc_all": 0.9794,
+      "test_acc_field": 0.8465,
+      "temperature_Tstar": 0.5954,
+      "val_ece_before": 0.1125,
+      "val_ece_after": 0.0052,
+      "counts": {
+        "train": 9500,
+        "val": 2280,
+        "test": 2280
+      },
+      "sources": null
+    },
+    "v4_taxonomy_check": {
+      "n": 38,
+      "bare_crop_names": [],
+      "disease_level": true
+    },
+    "v4_best_num_classes": [
+      38,
+      1408
+    ]
+  }
+}

@@ -1,0 +1,137 @@
+<div class="amb-certifications zir-animate-in">
+
+  <header class="page-header">
+    <div class="header-titles">
+      <h1>
+        <ng-icon name="lucideAward" style="color:var(--zir-emerald);"></ng-icon>
+        Validations des Certificats de Zone
+      </h1>
+      <p>Vérifiez les pièces justificatives des travailleurs saisonniers de votre gouvernorat pour accorder le badge vérifié.</p>
+    </div>
+
+    @if (certifications().length) {
+      <span class="pending-count-badge">{{ certifications().length }} en attente</span>
+    }
+  </header>
+
+  @if (isLoading()) {
+    <div class="loading-state">
+      <div class="zir-spinner"></div>
+      <p>Chargement des demandes de votre gouvernorat...</p>
+    </div>
+  } @else {
+
+    <div class="certifications-queue">
+      @for (cert of certifications(); track cert.id) {
+        <div class="queue-card zir-animate-scale">
+          
+          <!-- Worker Info column -->
+          <div class="queue-col worker-info-col">
+            <div class="worker-avatar">
+              <ng-icon name="lucideUser"></ng-icon>
+            </div>
+            <div class="worker-details">
+              <h3>{{ cert.worker_name || 'Saisonnier ZirIA' }}</h3>
+              <span class="phone-number">{{ cert.worker_phone || 'Pas de téléphone' }}</span>
+              <div class="skills-row">
+                @for (skill of cert.skills; track skill) {
+                  <span class="skill-mini-tag">{{ skill }}</span>
+                }
+              </div>
+            </div>
+          </div>
+
+          <!-- Certification details column -->
+          <div class="queue-col cert-details-col">
+            <div class="cert-title-block">
+              <span class="cert-title-badge">Diplôme / Certificat</span>
+              <h2>{{ cert.certification_name }}</h2>
+              <p class="issuer">Délivré par : <strong>{{ cert.issuing_organization || 'Organisme non spécifié' }}</strong></p>
+            </div>
+
+            <div class="cert-dates">
+              <span *ngIf="cert.issued_date">
+                <ng-icon name="lucideCalendar"></ng-icon>
+                Obtenu : {{ cert.issued_date | date:'dd/MM/yyyy' }}
+              </span>
+              <span *ngIf="cert.expiry_date">
+                <ng-icon name="lucideCalendar"></ng-icon>
+                Expire : {{ cert.expiry_date | date:'dd/MM/yyyy' }}
+              </span>
+            </div>
+
+            @if (cert.description) {
+              <p class="cert-desc">" {{ cert.description }} "</p>
+            }
+
+            @if (cert.document_url) {
+              <button class="zir-btn zir-btn--ghost view-doc-btn" (click)="openDocument(cert.document_url)">
+                <ng-icon name="lucideExternalLink"></ng-icon>
+                Consulter la Pièce Justificative (PDF)
+              </button>
+            } @else {
+              <div class="no-doc-alert">
+                <ng-icon name="lucideAlertTriangle"></ng-icon>
+                <span>Aucune pièce justificative en ligne attachée. Contactez le travailleur par téléphone.</span>
+              </div>
+            }
+          </div>
+
+          <!-- Actions column -->
+          <div class="queue-col actions-col">
+            <button class="queue-action-btn accept" (click)="verifyCert(cert.id, 'VERIFIED')">
+              <ng-icon name="lucideCheck"></ng-icon>
+              Approuver
+            </button>
+            <button class="queue-action-btn reject" (click)="openRejectModal(cert.id)">
+              <ng-icon name="lucideX"></ng-icon>
+              Refuser
+            </button>
+          </div>
+
+        </div>
+      } @empty {
+        <div class="empty-queue-card text-center zir-animate-scale">
+          <div class="success-check-halo">
+            <ng-icon name="lucideCheckCircle" class="huge-check-icon"></ng-icon>
+          </div>
+          <h3>Aucune demande en attente</h3>
+          <p>Toutes les certifications de votre gouvernorat ont été examinées. Bon travail d'animation de zone !</p>
+        </div>
+      }
+    </div>
+
+  }
+
+  <!-- Rejection Modal -->
+  @if (showRejectModal()) {
+    <div class="zir-modal-overlay">
+      <div class="zir-modal reject-modal zir-animate-scale">
+        <div class="modal-header">
+          <h2>
+            <ng-icon name="lucideXCircle" style="color:#ef4444;"></ng-icon>
+            Refuser la certification
+          </h2>
+          <button class="close-modal-btn" (click)="closeRejectModal()">
+            <ng-icon name="lucideX"></ng-icon>
+          </button>
+        </div>
+        
+        <div class="modal-body">
+          <p class="modal-intro alert-style">Indiquez la raison du rejet pour aider le travailleur à corriger sa demande (ex: justificatif illisible, date incorrecte, diplôme non reconnu...).</p>
+          
+          <div class="form-group">
+            <label class="zir-label">Motif du rejet (Envoyé au travailleur) *</label>
+            <textarea class="zir-input" [(ngModel)]="rejectionReason" rows="4" placeholder="Ex: Le lien PDF fourni est inaccessible en mode public. Veuillez mettre à jour avec un lien partagé ouvert." required></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="zir-btn zir-btn--secondary" (click)="closeRejectModal()">Annuler</button>
+          <button class="zir-btn zir-btn--danger" (click)="submitRejection()">Confirmer le Rejet</button>
+        </div>
+      </div>
+    </div>
+  }
+
+</div>

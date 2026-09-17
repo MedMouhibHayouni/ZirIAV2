@@ -1,0 +1,111 @@
+<div class="directory-container">
+  <!-- Header -->
+  <header class="directory-header">
+    <div class="header-content">
+      <h1 class="text-4xl font-bold text-[var(--text-primary)] mb-4">Annuaire des Fournisseurs</h1>
+      <p class="text-[var(--text-secondary)] text-lg mb-8 max-w-2xl">
+        Découvrez les meilleurs fournisseurs agricoles de votre région. Achetez vos intrants, équipements et semences en toute confiance.
+      </p>
+      
+      <!-- Filters -->
+      <div class="filters-bar zir-card flex flex-col md:flex-row gap-4 p-4">
+        <div class="search-input flex-1 relative">
+          <ng-icon name="lucideSearch" class="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)]"></ng-icon>
+          <input 
+            type="text" 
+            [(ngModel)]="searchQuery" 
+            (ngModelChange)="onFilterChange()"
+            placeholder="Rechercher un fournisseur, un produit..." 
+            class="zir-input w-full pl-12"
+          >
+        </div>
+        <div class="gov-select md:w-64 relative">
+          <ng-icon name="lucideMapPin" class="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)]"></ng-icon>
+          <select 
+            [(ngModel)]="selectedGov" 
+            (ngModelChange)="onFilterChange()"
+            class="zir-input w-full pl-12 appearance-none"
+          >
+            <option value="">Tous les gouvernorats</option>
+            @for (gov of governorates; track gov) {
+              <option [value]="gov">{{gov}}</option>
+            }
+          </select>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Grid -->
+  <div class="directory-content py-12 px-6 max-w-7xl mx-auto">
+    
+    @if (loading) {
+      <div class="flex justify-center py-20">
+        <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[var(--zir-emerald)]"></div>
+      </div>
+    }
+
+    @if (!loading && suppliers.length === 0) {
+      <div class="text-center py-20 zir-card">
+        <ng-icon name="lucidePackage" class="text-6xl text-gray-600 mb-4 mx-auto"></ng-icon>
+        <h3 class="text-xl font-bold text-[var(--text-primary)] mb-2">Aucun fournisseur trouvé</h3>
+        <p class="text-[var(--text-secondary)]">Essayez de modifier vos critères de recherche.</p>
+      </div>
+    }
+
+    @if (!loading && suppliers.length > 0) {
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        @for (supplier of suppliers; track supplier.id) {
+          <a 
+            [routerLink]="['/suppliers', supplier.id]"
+            class="supplier-card zir-card relative overflow-hidden group hover:-translate-y-1 transition-all duration-300"
+          >
+            <!-- Background Gradient based on theme color -->
+            <div class="absolute inset-0 z-0 opacity-5 transition-opacity group-hover:opacity-10"
+                 [style.background]="getThemeGradient(supplier.vitrine_theme_color)">
+            </div>
+
+            <div class="relative z-10 p-6 flex flex-col h-full">
+              <div class="flex items-center gap-4 mb-4">
+                <div class="w-16 h-16 rounded-xl overflow-hidden bg-gray-800 border border-[var(--border)]">
+                  @if (supplier.vitrine_photo_url) {
+                    <img [src]="supplier.vitrine_photo_url" class="w-full h-full object-cover">
+                  } @else {
+                    <div class="w-full h-full flex items-center justify-center text-2xl font-bold text-gray-500">
+                      {{supplier.business_name?.[0] || supplier.name?.[0] || 'F'}}
+                    </div>
+                  }
+                </div>
+                <div>
+                  <h3 class="text-xl font-bold text-[var(--text-primary)] group-hover:text-[var(--zir-emerald)] transition-colors">
+                    {{supplier.business_name || supplier.name}}
+                  </h3>
+                  <div class="flex items-center text-sm text-[var(--text-muted)] mt-1">
+                    <ng-icon name="lucideMapPin" class="w-4 h-4 mr-1"></ng-icon>
+                    {{supplier.governorate}}
+                  </div>
+                </div>
+              </div>
+
+              <p class="text-[var(--text-secondary)] text-sm flex-1 line-clamp-3 mb-6">
+                {{supplier.business_description || 'Aucune description disponible.'}}
+              </p>
+
+              <div class="mt-auto flex items-center justify-between pt-4 border-t border-[var(--border)]">
+                <div class="flex items-center text-yellow-500">
+                  <ng-icon name="lucideStar" class="w-4 h-4 mr-1 fill-current"></ng-icon>
+                  <span class="font-bold mr-1">{{supplier.average_rating | number:'1.1-1'}}</span>
+                  <span class="text-[var(--text-muted)] text-xs">({{supplier.total_reviews}} avis)</span>
+                </div>
+                <div class="text-sm text-[var(--zir-emerald)] font-medium">
+                  {{supplier.active_products_count}} produits
+                </div>
+              </div>
+            </div>
+          </a>
+        }
+      </div>
+    }
+
+  </div>
+</div>

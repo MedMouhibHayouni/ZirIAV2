@@ -1,0 +1,131 @@
+<div class="land-page">
+  <div class="page-header">
+    <div>
+      <h2><ng-icon name="lucideGavel"></ng-icon> Mes Enchères Foncières</h2>
+      <p>Suivi en temps réel de toutes vos enchères actives et terminées</p>
+    </div>
+  </div>
+
+  @if (stats()) {
+    <div class="stats-row">
+      <div class="stat-pill"><span>Annonces Actives</span><strong>{{ stats()!.active_listings }}</strong></div>
+      <div class="stat-pill emerald"><span>Enchères en Cours</span><strong>{{ stats()!.active_auctions }}</strong></div>
+      <div class="stat-pill amber"><span>Meilleure Offre</span><strong>{{ formatAmount(stats()!.best_offer_tnd) }}</strong></div>
+      <div class="stat-pill blue"><span>Total Offres Reçues</span><strong>{{ stats()!.total_bids_received }}</strong></div>
+    </div>
+  }
+
+  @if (isLoading()) {
+    <div class="loading-state"><ng-icon name="lucideLoader" class="spin"></ng-icon> Chargement...</div>
+  } @else if (auctions().length === 0) {
+    <div class="empty-state">
+      <ng-icon name="lucideGavel" style="font-size:48px"></ng-icon>
+      <p>Aucune enchère publiée. Créez-en une depuis "Mes Terres".</p>
+    </div>
+  } @else {
+    <div class="auctions-list">
+      @for (auction of auctions(); track auction.id) {
+        <div class="auction-card" [class.ended]="auction.status !== 'ACTIVE'" [class.expanded]="auction._expanded">
+          <div class="auction-header" (click)="toggleAuction(auction)">
+            <div class="auction-info">
+              <div class="auction-tags">
+                <span class="status-badge" [class.active]="auction.status === 'ACTIVE'" [class.ended]="auction.status === 'ENDED'" [class.cancelled]="auction.status === 'CANCELLED'">
+                  @if (auction.status === 'ACTIVE') { <span class="text-emerald-500 flex items-center gap-1"><ng-icon name="lucideTrendingUp"></ng-icon> Active</span> }
+                  @else if (auction.status === 'ENDED') { <span class="text-blue-500 flex items-center gap-1"><ng-icon name="lucideCheckCircle"></ng-icon> Terminée</span> }
+                  @else { <span class="text-slate-500 flex items-center gap-1"><ng-icon name="lucideXCircle"></ng-icon> Annulée</span> }
+                </span>
+                @if (auction.landListing) {
+                  <span class="surface-badge">{{ auction.landListing.surface_ha }} ha · {{ auction.landListing.governorate }}</span>
+                }
+              </div>
+              <h4>Enchère Foncière</h4>
+            </div>
+
+            @if (auction.status === 'ACTIVE') {
+              <div class="countdown-box">
+                <ng-icon name="lucideClock"></ng-icon>
+                <div class="countdown-value">{{ auction.countdown || '--' }}</div>
+                <span class="countdown-label">Reste</span>
+              </div>
+            }
+
+            @if (auction.status === 'ACTIVE') {
+              <div class="auction-actions" (click)="$event.stopPropagation()">
+                <button class="zir-btn zir-btn--primary btn-sm" (click)="acceptBid(auction)" [disabled]="auction._accepting">
+                  <ng-icon [name]="auction._accepting ? 'lucideLoader' : 'lucideCheckCircle'" [class.spin]="auction._accepting"></ng-icon>
+                  Accepter meilleure offre
+                </button>
+                <button class="zir-btn zir-btn--danger-ghost btn-sm" (click)="cancelAuction(auction)" [disabled]="auction._cancelling">
+                  <ng-icon [name]="auction._cancelling ? 'lucideLoader' : 'lucideXCircle'" [class.spin]="auction._cancelling"></ng-icon>
+                  Annuler
+                </button>
+              </div>
+            }
+          </div>
+
+          @if (auction._expanded) {
+            <div class="auction-body">
+              <div class="auction-details-grid">
+                <!-- Bid History -->
+                <div class="detail-section">
+                  <h5><ng-icon name="lucideTrendingUp"></ng-icon> Historique des Offres ({{ auction.bids?.length || 0 }})</h5>
+                  @if (auction._loadingBids) {
+                    <div class="loading-inline"><ng-icon name="lucideLoader" class="spin"></ng-icon> Chargement...</div>
+                  } @else if (auction.bids?.length === 0) {
+                    <p class="text-muted text-sm">Aucune offre pour le moment.</p>
+                  } @else {
+                    <div class="bids-list">
+                      @for (bid of auction.bids; track bid.id; let i = $index) {
+                        <div class="bid-row" [class.winning]="i === 0">
+                          <span class="bid-rank">{{ i === 0 ? '' : '#' + (i + 1) }}<ng-icon *ngIf="i === 0" name="lucideTrophy" style="color:var(--warning)"></ng-icon></span>
+                          <span class="bid-amount">{{ formatAmount(bid.amount_tnd) }}</span>
+                          <span class="bid-date text-muted text-sm">{{ bid.created_at | date:'dd/MM HH:mm' }}</span>
+                        </div>
+                      }
+                    </div>
+                    @if (auction.bids && auction.bids.length > 0) {
+                      <div class="best-bid-display">
+                        Meilleure offre: <strong class="text-success">{{ formatAmount(getBestBid(auction)) }}</strong>
+                      </div>
+                    }
+                  }
+                </div>
+
+                <!-- Q&A -->
+                <div class="detail-section">
+                  <h5><ng-icon name="lucideMessageSquare"></ng-icon> Questions Acheteurs ({{ auction.questions?.length || 0 }})</h5>
+                  @if (auction._loadingQa) {
+                    <div class="loading-inline"><ng-icon name="lucideLoader" class="spin"></ng-icon> Chargement...</div>
+                  } @else if (auction.questions?.length === 0) {
+                    <p class="text-muted text-sm">Aucune question posée.</p>
+                  } @else {
+                    <div class="qa-list">
+                      @for (q of auction.questions; track q.id) {
+                        <div class="qa-item">
+                          <p class="question-text"><ng-icon name="lucideHelpCircle" class="text-amber-500"></ng-icon> {{ q.question }}</p>
+                          @if (q.answer) {
+                            <p class="answer-text">
+                              <ng-icon name="lucideCheckCircle" class="text-emerald-500"></ng-icon>
+                              {{ q.answer }}
+                            </p>
+                          } @else {
+                            <div class="answer-form">
+                              <input type="text" class="zir-input" [(ngModel)]="q._answer" placeholder="Votre réponse...">
+                              <button class="zir-btn zir-btn--primary btn-xs" (click)="answerQuestion(auction, q)" [disabled]="q._saving || !q._answer?.trim()">
+                                <ng-icon [name]="q._saving ? 'lucideLoader' : 'lucideCheckCircle'" [class.spin]="q._saving"></ng-icon>
+                              </button>
+                            </div>
+                          }
+                        </div>
+                      }
+                    </div>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>

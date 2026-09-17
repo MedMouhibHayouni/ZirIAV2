@@ -1,0 +1,88 @@
+<div class="land-owner-lands zir-animate-in">
+  
+  <header class="page-header">
+    <div class="header-content">
+      <div class="title-area">
+        <h1>
+          <ng-icon name="lucideMap" style="color:var(--zir-emerald);"></ng-icon>
+          Mes Terres & Parcelles
+        </h1>
+        <p>Gérez vos propriétés foncières et optimisez leur rentabilité via les enchères.</p>
+      </div>
+
+      <button class="zir-btn zir-btn--primary">
+        <ng-icon name="lucidePlus"></ng-icon>
+        Ajouter une Parcelle
+      </button>
+    </div>
+  </header>
+
+  @if (isLoading()) {
+    <div class="loading-state">
+      <div class="zir-spinner"></div>
+    </div>
+  } @else {
+    <div class="lands-grid">
+      @for (land of lands(); track land.id) {
+        <div class="zir-card land-card">
+          <div class="card-map-preview">
+            <!-- Mock Map UI -->
+            <div class="map-placeholder">
+              <ng-icon name="lucideMapPin"></ng-icon>
+              <span>{{ land.center_lat | number:'1.2-2' }}, {{ land.center_lng | number:'1.2-2' }}</span>
+            </div>
+            @if (land.is_for_auction) {
+              <div class="auction-status">
+                <ng-icon name="lucideTrendingUp"></ng-icon>
+                AUX ENCHÈRES
+              </div>
+            }
+          </div>
+
+          <div class="card-body">
+            <div class="card-header">
+              <h3>{{ land.name }}</h3>
+              <span class="governorate">{{ land.governorate }}</span>
+            </div>
+
+            <div class="land-stats">
+              <div class="stat">
+                <ng-icon name="lucideMaximize"></ng-icon>
+                <span>{{ land.surface_area }} Ha</span>
+              </div>
+              <div class="stat">
+                <ng-icon name="lucideInfo"></ng-icon>
+                <span>{{ land.crop_type || 'Terre nue' }}</span>
+              </div>
+            </div>
+
+            <div class="card-footer">
+              <button class="zir-btn zir-btn--ghost" (click)="openLandDetail(land)">
+                Détails
+              </button>
+              @if (!land.is_for_auction) {
+                <button class="zir-btn zir-btn--primary" (click)="startAuction(land)">
+                  <ng-icon name="lucideGavel"></ng-icon>
+                  Lancer Enchère
+                </button>
+              } @else {
+                <button class="zir-btn zir-btn--success-ghost" routerLink="/dashboard/land_owner/auctions">
+                  Suivre Enchère
+                </button>
+              }
+            </div>
+          </div>
+        </div>
+      } @empty {
+        <div class="empty-state">
+          <div class="empty-icon">
+            <ng-icon name="lucideMap"></ng-icon>
+          </div>
+          <h3>Aucune parcelle enregistrée</h3>
+          <p>Commencez par ajouter votre première terre agricole.</p>
+        </div>
+      }
+    </div>
+  }
+
+</div>

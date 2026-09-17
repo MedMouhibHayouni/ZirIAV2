@@ -1,0 +1,1120 @@
+{
+  "generated_at": "2026-09-13T01:04:38Z",
+  "final_classes": [
+    "almond_damaged",
+    "almond_healthy",
+    "apple_black_rot",
+    "apple_cedar_rust",
+    "apple_healthy",
+    "apple_scab",
+    "cherry_healthy",
+    "cherry_powdery_mildew",
+    "corn_cercospora_leaf_spot",
+    "corn_common_rust",
+    "corn_healthy",
+    "corn_northern_leaf_blight",
+    "datepalm_black_scorch",
+    "datepalm_brown_spots",
+    "datepalm_fusarium_wilt",
+    "datepalm_healthy",
+    "datepalm_leaf_spots",
+    "datepalm_magnesium_deficiency",
+    "datepalm_manganese_deficiency",
+    "datepalm_parlatoria_scale",
+    "datepalm_potassium_deficiency",
+    "datepalm_rachis_blight",
+    "grape_black_rot",
+    "grape_esca",
+    "grape_healthy",
+    "grape_leaf_blight",
+    "olive_aculus_mite",
+    "olive_diseased",
+    "olive_healthy",
+    "olive_peacock_spot",
+    "peach_bacterial_spot",
+    "peach_healthy",
+    "pep_bacterial_spot",
+    "pep_healthy",
+    "pot_early_blight",
+    "pot_healthy",
+    "pot_late_blight",
+    "strawberry_healthy",
+    "strawberry_leaf_scorch",
+    "tom_bacterial_spot",
+    "tom_early_blight",
+    "tom_healthy",
+    "tom_late_blight",
+    "tom_leaf_mold",
+    "tom_mosaic_virus",
+    "tom_septoria_leaf_spot",
+    "tom_spider_mites",
+    "tom_yellow_leaf_curl",
+    "wheat_black_point",
+    "wheat_blast",
+    "wheat_fusarium_foot_rot",
+    "wheat_healthy",
+    "wheat_leaf_blight"
+  ],
+  "n_classes": 53,
+  "old38_retained": [
+    "apple_black_rot",
+    "apple_cedar_rust",
+    "apple_healthy",
+    "apple_scab",
+    "cherry_healthy",
+    "cherry_powdery_mildew",
+    "corn_cercospora_leaf_spot",
+    "corn_common_rust",
+    "corn_healthy",
+    "corn_northern_leaf_blight",
+    "grape_black_rot",
+    "grape_esca",
+    "grape_healthy",
+    "grape_leaf_blight",
+    "olive_diseased",
+    "olive_healthy",
+    "peach_bacterial_spot",
+    "peach_healthy",
+    "pep_bacterial_spot",
+    "pep_healthy",
+    "pot_early_blight",
+    "pot_healthy",
+    "pot_late_blight",
+    "strawberry_healthy",
+    "strawberry_leaf_scorch",
+    "tom_bacterial_spot",
+    "tom_early_blight",
+    "tom_healthy",
+    "tom_late_blight",
+    "tom_leaf_mold",
+    "tom_mosaic_virus",
+    "tom_septoria_leaf_spot",
+    "tom_spider_mites",
+    "tom_yellow_leaf_curl"
+  ],
+  "old38_missing": [
+    "raspberry_healthy",
+    "soybean_healthy",
+    "squash_powdery_mildew",
+    "tom_target_spot"
+  ],
+  "dropped_low_data": {},
+  "split_totals": {
+    "train": 17000,
+    "val": 3598,
+    "test": 3598
+  },
+  "split_per_class": {
+    "train": {
+      "almond_damaged": 196,
+      "almond_healthy": 304,
+      "apple_black_rot": 471,
+      "apple_cedar_rust": 229,
+      "apple_healthy": 1246,
+      "apple_scab": 621,
+      "cherry_healthy": 36,
+      "cherry_powdery_mildew": 36,
+      "corn_cercospora_leaf_spot": 36,
+      "corn_common_rust": 36,
+      "corn_healthy": 36,
+      "corn_northern_leaf_blight": 36,
+      "datepalm_black_scorch": 68,
+      "datepalm_brown_spots": 322,
+      "datepalm_fusarium_wilt": 140,
+      "datepalm_healthy": 1070,
+      "datepalm_leaf_spots": 45,
+      "datepalm_magnesium_deficiency": 368,
+      "datepalm_manganese_deficiency": 283,
+      "datepalm_parlatoria_scale": 733,
+      "datepalm_potassium_deficiency": 566,
+      "datepalm_rachis_blight": 219,
+      "grape_black_rot": 36,
+      "grape_esca": 36,
+      "grape_healthy": 36,
+      "grape_leaf_blight": 36,
+      "olive_aculus_mite": 1246,
+      "olive_diseased": 615,
+      "olive_healthy": 1350,
+      "olive_peacock_spot": 2281,
+      "peach_bacterial_spot": 36,
+      "peach_healthy": 36,
+      "pep_bacterial_spot": 61,
+      "pep_healthy": 61,
+      "pot_early_blight": 61,
+      "pot_healthy": 61,
+      "pot_late_blight": 61,
+      "strawberry_healthy": 36,
+      "strawberry_leaf_scorch": 36,
+      "tom_bacterial_spot": 61,
+      "tom_early_blight": 61,
+      "tom_healthy": 61,
+      "tom_late_blight": 61,
+      "tom_leaf_mold": 61,
+      "tom_mosaic_virus": 61,
+      "tom_septoria_leaf_spot": 61,
+      "tom_spider_mites": 61,
+      "tom_yellow_leaf_curl": 36,
+      "wheat_black_point": 687,
+      "wheat_blast": 590,
+      "wheat_fusarium_foot_rot": 655,
+      "wheat_healthy": 693,
+      "wheat_leaf_blight": 669
+    },
+    "val": {
+      "almond_damaged": 41,
+      "almond_healthy": 65,
+      "apple_black_rot": 100,
+      "apple_cedar_rust": 48,
+      "apple_healthy": 266,
+      "apple_scab": 133,
+      "cherry_healthy": 7,
+      "cherry_powdery_mildew": 7,
+      "corn_cercospora_leaf_spot": 7,
+      "corn_common_rust": 7,
+      "corn_healthy": 7,
+      "corn_northern_leaf_blight": 7,
+      "datepalm_black_scorch": 14,
+      "datepalm_brown_spots": 68,
+      "datepalm_fusarium_wilt": 29,
+      "datepalm_healthy": 228,
+      "datepalm_leaf_spots": 9,
+      "datepalm_magnesium_deficiency": 78,
+      "datepalm_manganese_deficiency": 60,
+      "datepalm_parlatoria_scale": 156,
+      "datepalm_potassium_deficiency": 121,
+      "datepalm_rachis_blight": 46,
+      "grape_black_rot": 7,
+      "grape_esca": 7,
+      "grape_healthy": 7,
+      "grape_leaf_blight": 7,
+      "olive_aculus_mite": 266,
+      "olive_diseased": 131,
+      "olive_healthy": 288,
+      "olive_peacock_spot": 488,
+      "peach_bacterial_spot": 7,
+      "peach_healthy": 7,
+      "pep_bacterial_spot": 12,
+      "pep_healthy": 12,
+      "pot_early_blight": 12,
+      "pot_healthy": 12,
+      "pot_late_blight": 12,
+      "strawberry_healthy": 7,
+      "strawberry_leaf_scorch": 7,
+      "tom_bacterial_spot": 12,
+      "tom_early_blight": 12,
+      "tom_healthy": 12,
+      "tom_late_blight": 12,
+      "tom_leaf_mold": 12,
+      "tom_mosaic_virus": 12,
+      "tom_septoria_leaf_spot": 12,
+      "tom_spider_mites": 12,
+      "tom_yellow_leaf_curl": 7,
+      "wheat_black_point": 147,
+      "wheat_blast": 126,
+      "wheat_fusarium_foot_rot": 139,
+      "wheat_healthy": 148,
+      "wheat_leaf_blight": 142
+    },
+    "test": {
+      "almond_damaged": 41,
+      "almond_healthy": 65,
+      "apple_black_rot": 100,
+      "apple_cedar_rust": 48,
+      "apple_healthy": 266,
+      "apple_scab": 133,
+      "cherry_healthy": 7,
+      "cherry_powdery_mildew": 7,
+      "corn_cercospora_leaf_spot": 7,
+      "corn_common_rust": 7,
+      "corn_healthy": 7,
+      "corn_northern_leaf_blight": 7,
+      "datepalm_black_scorch": 14,
+      "datepalm_brown_spots": 68,
+      "datepalm_fusarium_wilt": 29,
+      "datepalm_healthy": 228,
+      "datepalm_leaf_spots": 9,
+      "datepalm_magnesium_deficiency": 78,
+      "datepalm_manganese_deficiency": 60,
+      "datepalm_parlatoria_scale": 156,
+      "datepalm_potassium_deficiency": 121,
+      "datepalm_rachis_blight": 46,
+      "grape_black_rot": 7,
+      "grape_esca": 7,
+      "grape_healthy": 7,
+      "grape_leaf_blight": 7,
+      "olive_aculus_mite": 266,
+      "olive_diseased": 131,
+      "olive_healthy": 288,
+      "olive_peacock_spot": 488,
+      "peach_bacterial_spot": 7,
+      "peach_healthy": 7,
+      "pep_bacterial_spot": 12,
+      "pep_healthy": 12,
+      "pot_early_blight": 12,
+      "pot_healthy": 12,
+      "pot_late_blight": 12,
+      "strawberry_healthy": 7,
+      "strawberry_leaf_scorch": 7,
+      "tom_bacterial_spot": 12,
+      "tom_early_blight": 12,
+      "tom_healthy": 12,
+      "tom_late_blight": 12,
+      "tom_leaf_mold": 12,
+      "tom_mosaic_virus": 12,
+      "tom_septoria_leaf_spot": 12,
+      "tom_spider_mites": 12,
+      "tom_yellow_leaf_curl": 7,
+      "wheat_black_point": 147,
+      "wheat_blast": 126,
+      "wheat_fusarium_foot_rot": 139,
+      "wheat_healthy": 148,
+      "wheat_leaf_blight": 142
+    }
+  },
+  "per_source_class": {
+    "almond": {
+      "almond_damaged": 278,
+      "almond_healthy": 434
+    },
+    "pv_apple": {
+      "apple_black_rot": 621,
+      "apple_cedar_rust": 275,
+      "apple_healthy": 1638,
+      "apple_scab": 630
+    },
+    "v2": {
+      "apple_black_rot": 50,
+      "apple_cedar_rust": 50,
+      "apple_healthy": 50,
+      "apple_scab": 50,
+      "cherry_healthy": 50,
+      "cherry_powdery_mildew": 50,
+      "corn_cercospora_leaf_spot": 50,
+      "corn_common_rust": 50,
+      "corn_healthy": 50,
+      "corn_northern_leaf_blight": 50,
+      "grape_black_rot": 50,
+      "grape_esca": 50,
+      "grape_healthy": 50,
+      "grape_leaf_blight": 50,
+      "olive_diseased": 772,
+      "peach_bacterial_spot": 50,
+      "peach_healthy": 50,
+      "pep_bacterial_spot": 50,
+      "pep_healthy": 50,
+      "pot_early_blight": 50,
+      "pot_healthy": 50,
+      "pot_late_blight": 50,
+      "strawberry_healthy": 50,
+      "strawberry_leaf_scorch": 50,
+      "tom_bacterial_spot": 50,
+      "tom_early_blight": 50,
+      "tom_healthy": 50,
+      "tom_late_blight": 50,
+      "tom_leaf_mold": 50,
+      "tom_mosaic_virus": 50,
+      "tom_septoria_leaf_spot": 50,
+      "tom_spider_mites": 50,
+      "tom_yellow_leaf_curl": 50,
+      "wheat_healthy": 20
+    },
+    "apple_scab": {
+      "apple_healthy": 90,
+      "apple_scab": 207
+    },
+    "date_yehia": {
+      "datepalm_black_scorch": 96,
+      "datepalm_fusarium_wilt": 198,
+      "datepalm_healthy": 332,
+      "datepalm_leaf_spots": 63,
+      "datepalm_magnesium_deficiency": 524,
+      "datepalm_manganese_deficiency": 403,
+      "datepalm_parlatoria_scale": 100,
+      "datepalm_potassium_deficiency": 808,
+      "datepalm_rachis_blight": 311
+    },
+    "date_hadjer": {
+      "datepalm_brown_spots": 458,
+      "datepalm_healthy": 1194,
+      "datepalm_parlatoria_scale": 945
+    },
+    "olive_tech": {
+      "olive_aculus_mite": 1778,
+      "olive_healthy": 1926,
+      "olive_peacock_spot": 3257
+    },
+    "v1": {
+      "olive_diseased": 105,
+      "pep_bacterial_spot": 35,
+      "pep_healthy": 35,
+      "pot_early_blight": 35,
+      "pot_healthy": 35,
+      "pot_late_blight": 35,
+      "tom_bacterial_spot": 35,
+      "tom_early_blight": 35,
+      "tom_healthy": 35,
+      "tom_late_blight": 35,
+      "tom_leaf_mold": 35,
+      "tom_mosaic_virus": 35,
+      "tom_septoria_leaf_spot": 35,
+      "tom_spider_mites": 35,
+      "wheat_healthy": 35
+    },
+    "wheat_khan": {
+      "wheat_black_point": 981,
+      "wheat_blast": 842,
+      "wheat_fusarium_foot_rot": 933,
+      "wheat_healthy": 934,
+      "wheat_leaf_blight": 953
+    }
+  },
+  "hard_set_n": 142,
+  "rule2_guard": "pass: no bare crop names",
+  "sha256_20_per_source": {
+    "almond": [
+      {
+        "file": "almond_000020.jpg",
+        "sha256": "9a399ddc22cf25d186737f27cb48193a3a02c133e80eebc56a776a9782b800f2"
+      },
+      {
+        "file": "almond_000009.jpg",
+        "sha256": "ca33fb45258d51becf2813a817980e2b6ea5942065f48666527ff3ef5fe42f25"
+      },
+      {
+        "file": "almond_000025.jpg",
+        "sha256": "f96286060cdd328552b632776e87290de6b50e79afdc9cc1badc08533266e7e0"
+      },
+      {
+        "file": "almond_000041.jpg",
+        "sha256": "1f9bbe23eec3581883ebf68c04ec2fb9685a4ef028b0ae9c8510971c4ae35e9e"
+      },
+      {
+        "file": "almond_000003.jpg",
+        "sha256": "29331be33c9cc996d6455a5f094de3028d513a1efb2f6622c7931149052ccbe8"
+      },
+      {
+        "file": "almond_000004.jpg",
+        "sha256": "50736df83c3693777aa933cc8f708dbc0c00c2aaf66bd469acb90a24700e8f8c"
+      },
+      {
+        "file": "almond_000052.jpg",
+        "sha256": "69468552712b18f383bf41eaadab732904ca6f83ca7e71f9c58dbb070faed2dc"
+      },
+      {
+        "file": "almond_000034.jpg",
+        "sha256": "268c0899204abf710249f5501b83ce07faecddb06085d98744b7fda42e7b4bc2"
+      },
+      {
+        "file": "almond_000006.jpg",
+        "sha256": "2756015c01e128b9d5781e860c9fd4979877de05041fc9770792f87e84623bc4"
+      },
+      {
+        "file": "almond_000023.jpg",
+        "sha256": "4b527b49273c3c9262b092a8e2322a907f4f81137ddcdff7b92a177599cfe02c"
+      },
+      {
+        "file": "almond_000037.jpg",
+        "sha256": "0b21a6664b90573694aa8041aa8f3ab9383ef254b3d65e1d5da3f3a029f9a0d0"
+      },
+      {
+        "file": "almond_000055.jpg",
+        "sha256": "6be1bb5c9a0fb8e286e44f6b98a50080de97409553d2c906619071dfa82d509d"
+      },
+      {
+        "file": "almond_000032.jpg",
+        "sha256": "cfc4f42e41c88c663bc193db90d980185f961c7da1677e8a9a86ba3676d6459a"
+      },
+      {
+        "file": "almond_000013.jpg",
+        "sha256": "097cec70653ba5e10325f0d5b55d62b9c2e85f61f8b39c00596ad5572f960ce6"
+      },
+      {
+        "file": "almond_000002.jpg",
+        "sha256": "3e0995029ced4851bf346fba908b81a463854381b02213c03a82bfcbf1613634"
+      },
+      {
+        "file": "almond_000005.jpg",
+        "sha256": "0cfddb0bfcac99813c2d6d18e161e7e2249cf429b028a7ccaae43c480e5aa935"
+      },
+      {
+        "file": "almond_000027.jpg",
+        "sha256": "ad6038291e0a4f30931fb78c766f576430df5637bfb221df64af7a9d46220da0"
+      },
+      {
+        "file": "almond_000026.jpg",
+        "sha256": "89f86d03e34713a0ff3284c535351feac730f179b9ac8ab2be5f487742d48b4d"
+      },
+      {
+        "file": "almond_000054.jpg",
+        "sha256": "6e47fee2bc0a6e8db77a24de5f4141ec2022a4314e13db135a19ea4958a0bc62"
+      },
+      {
+        "file": "almond_000015.jpg",
+        "sha256": "9e232250e216bc036287dc4a9c82142cf69916c2d9a15e0594b1b2748129cb05"
+      }
+    ],
+    "pv_apple": [
+      {
+        "file": "pv_apple_000005.jpg",
+        "sha256": "32c2afbfcfb3287e8148856c68932f9a9d47b0f2962fbbb6d85621df7b30cdce"
+      },
+      {
+        "file": "pv_apple_000035.jpg",
+        "sha256": "b3b61106412023f744c60522bb263aaf3ea3c244d56544874fdebc3b33693491"
+      },
+      {
+        "file": "pv_apple_000027.jpg",
+        "sha256": "da591468ae4f6979df37869e03a1dd0a5580f7bacfe002df3cd4bb0fff37b66f"
+      },
+      {
+        "file": "pv_apple_000003.jpg",
+        "sha256": "0647b55811e5b5a59ff3a2642ca6b582ac920b33b6e097ca1b661240fae9fdca"
+      },
+      {
+        "file": "pv_apple_000054.jpg",
+        "sha256": "d4d0d64804671ffe285408a89573376cbee71ccf180dcd95a8f83fbff2ce7dab"
+      },
+      {
+        "file": "pv_apple_000036.jpg",
+        "sha256": "61ddfac28aa4c6d5c00a8aa2c54de555c101d60fa4241f989a574a5e4bc017b0"
+      },
+      {
+        "file": "pv_apple_000007.jpg",
+        "sha256": "77d04eb3c10cc027e3696e38b3c8274689541ffb003dd8943e54ec675a0411c2"
+      },
+      {
+        "file": "pv_apple_000014.jpg",
+        "sha256": "3f270ebe44615f0d2fe84bd826f0b724c3ffae94e8e77141c3aa76fe23da8694"
+      },
+      {
+        "file": "pv_apple_000040.jpg",
+        "sha256": "28b8d4ce62aefab4dada97470ef359431a5525a31179df80a81e6b2750636d84"
+      },
+      {
+        "file": "pv_apple_000053.jpg",
+        "sha256": "54b6f4a6b8726ccc184853f02de1b2a8e4a422bcd13ef6dd863a64c5935a62b7"
+      },
+      {
+        "file": "pv_apple_000037.jpg",
+        "sha256": "d62c4aaec6ce0c9e4408aa64a19d39cbc0cdd4ba5fe0d4cc05a38f2aa87c46b4"
+      },
+      {
+        "file": "pv_apple_000058.jpg",
+        "sha256": "0fc7768790fb97a3d414c0e8829c53cfe0faaed9b9d19f3d52446ab0f0d67d34"
+      },
+      {
+        "file": "pv_apple_000056.jpg",
+        "sha256": "6a131780986177822b1aad4400cc7756369ddc714de95374fa729ee0646ef0e8"
+      },
+      {
+        "file": "pv_apple_000051.jpg",
+        "sha256": "1801a34eef80ce862304dfb261266514ecb7712a34c116ca021876a54989b89c"
+      },
+      {
+        "file": "pv_apple_000025.jpg",
+        "sha256": "75fc70f507c6c776e74633394da16ad51ffe0414d3096afe30e1e09faa2fdcc6"
+      },
+      {
+        "file": "pv_apple_000050.jpg",
+        "sha256": "25022fb86da60b9aa8cf71c63425b383b35f2acfd0095d80c13b0b2f79e5994b"
+      },
+      {
+        "file": "pv_apple_000057.jpg",
+        "sha256": "95487c5f9622f4594516974ef9d13ac41ebee254d052e95d6a2ea037a21a864e"
+      },
+      {
+        "file": "pv_apple_000002.jpg",
+        "sha256": "b9e43bd1f965c8bf85d3335a285927d1d1a4cec4e13a1f45d5043b75b25d4b4e"
+      },
+      {
+        "file": "pv_apple_000060.jpg",
+        "sha256": "d192bddba65afea1f819cbea362a3f51b9d2aa5f4388cfa05119f22d2dabe966"
+      },
+      {
+        "file": "pv_apple_000008.jpg",
+        "sha256": "4719f991e9e958b75f9315d99bcb47a5c844f83cdeb8ab1953ff6c33cf7c7904"
+      }
+    ],
+    "v2": [
+      {
+        "file": "v2_000222.jpg",
+        "sha256": "d2bb3d6b80bc87bb24d0f408de833af3c05c3315d4adcc155510135e0ecbafb5"
+      },
+      {
+        "file": "v2_000282.jpg",
+        "sha256": "3a54172015efb50bd8ecdbd01c27ea766b92df44302e6ca2e3a37c7a7ddbb523"
+      },
+      {
+        "file": "v2_000152.jpg",
+        "sha256": "ed760630fa401fe09e06612bfe9df58fd486d09fdf5deac163bbfa4fc2f33086"
+      },
+      {
+        "file": "v2_000425.jpg",
+        "sha256": "c6aa2d5c472bb8ac75152e65988b4cfea6249a8a246efb221d11f06343fc7ceb"
+      },
+      {
+        "file": "v2_000143.jpg",
+        "sha256": "5b0f70827f6ba42e9a1987c008a42c1f84538d27a1984f6ea0b40e8f8353107d"
+      },
+      {
+        "file": "v2_000464.jpg",
+        "sha256": "85ad8cc063e004013ceec985e64c9d591abe98cbf372743f77144c3616e68b7d"
+      },
+      {
+        "file": "v2_000225.jpg",
+        "sha256": "4eb38c1f22b60aa3337ce18b531e2071819b3c0111ebf35e8f5ac67afc51e497"
+      },
+      {
+        "file": "v2_000435.jpg",
+        "sha256": "f00cc4f7df2d83af42119da7bb128203168f1459c9e6bc71d611fecc891265bc"
+      },
+      {
+        "file": "v2_000073.jpg",
+        "sha256": "633af360ed834ad5fbbbd0a713549aa4fed1683f690ee03713e945369cc7e625"
+      },
+      {
+        "file": "v2_000166.jpg",
+        "sha256": "68e28dfd4f97fe4fe39156e7ad8495c7c994f55ad6f87aa406cca31f947d039f"
+      },
+      {
+        "file": "v2_000130.jpg",
+        "sha256": "0cc063441f857cf017cfab4af191dce13a643ad113046dfcbd30ef552c93475c"
+      },
+      {
+        "file": "v2_000467.jpg",
+        "sha256": "7592ce2f0cabb707f761f3240fc521bf9659e394142720d78b416e2a3596e4d5"
+      },
+      {
+        "file": "v2_000028.jpg",
+        "sha256": "9068634c2686ae236f3d93c8ac900e08c411f95a72d02bbd0a2a2631044d588e"
+      },
+      {
+        "file": "v2_000046.jpg",
+        "sha256": "c0c2cddc867a3012c7729566e22cda7bd73ad3091a8782749b85a1dda05aaeea"
+      },
+      {
+        "file": "v2_000174.jpg",
+        "sha256": "dc7395617d9abb28d41f9ae62baf78d7379e772ad1690d33152f9c9b2440dd58"
+      },
+      {
+        "file": "v2_000269.jpg",
+        "sha256": "f40659f763e2a605149f0f992c346335de66812769a6b67a6c67d28dfaf69363"
+      },
+      {
+        "file": "v2_000072.jpg",
+        "sha256": "fc7e90d5660b65ba3d865188074263b545adfd5f676723bf7070d851c41b455c"
+      },
+      {
+        "file": "v2_000019.jpg",
+        "sha256": "a6aaacd85ca0fa86132fd0ea4c614eff217c7d59d985f86e64b49a587e8b7dca"
+      },
+      {
+        "file": "v2_000122.jpg",
+        "sha256": "9e1ee4eaf737cddf0f643bd8b057f00d56fd80f3e8ebe800e5f1f5420ecec405"
+      },
+      {
+        "file": "v2_000061.jpg",
+        "sha256": "bb0b92faab667692d58343a2c760c5c10553e59e872433c5a2f08d429a173f21"
+      }
+    ],
+    "apple_scab": [
+      {
+        "file": "apple_scab_000065.jpg",
+        "sha256": "f74c7ffdc63aabd49eea5b785e0404a780b1170997d6cf6ff0c9372d1fe7c008"
+      },
+      {
+        "file": "apple_scab_000806.jpg",
+        "sha256": "3e92dd6a2cd5af17294b1b67c1eb3109ce485ed82c030eb3df99b5680653c9c6"
+      },
+      {
+        "file": "apple_scab_000320.jpg",
+        "sha256": "eb86423237b9b3489f6bb42fae5a3ecfdf991e1e21eafa9a3a61ce26542387e7"
+      },
+      {
+        "file": "apple_scab_000613.jpg",
+        "sha256": "239c46ceb6c2f6f247b1c89d9f46be7152f6c46244e0830b503a7b70e18ed3ec"
+      },
+      {
+        "file": "apple_scab_000884.jpg",
+        "sha256": "bb134162ac5cc55b34ed0459a587ff36abd76fb0f45acf1df405ff0524689360"
+      },
+      {
+        "file": "apple_scab_000732.jpg",
+        "sha256": "65aa034c7131f98902d1733435133aa6c0a5cdeaf32032086c66eb45d91615ee"
+      },
+      {
+        "file": "apple_scab_000555.jpg",
+        "sha256": "a05a21a23bfe1a323f27d5d5cad066fc53befd4abf126626a205536ad3ecaa1d"
+      },
+      {
+        "file": "apple_scab_001026.jpg",
+        "sha256": "c8f7b0211ac3b8707483114b2768191c6c110e15b28f8417e990aeddb32bc7ce"
+      },
+      {
+        "file": "apple_scab_000417.jpg",
+        "sha256": "e2e05924d8a26a93bf9204d13f5860035953846b3fdeb579697ce45403a5a5b2"
+      },
+      {
+        "file": "apple_scab_000561.jpg",
+        "sha256": "a594f44b6924515f6cdf0b9bcf28061e71cf0376244bd55084b836ac9f5b38e6"
+      },
+      {
+        "file": "apple_scab_000779.jpg",
+        "sha256": "589ce959ee7621cd45a97442766acd0d03f76d70ddf2aef4928f4d706996d793"
+      },
+      {
+        "file": "apple_scab_001031.jpg",
+        "sha256": "1cd84482890177f2ad38b321dae12ad7c44833d8f74a70a9777fd459b3cf64df"
+      },
+      {
+        "file": "apple_scab_000465.jpg",
+        "sha256": "2f471fa4c772fe4e16d52b3315d289fffc702f6a61e9a1c685ea763557cb7332"
+      },
+      {
+        "file": "apple_scab_000415.jpg",
+        "sha256": "927f4041d45b5e4a6873d864e2679342134cd8547bbe525c9bad1645626eb406"
+      },
+      {
+        "file": "apple_scab_000359.jpg",
+        "sha256": "029d39252733a56690996f8962e5ff4a7dfd89b27229582c5eeab267f851bde7"
+      },
+      {
+        "file": "apple_scab_000306.jpg",
+        "sha256": "a1efee2dab4377d4bd1a43200a850a4aa71dcf21fda6bd749a12c210e7d6468b"
+      },
+      {
+        "file": "apple_scab_000909.jpg",
+        "sha256": "c7317ca6ac66087a770ae1fbff8baa1c6a5bc48b7aad2a5104cdfea3db79452a"
+      },
+      {
+        "file": "apple_scab_000123.jpg",
+        "sha256": "e5ae30b7e8efb6972e17365cdac4355000c1a24a5ae94a8f65415e5296111d17"
+      },
+      {
+        "file": "apple_scab_000758.jpg",
+        "sha256": "1fe7001caef9e2c6c416eff80f734ac95fd633cff3bd492f7dcfd5071710fab9"
+      },
+      {
+        "file": "apple_scab_000953.jpg",
+        "sha256": "bcccb23ce630ad24ee25becc2a62b21e834890d2f3a951d8d747c137f204d4d8"
+      }
+    ],
+    "date_yehia": [
+      {
+        "file": "date_yehia_000033.jpg",
+        "sha256": "18d798183b24918409abcd16d4c3475a4be3941694fe0e398dbf50bc60e1bbc2"
+      },
+      {
+        "file": "date_yehia_000031.jpg",
+        "sha256": "d4f89423992151e0d1c7161eb910e63e75b0f3b8815d4e2930e41b54cf4484fc"
+      },
+      {
+        "file": "date_yehia_000056.jpg",
+        "sha256": "d3d2bb93f63a0685f76bcdc37d93b9754862ff1ca75084ea37a081e7e1ac9d47"
+      },
+      {
+        "file": "date_yehia_000021.jpg",
+        "sha256": "a852117261fb8bfb506932bf37edc0fc1250fc8d278cc498aafe6d2df9870cc5"
+      },
+      {
+        "file": "date_yehia_000046.jpg",
+        "sha256": "a35931d6cef4f8e793a9d7e5f2916f340792e397d5b06f2abf9d47d65779c5cc"
+      },
+      {
+        "file": "date_yehia_000028.jpg",
+        "sha256": "5df9c57a575e0a71e188b908d919e1226fe1485da094bed442d0df63f5928e75"
+      },
+      {
+        "file": "date_yehia_000018.jpg",
+        "sha256": "1cc1c95d62ea5f5a99e7f81199e37215b37210bccb64b4ab596b2f15973734b9"
+      },
+      {
+        "file": "date_yehia_000038.jpg",
+        "sha256": "9b77b9bfa943ab5fbf8e43be39bdffabff86557e6e4d4373c614a8d047a6d0f7"
+      },
+      {
+        "file": "date_yehia_000004.jpg",
+        "sha256": "09a80484208d0cb0021ea39ad746bee0defe9e641d40d30b58b055fe5bdb2d2f"
+      },
+      {
+        "file": "date_yehia_000007.jpg",
+        "sha256": "de68f4e9730da9aabd86eb607aa0229ffdebd0d0f7cde15521f45a813110bbd2"
+      },
+      {
+        "file": "date_yehia_000032.jpg",
+        "sha256": "8807bc2cb9ad9d932ef3521fc8f3319c4a8c76fad19ebe79606aa98dcd003aae"
+      },
+      {
+        "file": "date_yehia_000026.jpg",
+        "sha256": "2079d89082bdf27ca8370058d34419374a127426c1f8e2a0ba481587b9c4841e"
+      },
+      {
+        "file": "date_yehia_000010.jpg",
+        "sha256": "98cf35fc76ddb470fc3a952bab8443a30b5d5ec27519268f3e6f46c50d723930"
+      },
+      {
+        "file": "date_yehia_000057.jpg",
+        "sha256": "2b7bce2227031d5b2f049b1643a3c450f8979f3c4d5c03e86f0712553e38409d"
+      },
+      {
+        "file": "date_yehia_000009.jpg",
+        "sha256": "7e147d735e4361c3d79deaad36a3f8512f8266c8a03a73acaac7ecb00a527369"
+      },
+      {
+        "file": "date_yehia_000058.jpg",
+        "sha256": "8deea09e6ad305660738f956fd17ecd7214df82ac6c44db5fac568741c5b5039"
+      },
+      {
+        "file": "date_yehia_000048.jpg",
+        "sha256": "4a6fe11aeb656aa8a271422f17016d70537e6095cf1f1d269ba58eb3f76dafba"
+      },
+      {
+        "file": "date_yehia_000002.jpg",
+        "sha256": "c780a10e9729c06042a8295f92c8b733222d959ecbc0b4f59e2874ae005243c7"
+      },
+      {
+        "file": "date_yehia_000051.jpg",
+        "sha256": "f54187b7030866e6bfd92701e228955f1f7459b05779668a19f44b9c90b94680"
+      },
+      {
+        "file": "date_yehia_000035.jpg",
+        "sha256": "3de88ab301ab6d9d8f6651e4ed7f6cbc17ce228a3040da48297c9658f4d9f12f"
+      }
+    ],
+    "date_hadjer": [
+      {
+        "file": "date_hadjer_000036.jpg",
+        "sha256": "1b80b816405864c1508f318da6f6d5b027a6ddd7c9e19b3c620fb336b43cb3a4"
+      },
+      {
+        "file": "date_hadjer_000050.jpg",
+        "sha256": "fd33f176220955ea061059c5d08edd012243f72c170a71db602864a523358ab3"
+      },
+      {
+        "file": "date_hadjer_000056.jpg",
+        "sha256": "14b665b9cf70927f8ce723ea8907807fa8ac6e192c6aa0b911f8ef63bed0a203"
+      },
+      {
+        "file": "date_hadjer_000052.jpg",
+        "sha256": "86f92f49a256f8e6521eb9d706194bf81925f51b9fa2f8d46cb8feae3308d7a4"
+      },
+      {
+        "file": "date_hadjer_000020.jpg",
+        "sha256": "ee25eed56e3b3eaf6e40e6e3a7a5fbdca07baf9c27ae1b5061b2280497991361"
+      },
+      {
+        "file": "date_hadjer_000021.jpg",
+        "sha256": "0d44f361ab272dca7f4e2c0185b3a9b9464fe0e2d2d575389be4d8dcc1c15a22"
+      },
+      {
+        "file": "date_hadjer_000044.jpg",
+        "sha256": "5705a747d864f6f78aaab97077b01ed7852d9dfdec95200baaeca3b678d8bd69"
+      },
+      {
+        "file": "date_hadjer_000022.jpg",
+        "sha256": "cce27e37c8b4a1fbb4c78d1667d10f4adebe4032783561257d1abf8b1e4383eb"
+      },
+      {
+        "file": "date_hadjer_000038.jpg",
+        "sha256": "17e71b4ce825074d520380ef2360c978fb392b71a3679a14c05d21ef079939d0"
+      },
+      {
+        "file": "date_hadjer_000031.jpg",
+        "sha256": "d66f2b6fd32f21d09c4b14af5cce8d942892ac4a2fb5e415d3f1fcc9218446ad"
+      },
+      {
+        "file": "date_hadjer_000037.jpg",
+        "sha256": "5d5e9f3ccee3f1038d5c0f7c6512bdff14d70e7b237c5b1c1c99d1c27fc359f1"
+      },
+      {
+        "file": "date_hadjer_000029.jpg",
+        "sha256": "bbe094e9ae89e64db724c48f5fbee01aa342aff12a0a7aa488537c9afd1a1306"
+      },
+      {
+        "file": "date_hadjer_000004.jpg",
+        "sha256": "edf507450e6f17591c144b21e95327cdd831f8eea1034451d868d518d8fea199"
+      },
+      {
+        "file": "date_hadjer_000005.jpg",
+        "sha256": "9f2f95f1a5a91c1fbac0eec7a9d4d3792437f626a51098e3dbc0e564d1e04ee2"
+      },
+      {
+        "file": "date_hadjer_000017.jpg",
+        "sha256": "b7d6c0828c0f2dad94764f0dbf5b64e6c98d77d75f717d948670bae278830879"
+      },
+      {
+        "file": "date_hadjer_000030.jpg",
+        "sha256": "be4c6caddeee97312ab0f534bd6e155adcee7c7f7b7eb81dafbd7ebc24759c8f"
+      },
+      {
+        "file": "date_hadjer_000042.jpg",
+        "sha256": "610826ff42a70bbf50ecf9fda52b2a516c0a537ce38f9eeaafad41bb04193092"
+      },
+      {
+        "file": "date_hadjer_000047.jpg",
+        "sha256": "d3e27b9df6382cb44efc4dcf32ce0dd8af452d66cae0fe4d4bfe12f6cfc8ce41"
+      },
+      {
+        "file": "date_hadjer_000003.jpg",
+        "sha256": "e51c72e4c00af77cd5ea5128e32c0053fe4561bbd7cd5074dd6c3a5c9576d11b"
+      },
+      {
+        "file": "date_hadjer_000019.jpg",
+        "sha256": "30469528008fa0edd8c72fb9b1feb7bc0aaa1bf6d2ca9994a80374bc9debd0ed"
+      }
+    ],
+    "olive_tech": [
+      {
+        "file": "olive_tech_000041.jpg",
+        "sha256": "558f6e05fa770b542745f8386ac27b0537bad023a2228d307fd2837b5acf885b"
+      },
+      {
+        "file": "olive_tech_000036.jpg",
+        "sha256": "fea3f06114c5bc2418dabee1fd62a066a14b8cb24a4b72ad4b0441b36de93a1b"
+      },
+      {
+        "file": "olive_tech_000043.jpg",
+        "sha256": "d7172a1502a5a29a4b979bf4ada89623350391949a552b628d0737b4db04ac5a"
+      },
+      {
+        "file": "olive_tech_000052.jpg",
+        "sha256": "11f7a7cd8e5a6f0f02ec756c29bd4dd09bba4954670830c4bca8ae25254d77eb"
+      },
+      {
+        "file": "olive_tech_000028.jpg",
+        "sha256": "ddb746e7ae8ea7ce51851b192c4d7e24969b5f206239e71f8862cc7ae6e49d52"
+      },
+      {
+        "file": "olive_tech_000018.jpg",
+        "sha256": "72f22b673851f907c00498e325ebd1597e035fd55aad408fe4c87a516e80f6f0"
+      },
+      {
+        "file": "olive_tech_000045.jpg",
+        "sha256": "a4965f2b6bcace97fc02c59bf7c600646cb444ca85c3e351e51f36d166c15a16"
+      },
+      {
+        "file": "olive_tech_000024.jpg",
+        "sha256": "50dd49e49495cdb9039118e6aa2f14820c10e9efef55c79fff5a5948cad8a5ac"
+      },
+      {
+        "file": "olive_tech_000042.jpg",
+        "sha256": "747959513bd644408a371a88fff9ed2e0a5acbadaf8321e44c47a89d7df11967"
+      },
+      {
+        "file": "olive_tech_000022.jpg",
+        "sha256": "acb4b9ac2fb511a1a838bb412e778ccd0f3f4a6be69fc40b1b962ccba0489147"
+      },
+      {
+        "file": "olive_tech_000001.jpg",
+        "sha256": "efb1466752118f01c7323a0e2798092ac20deef4bf3979dff8b3479250fb2984"
+      },
+      {
+        "file": "olive_tech_000029.jpg",
+        "sha256": "5c4850ca6b6c6da10721f5824a633b97475f1751faf449e83516928837fcfc70"
+      },
+      {
+        "file": "olive_tech_000050.jpg",
+        "sha256": "612fd2ec544c98df0a9ebfac1ea5eaf0fb44a16c2e3f8b1c471d06cada1a852c"
+      },
+      {
+        "file": "olive_tech_000010.jpg",
+        "sha256": "a742d7e301cc623eabcd4ce2093e6fe59531cca5f8eb47db81c55a08ac7706c6"
+      },
+      {
+        "file": "olive_tech_000039.jpg",
+        "sha256": "f09772f4f05cf70f3684665c67c0b6f64f4b36cb21c7dd5c78ece4517df7dc54"
+      },
+      {
+        "file": "olive_tech_000007.jpg",
+        "sha256": "459490181a5788ca44c3091d6dd5e83f07fcb78c84dce52879f236e5c421f243"
+      },
+      {
+        "file": "olive_tech_000031.jpg",
+        "sha256": "6df10fd7233424aed5c813b9a0a9e8a2c62f3469a85e8f46d0116cd9a32c3167"
+      },
+      {
+        "file": "olive_tech_000003.jpg",
+        "sha256": "6509b0c2377746545a75cfef599780dc9d638f63a69d58cc7bb2deaad6cc2ab4"
+      },
+      {
+        "file": "olive_tech_000013.jpg",
+        "sha256": "3d787e39803900de28f7e0ad2b28e81e25e82b8db2c4aa48bfbf1f876e755707"
+      },
+      {
+        "file": "olive_tech_000054.jpg",
+        "sha256": "f0fe321895063a814a772902f1f3cb2ab92b183bd357b8baa2e5e3b3fd6bd23e"
+      }
+    ],
+    "v1": [
+      {
+        "file": "v1_000084.jpg",
+        "sha256": "61785ccb2756a1615cbe19669546f4dc427f501c7bd69c1655c6320ef01985ef"
+      },
+      {
+        "file": "v1_000432.jpg",
+        "sha256": "b07a3a57e5fc966a19f1c2f81519675e783ca62045600f0946fd1435e5947d61"
+      },
+      {
+        "file": "v1_000121.jpg",
+        "sha256": "16d82a7c7ae521f9c162e15e58f274d470330cfa3e7c5b601b80016f342c9153"
+      },
+      {
+        "file": "v1_000226.jpg",
+        "sha256": "8f5b09796231e287e1bd73a1a453858b9e6251e8c8364242dc47011f92f8ac12"
+      },
+      {
+        "file": "v1_000491.jpg",
+        "sha256": "16760503175e85b1c5c4a7a269eaa57217c15ddd7d5f9d25abc539267d770bfb"
+      },
+      {
+        "file": "v1_000280.jpg",
+        "sha256": "7ce3a79edf522cafd95ed00b555e1773e774c6640eaeabb8117fae6051975580"
+      },
+      {
+        "file": "v1_000077.jpg",
+        "sha256": "aa03b165791786eedce3cdb8a624c08798654e2c748fef151df0afc7ecffaad2"
+      },
+      {
+        "file": "v1_000101.jpg",
+        "sha256": "3d3c5422bc00551612cac82107ac3b2198cbb1243d422c0730fd07da50f7b0aa"
+      },
+      {
+        "file": "v1_000252.jpg",
+        "sha256": "7f3842f9a63a404dccb7b5ff4ed2686744e7dda3cbb196a144e0504c40675822"
+      },
+      {
+        "file": "v1_000486.jpg",
+        "sha256": "2777062629632aa607cd01ec638d670cd6f9a7fd6535e24ba897a4330970a4f9"
+      },
+      {
+        "file": "v1_000302.jpg",
+        "sha256": "80cb80f3e7de0d6aa0a46cd3f9c0c438e06232ac8d5425c62950dcbbb878e08f"
+      },
+      {
+        "file": "v1_000143.jpg",
+        "sha256": "9477062e92f6bbdce9ddfb7adb4d1fc9b7f6b6ab55157cb2094f0f99cdcbaff8"
+      },
+      {
+        "file": "v1_000526.jpg",
+        "sha256": "d14a8c3742b042ffe61bca713318f560d9e88f054a857da60f00f52322090562"
+      },
+      {
+        "file": "v1_000251.jpg",
+        "sha256": "e3c091989bdf65abe262767cfbd04a4db8e7e3f1ed6e78c340c2c50f9c282f99"
+      },
+      {
+        "file": "v1_000442.jpg",
+        "sha256": "4839a7a7240b27aa81f07e6bf6c1829aea14a07f53d4b2d06ea4be1db1fdc217"
+      },
+      {
+        "file": "v1_000436.jpg",
+        "sha256": "15fa8ff16bfe33ecc3647c05d8111582f131a662c5726585a1a4f367d0b76a40"
+      },
+      {
+        "file": "v1_000233.jpg",
+        "sha256": "1ac9a4c8f405da9b89c8f6b251bc432cb1e243129e7bed94530fa0d602025aa9"
+      },
+      {
+        "file": "v1_000202.jpg",
+        "sha256": "27ae6183511e1c064eeebfd648e617f224eb887d7d2197aa3c8ca68bef0886c0"
+      },
+      {
+        "file": "v1_000223.jpg",
+        "sha256": "eafeb5aaa0cabb54fee3a63685775bebaa254db09aa04bb9b91e539e431c75dc"
+      },
+      {
+        "file": "v1_000118.jpg",
+        "sha256": "ec5f7c5e875f68e8eb58a125b59364583450cf4b3e1ab21c9c0adc78799cb59c"
+      }
+    ],
+    "wheat_khan": [
+      {
+        "file": "wheat_khan_000009.jpg",
+        "sha256": "83af668d29ea1436a2bf590f05a12aa705424ee321e6b979e3c6a35765027442"
+      },
+      {
+        "file": "wheat_khan_000005.jpg",
+        "sha256": "7c604ee4e305814c6abc19401acf7011bc7fdc831afe80423382dc63e08ff2d8"
+      },
+      {
+        "file": "wheat_khan_000011.jpg",
+        "sha256": "2a69251a09c05613ca5b38c55b97a396758cf1cdd6a494ec098ab2ee2130f0c4"
+      },
+      {
+        "file": "wheat_khan_000059.jpg",
+        "sha256": "5dfed308a4617d47e38b53b78afa7e6ea17bade3be4ec4d74b3f795b6e11c4c7"
+      },
+      {
+        "file": "wheat_khan_000014.jpg",
+        "sha256": "1aff15eb3d3374f3e531dda8835a803dca594d7d482784caed07dac845a45ecf"
+      },
+      {
+        "file": "wheat_khan_000042.jpg",
+        "sha256": "1ac421aaeb6b50ddfa58781e0c41ba397781b3ece0046f9d776e511cc62af8be"
+      },
+      {
+        "file": "wheat_khan_000055.jpg",
+        "sha256": "a535fc375811a5f81e81c6c5f0ec4759822c88e4019f6e71b08cc11f98370a26"
+      },
+      {
+        "file": "wheat_khan_000000.jpg",
+        "sha256": "56e19ea4d8fd22bae192066fdf48789ae7530c610144dce7337347dde209d0d7"
+      },
+      {
+        "file": "wheat_khan_000031.jpg",
+        "sha256": "1de322ba36ab32b705b79a60c2b5cd70df76def439cfb4508bfc8ba928ea555e"
+      },
+      {
+        "file": "wheat_khan_000037.jpg",
+        "sha256": "547207cbbff204550c580fc17c5ac46d97666115de01e02dbdd7136711f8ff87"
+      },
+      {
+        "file": "wheat_khan_000057.jpg",
+        "sha256": "19c5905950364da61f987aaa4bd13be68efaabe362bf79e950dbc0de22111a71"
+      },
+      {
+        "file": "wheat_khan_000016.jpg",
+        "sha256": "5990d6165fbd75c94de1d9ab21f2e9236d5edc256a77dd2e730a5f7e2829cdee"
+      },
+      {
+        "file": "wheat_khan_000018.jpg",
+        "sha256": "6ae1218949499b46d8c3e223b2e0a523d8d0075883599950a407d76554f29e83"
+      },
+      {
+        "file": "wheat_khan_000052.jpg",
+        "sha256": "f7750296d699e92dcda402fbfbbf9b825ff7079fd290d21dbd8dafed12057d90"
+      },
+      {
+        "file": "wheat_khan_000056.jpg",
+        "sha256": "49283be8de67cb58ebda364275e63242c782a0048013bc7bc9a32e7dada3a124"
+      },
+      {
+        "file": "wheat_khan_000026.jpg",
+        "sha256": "3161cba639ce289fcf22ce6b4cf3ee75b624f1fbb33d296205dc729a8756e7f1"
+      },
+      {
+        "file": "wheat_khan_000034.jpg",
+        "sha256": "a2a3481679fd955fe11fe863f1000b564cbe2ceebc59054fad91f2cc27118771"
+      },
+      {
+        "file": "wheat_khan_000023.jpg",
+        "sha256": "39b3ccd7108071b3e3cf84a2412b110a787bac0e0fcd1b5f85791a004fea0bfd"
+      },
+      {
+        "file": "wheat_khan_000039.jpg",
+        "sha256": "55867bc41cd9f9db39f11aa7e64cf490c2013d242b905c1ac738bd944dc6817a"
+      },
+      {
+        "file": "wheat_khan_000036.jpg",
+        "sha256": "2d0630d499930f68a251132f17b7b22d8f91e073b37ae5d9ee7bb91d9d60761f"
+      }
+    ]
+  },
+  "notes": [
+    "almond_damaged = mechanical/damage detection, not pathogen (kept, flagged)",
+    "datepalm deficiencies = nutrient disorders (kept as conditions, flagged)",
+    "hadjer white scale + yehia Parlatoria Blanchardi merged (same pest)",
+    "v4_blend (15 crop-level labels) EXCLUDED from disease training",
+    "opuntia: 0 images, classes not created; treatment content in Phase 5"
+  ]
+}

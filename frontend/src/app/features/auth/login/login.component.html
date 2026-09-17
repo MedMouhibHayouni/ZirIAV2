@@ -1,0 +1,72 @@
+<div class="auth-page">
+  <div class="auth-bg">
+    <div class="orb orb--1"></div>
+    <div class="orb orb--2"></div>
+  </div>
+
+  <div class="auth-container">
+    <div class="auth-card">
+      
+      <!-- HEADER -->
+      <div class="auth-header">
+        <a routerLink="/" class="auth-logo">
+          <div class="auth-logo__icon">
+            <img src="assets/ziria-icon.png" alt="ZirIA" class="auth-logo__img" />
+          </div>
+          <span class="auth-logo__text">Zir<span class="auth-logo__ia">IA</span></span>
+        </a>
+        <div class="auth-header__links">
+          <span class="auth-header__text">Nouveau ici ?</span>
+          <a routerLink="/register" class="auth-header__link">Créer un compte</a>
+        </div>
+      </div>
+
+      <div class="auth-body">
+        <h2 class="auth-title">Bon retour</h2>
+        <p class="auth-subtitle">Connectez-vous pour accéder à votre espace de travail ZirIA.</p>
+
+        <!-- TABS -->
+        <div class="auth-tabs">
+          <button class="auth-tab" [class.active]="loginType === 'email'" (click)="toggleLoginType('email')">Email</button>
+          <button class="auth-tab" [class.active]="loginType === 'phone'" (click)="toggleLoginType('phone')">Téléphone</button>
+        </div>
+
+        <div class="error-msg" *ngIf="errorMsg()">
+          {{ errorMsg() }}
+        </div>
+
+        <div class="auth-form" (keyup.enter)="login()">
+          <div class="input-group">
+            <label>{{ loginType === 'email' ? 'Adresse Email' : 'Numéro de Téléphone' }}</label>
+            <div class="input-wrapper">
+              <ng-icon [name]="loginType === 'email' ? 'lucideMail' : 'lucidePhone'" class="input-icon"></ng-icon>
+              <input [type]="loginType === 'email' ? 'email' : 'tel'" 
+                     [(ngModel)]="emailOrPhone" 
+                     [placeholder]="loginType === 'email' ? 'contact@exemple.tn' : '2X XXX XXX'">
+            </div>
+          </div>
+
+          <div class="input-group">
+            <div class="label-row">
+              <label>Mot de passe</label>
+              <a href="#" class="forgot-link">Mot de passe oublié ?</a>
+            </div>
+            <div class="input-wrapper">
+              <ng-icon name="lucideLock" class="input-icon"></ng-icon>
+              <input [type]="showPassword() ? 'text' : 'password'" [(ngModel)]="password" placeholder="••••••••">
+              <button type="button" class="toggle-password" (click)="togglePasswordVisibility()">
+                <ng-icon [name]="showPassword() ? 'lucideEyeOff' : 'lucideEye'"></ng-icon>
+              </button>
+            </div>
+          </div>
+
+          <button class="zir-btn zir-btn--primary zir-btn--full" (click)="login()" [disabled]="loading()">
+            <span *ngIf="loading()" class="spinner"></span>
+            <span *ngIf="!loading()">Se connecter</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

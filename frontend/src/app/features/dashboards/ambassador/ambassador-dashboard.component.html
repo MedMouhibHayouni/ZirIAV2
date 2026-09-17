@@ -1,0 +1,178 @@
+<div class="ambassador-page">
+  <!-- Tabs -->
+  <div class="tab-nav">
+    <button class="tab-btn" [class.active]="activeTab() === 'activity'" (click)="activeTab.set('activity')">
+      <ng-icon name="lucideActivity"></ng-icon> Mon Activité
+    </button>
+    <button class="tab-btn" [class.active]="activeTab() === 'neighbors'" (click)="activeTab.set('neighbors'); locateAndLoadFarmers()">
+      <ng-icon name="lucideUsers"></ng-icon> Agriculteurs Proches
+    </button>
+    <button class="tab-btn" [class.active]="activeTab() === 'report'" (click)="activeTab.set('report')">
+      <ng-icon name="lucideAlertTriangle"></ng-icon> Signalement Terrain
+    </button>
+  </div>
+
+  <!-- Activity Tab -->
+  @if (activeTab() === 'activity') {
+    <div class="tab-content">
+      <div class="page-header">
+        <h2><ng-icon name="lucideHandshake"></ng-icon> Mon Tableau de Bord Ambassadeur</h2>
+        <p>Votre impact sur le terrain ce mois-ci</p>
+      </div>
+
+      @if (isLoadingStats()) {
+        <div class="loading-state"><ng-icon name="lucideLoader" class="spin"></ng-icon> Chargement...</div>
+      } @else if (stats()) {
+        <div class="stats-grid">
+          <div class="stat-card emerald">
+            <div class="stat-icon"><ng-icon name="lucideMicroscope"></ng-icon></div>
+            <div class="stat-body">
+              <span class="stat-label">Diagnostics IA soumis</span>
+              <span class="stat-value">{{ stats()!.diagnostics_submitted }}</span>
+              <span class="stat-period">30 derniers jours</span>
+            </div>
+          </div>
+          <div class="stat-card blue">
+            <div class="stat-icon"><ng-icon name="lucideShoppingCart"></ng-icon></div>
+            <div class="stat-body">
+              <span class="stat-label">Annonces créées</span>
+              <span class="stat-value">{{ stats()!.listings_created }}</span>
+              <span class="stat-period">30 derniers jours</span>
+            </div>
+          </div>
+          <div class="stat-card amber">
+            <div class="stat-icon"><ng-icon name="lucideBell"></ng-icon></div>
+            <div class="stat-body">
+              <span class="stat-label">Signalements soumis</span>
+              <span class="stat-value">{{ stats()!.reports_submitted }}</span>
+              <span class="stat-period">30 derniers jours</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="zir-card ambassador-guide">
+          <h3><ng-icon name="lucideFileText"></ng-icon> Votre Rôle d'Ambassadeur</h3>
+          <div class="guide-grid">
+            <div class="guide-item">
+              <span class="guide-icon"><ng-icon name="lucideWheat"></ng-icon></span>
+              <div>
+                <strong>Aide aux Agriculteurs</strong>
+                <p>Aidez les agriculteurs de votre région à prendre en main la plateforme. Créez des annonces en leur nom sur le marketplace.</p>
+              </div>
+            </div>
+            <div class="guide-item">
+              <span class="guide-icon"><ng-icon name="lucideCamera"></ng-icon></span>
+              <div>
+                <strong>Diagnostic IA</strong>
+                <p>Photographiez les cultures malades et soumettez des diagnostics. Votre contribution améliore le modèle IA.</p>
+              </div>
+            </div>
+            <div class="guide-item">
+              <span class="guide-icon"><ng-icon name="lucideRss"></ng-icon></span>
+              <div>
+                <strong>Signalement Terrain</strong>
+                <p>Alertez les experts CRDA des problèmes urgents que vous observez sur le terrain (ravageurs, stress hydrique...).</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Nearby Farmers Tab -->
+  @if (activeTab() === 'neighbors') {
+    <div class="tab-content">
+      <div class="page-header">
+        <h2><ng-icon name="lucideUsers"></ng-icon> Agriculteurs Proches</h2>
+        <p>Dans un rayon de 15 km autour de votre position actuelle</p>
+      </div>
+      @if (isLoadingFarmers()) {
+        <div class="loading-state"><ng-icon name="lucideLoader" class="spin"></ng-icon> Géolocalisation en cours...</div>
+      } @else if (geoError()) {
+        <div class="empty-state error-state">
+          <ng-icon name="lucideMapPin" style="font-size:40px;color:#ef4444"></ng-icon>
+          <p>{{ geoError() }}</p>
+          <button class="zir-btn zir-btn--primary" (click)="locateAndLoadFarmers()">Réessayer</button>
+        </div>
+      } @else if (nearbyFarmers().length === 0) {
+        <div class="empty-state">
+          <ng-icon name="lucideUsers" style="font-size:40px"></ng-icon>
+          <p>Aucun agriculteur trouvé dans les 15 km autour de vous.</p>
+        </div>
+      } @else {
+        <div class="farmers-grid">
+          @for (farmer of nearbyFarmers(); track farmer.id) {
+            <div class="farmer-card">
+              <div class="farmer-avatar">{{ farmer.name.charAt(0).toUpperCase() }}</div>
+              <div class="farmer-info">
+                <span class="farmer-name">{{ farmer.name }}</span>
+                <span class="farmer-gov"><ng-icon name="lucideMapPin"></ng-icon> {{ farmer.governorate }}</span>
+              </div>
+              @if (farmer.verified) {
+                <span class="verified-dot" title="Compte vérifié"><ng-icon name="lucideCheckCircle" style="color:var(--zir-emerald)"></ng-icon></span>
+              }
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Report Tab -->
+  @if (activeTab() === 'report') {
+    <div class="tab-content">
+      <div class="page-header">
+        <h2><ng-icon name="lucideAlertTriangle"></ng-icon> Signalement Terrain</h2>
+        <p>Alertez les experts CRDA d'un problème urgent observé sur le terrain</p>
+      </div>
+
+      <div class="zir-card report-form">
+        <div class="form-group">
+          <label>Type de Problème <span class="required">*</span></label>
+          <select class="zir-input" [(ngModel)]="reportForm.problem_type">
+            <option value="">-- Sélectionner --</option>
+            @for (p of problemTypes; track p) { <option [value]="p">{{ p }}</option> }
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Gouvernorat <span class="required">*</span></label>
+          <select class="zir-input" [(ngModel)]="reportForm.governorate">
+            <option value="">-- Sélectionner --</option>
+            @for (g of governorates; track g) { <option [value]="g">{{ g }}</option> }
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Description détaillée <span class="required">*</span></label>
+          <textarea class="zir-input" [(ngModel)]="reportForm.description" rows="4"
+            placeholder="Décrivez le problème : cultures affectées, étendue, symptômes observés, conditions météo..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>URL Photo (optionnel)</label>
+          <div class="input-with-icon">
+            <ng-icon name="lucideCamera"></ng-icon>
+            <input type="url" class="zir-input" [(ngModel)]="reportForm.photo_url" placeholder="https://...">
+          </div>
+        </div>
+
+        <div class="geo-section">
+          <button class="zir-btn zir-btn--ghost" (click)="locateAndLoadFarmers()">
+            <ng-icon name="lucideMapPin"></ng-icon>
+            {{ reportForm.lat ? 'GPS: ' + (reportForm.lat | number:'1.4-4') + ', ' + (reportForm.lng | number:'1.4-4') : 'Obtenir ma position GPS' }}
+          </button>
+          @if (geoError()) { <span class="error-text">{{ geoError() }}</span> }
+        </div>
+
+        <div class="form-actions">
+          <button class="zir-btn zir-btn--primary submit-btn" (click)="submitReport()" [disabled]="isSubmittingReport() || !reportForm.problem_type || !reportForm.description || !reportForm.governorate">
+            <ng-icon [name]="isSubmittingReport() ? 'lucideLoader' : 'lucideSend'" [class.spin]="isSubmittingReport()"></ng-icon>
+            {{ isSubmittingReport() ? 'Envoi en cours...' : 'Envoyer le Signalement' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

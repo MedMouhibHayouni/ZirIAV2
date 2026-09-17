@@ -1,0 +1,443 @@
+<div class="mkt-page" data-marketplace-ui>
+
+  <app-public-navbar />
+
+  <!-- ══ HERO HEADER ══════════════════════════════════════════════════════════ -->
+  <header class="mkt-hero">
+    <div class="hero-content">
+      <div class="hero-badge">
+        <span class="badge-dot"></span>
+        <span>Marketplace Agricole Tunisien</span>
+      </div>
+      <h1>Trouvez, Achetez, Vendez<br><span class="hero-accent">directement entre agriculteurs</span></h1>
+      <p class="hero-sub">Des milliers d'annonces : produits frais, bétail, terrains, matériel et plus — sans intermédiaire.</p>
+      @if (!isLoading() && totalListings() > 0) {
+        <div class="hero-stats">
+          <span class="stat-pill"><span class="stat-num">{{ totalListings() }}</span> annonces actives</span>
+          <span class="stat-pill">Vente directe · Sans intermédiaire</span>
+        </div>
+      }
+    </div>
+  </header>
+
+  <!-- ══ E-COMMERCE LAYOUT ════════════════════════════════════════════════════ -->
+  @if (showMobileFilters()) {
+    <div class="mkt-sidebar-backdrop" (click)="showMobileFilters.set(false)" aria-hidden="true"></div>
+  }
+  <div class="mkt-container">
+
+    <!-- ── LEFT SIDEBAR FILTERS ────────────────────────────────────────────── -->
+    <aside class="mkt-sidebar" [class.mkt-sidebar--open]="showMobileFilters()">
+      <div class="sidebar-header">
+        <h3>
+          <ng-icon name="lucideSlidersHorizontal" class="header-icon"/>
+          Filtres
+        </h3>
+        <div class="sidebar-header-actions">
+          <button class="clear-btn" (click)="resetFilters()" [disabled]="!searchQuery() && !locationQuery() && activeCategory() === 'ALL' && minPrice() === null && maxPrice() === null && priceOnRequest() === null">
+            Réinitialiser
+          </button>
+          <button class="close-mobile-filters" (click)="showMobileFilters.set(false)">
+            <ng-icon name="lucideX"/>
+          </button>
+        </div>
+      </div>
+
+      <!-- Categories Tree List -->
+      <div class="filter-section">
+        <h4>Catégories</h4>
+        <div class="category-tree">
+          @for (cat of categories; track cat.key) {
+            <button class="tree-item" [class.active]="activeCategory() === cat.key" (click)="setCategory(cat.key); showMobileFilters.set(false)">
+              <ng-icon [name]="cat.icon" class="tree-icon"/>
+              <span class="tree-label">{{ cat.label }}</span>
+              @if (activeCategory() === cat.key) {
+                <ng-icon name="lucideCheck" class="active-check"/>
+              }
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- Search Input Section -->
+      <div class="filter-section">
+        <h4>Recherche de mots-clés</h4>
+        <div class="input-wrap">
+          <ng-icon name="lucideSearch" class="input-icon"/>
+          <input type="text" [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event); onSearchChange()"
+            placeholder="Ex: Tomate, Tracteur..." class="sidebar-input"/>
+        </div>
+      </div>
+
+      <!-- Location Input Section -->
+      <div class="filter-section">
+        <h4>Localisation / Région</h4>
+        <div class="input-wrap">
+          <ng-icon name="lucideMapPin" class="input-icon"/>
+          <input type="text" [ngModel]="locationQuery()" (ngModelChange)="locationQuery.set($event); onSearchChange()"
+            placeholder="Ex: Kasserine, Béja..." class="sidebar-input"/>
+        </div>
+      </div>
+
+      <!-- Price range Section -->
+      <div class="filter-section">
+        <h4>Budget (TND)</h4>
+        <div class="price-inputs">
+          <input type="number" [ngModel]="minPrice()" (ngModelChange)="minPrice.set($event); onFilterChange(true)"
+            placeholder="Min" class="sidebar-input price-input"/>
+          <span class="price-separator">à</span>
+          <input type="number" [ngModel]="maxPrice()" (ngModelChange)="maxPrice.set($event); onFilterChange(true)"
+            placeholder="Max" class="sidebar-input price-input"/>
+        </div>
+        <label class="price-on-request-checkbox">
+          <input type="checkbox" [ngModel]="priceOnRequest() === true" (ngModelChange)="priceOnRequest.set($event ? true : null); onFilterChange(true)"/>
+          <span>Prix sur demande uniquement</span>
+        </label>
+      </div>
+
+    </aside>
+
+    <!-- ── RIGHT CONTENT WINDOW ───────────────────────────────────────────── -->
+    <main class="mkt-content">
+
+      <!-- Top Filters bar / Summary & Sort -->
+      <div class="mkt-topbar">
+        <button class="mobile-filters-trigger" (click)="showMobileFilters.set(true)">
+          <ng-icon name="lucideFilter"/>
+          Filtres
+        </button>
+
+        <div class="results-summary">
+          @if (isLoading()) {
+            <span class="count-text">Recherche en cours...</span>
+          } @else {
+            <span class="count-text"><strong>{{ totalListings() }}</strong> annonce(s) trouvée(s)</span>
+          }
+        </div>
+
+        <div class="sort-selector">
+          <ng-icon name="lucideArrowUpDown" class="sort-icon"/>
+          <select [ngModel]="sortBy()" (ngModelChange)="sortBy.set($event); onFilterChange(true)" class="sort-select">
+            <option value="date_desc">Plus récents</option>
+            <option value="date_asc">Plus anciens</option>
+            <option value="price_asc">Prix croissant</option>
+            <option value="price_desc">Prix décroissant</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Grid Content -->
+      @if (isLoading()) {
+        <div class="loading-state">
+          <div class="spinner-ring"></div>
+          <p>Chargement des annonces...</p>
+        </div>
+      } @else if (listings().length === 0) {
+        <div class="empty-state">
+          <ng-icon name="lucideLeaf" class="empty-icon-svg"/>
+          <h3>Aucune annonce trouvée</h3>
+          <p>Essayez de modifier vos filtres ou de réinitialiser vos recherches dans la barre latérale.</p>
+          <button type="button" class="mkt-btn mkt-btn--primary" (click)="resetFilters()">
+            <ng-icon name="lucideRefreshCw"/> Réinitialiser les filtres
+          </button>
+        </div>
+      } @else {
+        <div class="listing-grid">
+          @for (listing of listings(); track listing.id) {
+            <article class="listing-card" (click)="openListing(listing)">
+              <!-- Photo -->
+              <div class="card-photo" [class.card-photo--fallback]="getPhotoUrls(listing).length === 0">
+                @if (getPhotoUrls(listing).length > 0) {
+                  <img
+                    [src]="getPhotoUrls(listing)[0]"
+                    [alt]="displayTitle(listing)"
+                    loading="lazy"
+                    (error)="onCardImageError($event)"/>
+                }
+                <div class="card-photo-placeholder">
+                  <ng-icon [name]="getCategoryIcon(listing.category)" class="placeholder-icon"/>
+                </div>
+                @if (listing.location_label) {
+                  <span class="card-location-badge">
+                    <ng-icon name="lucideMapPin"/>
+                    {{ listing.location_label }}
+                  </span>
+                }
+                <div class="card-category-badge">
+                  <ng-icon [name]="getCategoryIcon(listing.category)"/>
+                  {{ getCategoryLabel(listing.category) }}
+                </div>
+              </div>
+              <!-- Info -->
+              <div class="card-body">
+                <h3 class="card-title">{{ displayTitle(listing) }}</h3>
+                @if (listing.location_label) {
+                  <p class="card-location" title="Lieu de disponibilité">
+                    <ng-icon name="lucideMapPin" class="loc-icon"/>
+                    <span>{{ listing.location_label }}</span>
+                  </p>
+                }
+                <div class="card-footer">
+                  <span class="card-price">{{ formatPrice(listing) }}</span>
+                  @if (listing.quantity_value) {
+                    <span class="card-qty">{{ formatQuantity(listing) }}</span>
+                  }
+                </div>
+                <div class="card-cta">
+                  <span>Voir l'annonce</span>
+                  <ng-icon name="lucideArrowRight"/>
+                </div>
+              </div>
+            </article>
+          }
+        </div>
+
+        <!-- Pagination -->
+        @if (totalListings() > 15) {
+          <div class="pagination">
+            <button type="button" class="mkt-btn mkt-btn--secondary" [disabled]="currentPage() === 1" (click)="prevPage()">
+              <ng-icon name="lucideChevronLeft"/> Précédent
+            </button>
+            <span class="page-info">Page {{ currentPage() }}</span>
+            <button type="button" class="mkt-btn mkt-btn--secondary" [disabled]="!hasNext()" (click)="nextPage()">
+              Suivant <ng-icon name="lucideChevronRight"/>
+            </button>
+          </div>
+        }
+      }
+    </main>
+  </div>
+
+  <!-- ══ AUTH BANNER ══════════════════════════════════════════════════════════ -->
+  @if (!auth.isAuthenticated()) {
+    <section class="auth-banner">
+      <div class="banner-content">
+        <ng-icon name="lucideSprout" class="banner-icon-svg"/>
+        <div>
+          <h3>Vous êtes agriculteur ?</h3>
+          <p>Créez un compte ZirIA pour publier vos annonces, gérer vos messages et suivre vos ventes.</p>
+        </div>
+        <div class="banner-actions">
+          <a routerLink="/register" class="mkt-btn mkt-btn--primary">S'inscrire gratuitement</a>
+          <a routerLink="/login" class="mkt-btn mkt-btn--secondary">Se connecter</a>
+        </div>
+      </div>
+    </section>
+  }
+
+  <!-- ══ LISTING DETAIL DRAWER ════════════════════════════════════════════════ -->
+  @if (selectedListing(); as listing) {
+    <div class="drawer-backdrop" (click)="closeListing()"></div>
+    <aside class="listing-drawer">
+
+      <!-- Header -->
+      <div class="drawer-header">
+        <button class="drawer-close" (click)="closeListing()">
+          <ng-icon name="lucideX"/>
+        </button>
+        <div class="drawer-cat-badge">
+          <ng-icon [name]="getCategoryIcon(listing.category)"/>
+          {{ getCategoryLabel(listing.category) }}
+        </div>
+      </div>
+
+      <div class="drawer-scroll">
+
+        <!-- Photo Gallery -->
+        @if (getPhotoUrls(listing).length > 0) {
+          <div class="photo-gallery">
+            <img [src]="getPhotoUrls(listing)[selectedPhotoIndex()]" [alt]="displayTitle(listing)" class="gallery-main"/>
+            @if (getPhotoUrls(listing).length > 1) {
+              <button class="gallery-nav gallery-prev" (click)="prevPhoto(); $event.stopPropagation()">
+                <ng-icon name="lucideChevronLeft"/>
+              </button>
+              <button class="gallery-nav gallery-next" (click)="nextPhoto(); $event.stopPropagation()">
+                <ng-icon name="lucideChevronRight"/>
+              </button>
+              <div class="gallery-dots">
+                @for (url of getPhotoUrls(listing); track url) {
+                  <span class="gallery-dot" [class.active]="$index === selectedPhotoIndex()" (click)="selectedPhotoIndex.set($index)"></span>
+                }
+              </div>
+              <div class="gallery-thumbs">
+                @for (url of getPhotoUrls(listing); track url) {
+                  <button
+                    type="button"
+                    class="gallery-thumb"
+                    [class.active]="$index === selectedPhotoIndex()"
+                    (click)="selectedPhotoIndex.set($index); $event.stopPropagation()">
+                    <img [src]="url" [alt]="displayTitle(listing) + ' — photo ' + ($index + 1)" loading="lazy"/>
+                  </button>
+                }
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="photo-placeholder-large">
+            <ng-icon [name]="getCategoryIcon(listing.category)"/>
+          </div>
+        }
+
+        <!-- Listing Info -->
+        <div class="drawer-info">
+          <h2 class="drawer-title">{{ displayTitle(listing) }}</h2>
+
+          <div class="drawer-meta-row">
+            @if (listing.location_label) {
+              <span class="meta-chip"><ng-icon name="lucideMapPin"/> {{ listing.location_label }}</span>
+            }
+            <span class="meta-chip"><ng-icon name="lucideCalendar"/> {{ listing.created_at | date:'d MMM yyyy' }}</span>
+          </div>
+
+          <!-- Price & Quantity -->
+          <div class="drawer-price-block">
+            <div class="price-big">{{ formatPrice(listing) }}</div>
+            @if (listing.quantity_value) {
+              <div class="price-qty">Quantité : {{ formatQuantity(listing) }}</div>
+            }
+          </div>
+
+          <!-- Description -->
+          @if (listing.description) {
+            <p class="drawer-description">{{ listing.description }}</p>
+          }
+
+          <!-- Category-specific details -->
+          @if (listing.category === 'LIVESTOCK' && listing.livestock_type) {
+            <div class="detail-chip">
+              <ng-icon name="lucideSprout" class="chip-icon"/>
+              Type : {{ listing.livestock_type }}
+            </div>
+          }
+          @if (listing.category === 'EQUIPMENT' && listing.equipment_condition) {
+            <div class="detail-chip">
+              <ng-icon name="lucideTractor" class="chip-icon"/>
+              État : {{ listing.equipment_condition === 'NEW' ? 'Neuf' : 'Occasion' }}
+            </div>
+          }
+          @if (listing.category === 'LAND') {
+            @if (listing.land_size_ha) {
+              <div class="detail-chip">
+                <ng-icon name="lucideLandmark" class="chip-icon"/>
+                Surface : {{ listing.land_size_ha }} ha
+              </div>
+            }
+            @if (listing.land_soil_type) {
+              <div class="detail-chip">
+                <ng-icon name="lucideLeaf" class="chip-icon"/>
+                Sol : {{ listing.land_soil_type }}
+              </div>
+            }
+            @if (listing.land_water_access != null) {
+              <div class="detail-chip">
+                <ng-icon name="lucideDroplets" class="chip-icon"/>
+                Eau : {{ listing.land_water_access ? 'Disponible' : 'Non disponible' }}
+              </div>
+            }
+            @if (listing.land_open_for_bidding) {
+              <div class="detail-chip">
+                <ng-icon name="lucideTag" class="chip-icon"/>
+                Ouvert aux enchères
+              </div>
+            }
+          }
+
+          <!-- ══ SELLER CONTACT ══════════════════════════ -->
+          <div class="seller-contact-card">
+            <h4 class="contact-label">Contacter le vendeur</h4>
+            <p class="contact-name"><ng-icon name="lucideUser"/> {{ listing.seller_name }}</p>
+
+            <div class="contact-direct">
+              @if (listing.contact_phone) {
+                <a [href]="'tel:' + listing.contact_phone" class="contact-btn contact-phone">
+                  <ng-icon name="lucidePhone"/>
+                  {{ listing.contact_phone }}
+                </a>
+              }
+              @if (listing.contact_email) {
+                <a [href]="'mailto:' + listing.contact_email" class="contact-btn contact-email">
+                  <ng-icon name="lucideMail"/>
+                  {{ listing.contact_email }}
+                </a>
+              }
+            </div>
+
+            <!-- In-platform contact -->
+            @if (inquiryMode() === 'NONE') {
+              <button class="contact-btn contact-message" (click)="openContact()">
+                <ng-icon name="lucideMessageCircle"/>
+                {{ auth.isAuthenticated() ? 'Envoyer un message sur ZirIA' : 'Envoyer une demande de contact' }}
+              </button>
+            }
+          </div>
+
+          <!-- ══ INQUIRY FORM (guests) ══════════════════════════════════ -->
+          @if (inquiryMode() === 'FORM') {
+            <div class="inquiry-form">
+              <h4>Votre demande de contact</h4>
+
+              @if (inquirySuccess()) {
+                <div class="inquiry-success">
+                  <ng-icon name="lucideCheck"/>
+                  Votre demande a été envoyée ! Le vendeur vous contactera bientôt.
+                </div>
+              } @else {
+                <input type="text" [ngModel]="inquiryName()" (ngModelChange)="inquiryName.set($event)"
+                  placeholder="Votre nom *" class="iq-input"/>
+                <input type="email" [ngModel]="inquiryEmail()" (ngModelChange)="inquiryEmail.set($event)"
+                  placeholder="Votre email *" class="iq-input"/>
+                <input type="tel" [ngModel]="inquiryPhone()" (ngModelChange)="inquiryPhone.set($event)"
+                  placeholder="Votre téléphone (optionnel)" class="iq-input"/>
+                <textarea [ngModel]="inquiryMessage()" (ngModelChange)="inquiryMessage.set($event)"
+                  placeholder="Votre message *" rows="4" class="iq-input iq-textarea"></textarea>
+                <div class="iq-actions">
+                  <button class="btn-outline-sm" (click)="inquiryMode.set('NONE')">Annuler</button>
+                  <button class="btn-primary-sm" [disabled]="inquiryLoading()" (click)="submitInquiry()">
+                    @if (inquiryLoading()) { <ng-icon name="lucideLoader" class="spin"/> }
+                    @else { <ng-icon name="lucideSend"/> }
+                    Envoyer
+                  </button>
+                </div>
+              }
+            </div>
+          }
+
+          <!-- ══ IN-PLATFORM CHAT (logged-in users) ══════════════════════ -->
+          @if (inquiryMode() === 'CHAT') {
+            <div class="chat-panel">
+              <div class="chat-header">
+                <span>💬 Conversation avec {{ listing.seller_name }}</span>
+                <button class="chat-close" (click)="inquiryMode.set('NONE')"><ng-icon name="lucideX"/></button>
+              </div>
+
+              <div class="chat-messages">
+                @if (chatLoading()) {
+                  <div class="chat-loading"><ng-icon name="lucideLoader" class="spin"/> Chargement...</div>
+                } @else if (chatMessages().length === 0) {
+                  <div class="chat-empty">Commencez la conversation !</div>
+                } @else {
+                  @for (msg of chatMessages(); track msg.id) {
+                    <div class="chat-msg" [class.mine]="msg.sender_id === currentUser?.id">
+                      <p>{{ msg.content }}</p>
+                      <span class="msg-time">{{ msg.created_at | date:'HH:mm' }}</span>
+                    </div>
+                  }
+                }
+              </div>
+
+              <div class="chat-input-row">
+                <input type="text" [ngModel]="chatInput()" (ngModelChange)="chatInput.set($event)"
+                  placeholder="Votre message..." class="chat-input"
+                  (keydown.enter)="sendChatMessage()"/>
+                <button class="chat-send" (click)="sendChatMessage()">
+                  <ng-icon name="lucideSend"/>
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </aside>
+  }
+
+</div>

@@ -1,0 +1,532 @@
+<div class="diag-page">
+
+  <!-- ═══════════════════ IDLE STATE ═══════════════════ -->
+  @if (state() === 'idle') {
+    <div class="diag-idle animate-in">
+
+      <!-- Header motivation -->
+      <div class="diag-header">
+        <div class="diag-header__icon">
+          <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="40" cy="40" r="38" fill="url(#headerGrad)" opacity="0.15"/>
+            <ellipse cx="40" cy="48" rx="18" ry="28" fill="url(#headerGrad)" transform="rotate(-15 40 48)" opacity="0.9"/>
+            <ellipse cx="40" cy="48" rx="18" ry="28" fill="url(#headerGrad)" transform="rotate(15 40 48)" opacity="0.6"/>
+            <line x1="40" y1="18" x2="40" y2="72" stroke="#14532d" stroke-width="1.5" stroke-dasharray="3 3"/>
+            <defs>
+              <linearGradient id="headerGrad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#4ade80"/>
+                <stop offset="100%" stop-color="#15803d"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <div class="diag-header__text">
+          <h1>Diagnostic IA ZirIA</h1>
+          <p class="diag-header__fr">Photographiez votre plante malade pour un diagnostic instantané</p>
+          <p class="diag-header__ar" dir="rtl">صوّر نباتتك المريضة وخليها الذكاء الاصطناعي يحكم عليها</p>
+        </div>
+      </div>
+
+      <!-- Parcel & Crop selector row -->
+      <div class="diag-parcel-row">
+        <div>
+          <label class="diag-label">
+            <ng-icon name="lucideMapPin"></ng-icon> Parcelle <span class="optional">(optionnel)</span>
+          </label>
+          <select class="diag-select" [value]="selectedParcelId()" (change)="onParcelChange($event)">
+            <option value="">— Toutes parcelles —</option>
+            @for (p of parcels(); track p.id) {
+              <option [value]="p.id">{{ p.name || ('Parcelle ' + p.id.substring(0,6)) }} — {{ p.crop_type }}</option>
+            }
+          </select>
+        </div>
+
+        <div>
+          <label class="diag-label">
+            <ng-icon name="lucideLeaf"></ng-icon> Culture / Plante <span class="optional">(recommandé)</span>
+          </label>
+          <select class="diag-select" [value]="selectedCrop()" (change)="onCropChange($event)">
+            <option value="">— Détection automatique —</option>
+            <option value="Olivier">Olivier (زيتون)</option>
+            <option value="Tomate">Tomate (طماطم)</option>
+            <option value="Pomme de terre">Pomme de terre (بطاطا)</option>
+            <option value="Pêcher">Pêcher (خوخ)</option>
+            <option value="Poivron">Poivron (فلفل)</option>
+            <option value="Vigne">Vigne (عنب)</option>
+            <option value="Pommier">Pommier (تفاح)</option>
+            <option value="Maïs">Maïs (ذرة)</option>
+            <option value="Fraisier">Fraisier (فراولة)</option>
+            <option value="Cerisier">Cerisier (حب الملوك)</option>
+            <option value="Courge">Courge (قرع)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Drop Zone -->
+      <div
+        class="drop-zone"
+        [class.dragging]="isDragging()"
+        (dragover)="onDragOver($event)"
+        (dragleave)="onDragLeave()"
+        (drop)="onDrop($event)"
+        #fileDropZone
+      >
+        <div class="drop-zone__inner">
+          <div class="drop-zone__icon-wrap">
+            <ng-icon name="lucideCamera" class="drop-zone__icon"></ng-icon>
+          </div>
+          <p class="drop-zone__title">Glissez une photo ici</p>
+          <p class="drop-zone__sub">ou choisissez comment prendre la photo</p>
+          <div class="drop-zone__btns">
+            <label class="diag-cta camera-cta" for="camera-input">
+              <ng-icon name="lucideCamera"></ng-icon>
+              <span>Caméra</span>
+              <input id="camera-input" type="file" accept="image/*" capture="camera" class="sr-only" #cameraInput (change)="onFileSelected($event)">
+            </label>
+            <label class="diag-cta gallery-cta" for="gallery-input">
+              <ng-icon name="lucideImage"></ng-icon>
+              <span>Galerie</span>
+              <input id="gallery-input" type="file" accept="image/*" class="sr-only" #galleryInput (change)="onFileSelected($event)">
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Guidance thumbnails -->
+      <div class="guidance-row">
+        <p class="guidance-label">Exemples de bonnes photos diagnostiques :</p>
+        <div class="guidance-cards">
+          @for (g of guidancePhotos; track g.label) {
+            <div class="guidance-card" [style.--g-color]="g.color">
+              <div class="guidance-card__icon">
+                <ng-icon [name]="g.icon"></ng-icon>
+              </div>
+              <span class="guidance-card__fr">{{ g.label }}</span>
+              <span class="guidance-card__ar" dir="rtl">{{ g.hint }}</span>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- History scroll strip -->
+      <div class="history-section">
+        <div class="history-section__header">
+          <h3>Diagnostics récents <span class="history-count">(7 derniers jours)</span></h3>
+          <button class="icon-btn" (click)="loadHistory()" title="Rafraîchir">
+            <ng-icon name="lucideRefreshCcw"></ng-icon>
+          </button>
+        </div>
+
+        @if (isLoadingHistory()) {
+          <div class="history-strip">
+            @for (_ of [1,2,3,4,5]; track $index) {
+              <div class="history-card history-card--skeleton"></div>
+            }
+          </div>
+        } @else if (history().length === 0) {
+          <div class="history-empty">
+            <ng-icon name="lucideActivity"></ng-icon>
+            <p>Aucun diagnostic ces 7 derniers jours</p>
+          </div>
+        } @else {
+          <div class="history-strip">
+            @for (h of history(); track h.id) {
+              <button class="history-card" (click)="openHistoryItem(h)" [title]="h.disease_name">
+                <div class="history-card__img-wrap">
+                  <img [src]="h.photo_url || 'assets/images/leaf-placeholder.jpg'" [alt]="h.disease_name" class="history-card__img">
+                  @if (h.is_expert_validated) {
+                    <span class="expert-badge-mini" title="Validé par expert">✓</span>
+                  }
+                </div>
+                <div class="history-card__info">
+                  <span class="hc-disease">{{ h.disease_name }}</span>
+                  <span class="hc-date">{{ h.created_at | date:'dd/MM' }}</span>
+                  <span class="hc-conf" [style.color]="h.confidence_score >= 0.7 ? 'var(--success)' : h.confidence_score >= 0.4 ? 'var(--warning)' : 'var(--error)'">
+                    {{ (h.confidence_score * 100 | number:'1.0-0') }}%
+                  </span>
+                </div>
+              </button>
+            }
+          </div>
+        }
+      </div>
+
+    </div>
+  }
+
+  <!-- ═══════════════════ SCANNING STATE ═══════════════════ -->
+  @if (state() === 'scanning') {
+    <div class="diag-scanning animate-in">
+
+      <!-- Left: uploaded photo (40%) -->
+      <div class="scan-photo-col">
+        <div class="scan-photo-wrap">
+          <img [src]="previewUrl()" class="scan-photo" alt="Photo en cours d'analyse">
+          <div class="scan-line-overlay">
+            <div class="scan-line"></div>
+          </div>
+          <div class="scan-corner tl"></div>
+          <div class="scan-corner tr"></div>
+          <div class="scan-corner bl"></div>
+          <div class="scan-corner br"></div>
+        </div>
+        <p class="scan-photo-caption">Image soumise à l'analyse</p>
+      </div>
+
+      <!-- Right: animated loader (60%) -->
+      <div class="scan-loader-col">
+        <!-- Animated growing leaf SVG -->
+        <div class="scan-leaf-anim">
+          <svg viewBox="0 0 120 140" xmlns="http://www.w3.org/2000/svg" class="leaf-grow-svg">
+            <defs>
+              <radialGradient id="lGrad" cx="50%" cy="60%" r="50%">
+                <stop offset="0%" stop-color="#4ade80"/>
+                <stop offset="100%" stop-color="#166534"/>
+              </radialGradient>
+              <filter id="glow">
+                <feGaussianBlur stdDeviation="3" result="blur"/>
+                <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+              </filter>
+            </defs>
+            <!-- Stem -->
+            <line x1="60" y1="135" x2="60" y2="70" stroke="#166534" stroke-width="2.5" stroke-linecap="round" class="stem-grow"/>
+            <!-- Left leaf -->
+            <path d="M60 95 Q30 75 35 45 Q55 55 60 80" fill="url(#lGrad)" opacity="0.9" class="leaf-left"/>
+            <!-- Right leaf -->
+            <path d="M60 85 Q90 65 85 35 Q65 45 60 70" fill="url(#lGrad)" opacity="0.75" class="leaf-right"/>
+            <!-- Pulse glow -->
+            <circle cx="60" cy="35" r="12" fill="rgba(74,222,128,0.3)" class="leaf-pulse" filter="url(#glow)"/>
+            <!-- Veins -->
+            <path d="M60 85 Q45 70 42 55" stroke="#14532d" stroke-width="1" fill="none" opacity="0.5" class="leaf-vein"/>
+            <path d="M60 75 Q72 63 73 50" stroke="#14532d" stroke-width="1" fill="none" opacity="0.5" class="leaf-vein"/>
+          </svg>
+        </div>
+
+        <!-- Cycling phrases -->
+        <div class="scan-message">
+          <div class="scan-dots">
+            @for (i of [0,1,2,3,4]; track i) {
+              <span class="dot" [class.active]="scanPhraseIndex() === i"></span>
+            }
+          </div>
+          <p class="scan-phrase-fr">{{ scanPhrase().fr }}</p>
+          <p class="scan-phrase-ar" dir="rtl">{{ scanPhrase().ar }}</p>
+        </div>
+
+        <!-- Orbiting rings -->
+        <div class="scan-rings">
+          <div class="ring r1"></div>
+          <div class="ring r2"></div>
+          <div class="ring r3"></div>
+        </div>
+
+        <button class="cancel-btn" (click)="resetDiagnostic()">
+          <ng-icon name="lucideX"></ng-icon> Annuler
+        </button>
+      </div>
+
+    </div>
+  }
+
+  <!-- ═══════════════════ RESULT STATE ═══════════════════ -->
+  @if (state() === 'result' && result()) {
+    <div class="diag-result animate-in">
+
+      <!-- Back button -->
+      <button class="back-btn" (click)="resetDiagnostic()">
+        <ng-icon name="lucideChevronLeft"></ng-icon> Nouveau diagnostic
+      </button>
+
+      <div class="result-layout">
+
+        <!-- ── LEFT COLUMN: Photo + Expert Badge ── -->
+        <div class="result-photo-col">
+          <div class="result-photo-wrap">
+            <img [src]="previewUrl() || result()?.photo_url" class="result-photo" alt="Photo analysée">
+            @if (result()?.is_expert_validated) {
+              <div class="expert-validated-badge">
+                <ng-icon name="lucideCheckCircle"></ng-icon>
+                <span>Validé par expert certifié</span>
+              </div>
+            }
+          </div>
+
+          <!-- Confidence meter -->
+          <div class="confidence-card">
+            <div class="confidence-card__header">
+              <span class="conf-label">Confiance IA</span>
+              <span class="conf-pct" [style.color]="getConfidenceColor()">{{ getConfidenceScore() }}%</span>
+            </div>
+            <div class="conf-bar-track">
+              <div class="conf-bar-fill"
+                   [style.width.%]="getConfidenceScore()"
+                   [style.background]="getConfidenceColor()">
+              </div>
+            </div>
+            <p class="conf-hint" [style.color]="getConfidenceColor()">{{ getConfidenceLabel() }}</p>
+          </div>
+
+          <!-- Parcel link -->
+          @if (parcels().length > 0) {
+            <div class="parcel-link-card">
+              <label class="diag-label"><ng-icon name="lucideMapPin"></ng-icon> Lier à une parcelle</label>
+              <div class="parcel-link-row">
+                <select class="diag-select" [value]="selectedParcelId()" (change)="onParcelChange($event)">
+                  <option value="">— Sélectionner —</option>
+                  @for (p of parcels(); track p.id) {
+                    <option [value]="p.id">{{ p.name || ('Parcelle ' + p.id.substring(0,6)) }}</option>
+                  }
+                </select>
+                <button class="diag-btn ghost-btn" (click)="linkToParcel()" [disabled]="!selectedParcelId() || isLinking()">
+                  @if (isLinking()) { <ng-icon name="lucideLoader" class="spin"></ng-icon> }
+                  @else { <ng-icon name="lucideMapPin"></ng-icon> }
+                  Lier
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- ── RIGHT COLUMN: Diagnosis Details ── -->
+        <div class="result-details-col">
+
+          <!-- Disease Name — Trilingual Identity Card -->
+          <div class="disease-header animate-in">
+            <div class="disease-severity" [class]="getSeverityClass()">
+              {{ getSeverityLabel() }}
+            </div>
+            
+            <div class="trilingual-identity-card">
+              <!-- French Standard -->
+              <div class="name-pill name-pill--fr">
+                <span class="lang-tag"><span class="flag-icon">🇫🇷</span> FR</span>
+                <span class="disease-val">{{ diseaseNameFr() }}</span>
+              </div>
+              
+              <!-- Tunisian Arabic / Darija -->
+              @if (diseaseNameAr()) {
+                <div class="name-pill name-pill--ar" dir="rtl">
+                  <span class="lang-tag"><span class="flag-icon">🇹🇳</span> AR (Darija)</span>
+                  <span class="disease-val font-tajawal">{{ diseaseNameAr() }}</span>
+                </div>
+              }
+              
+              <!-- Latin Technical -->
+              @if (diseaseNameLat()) {
+                <div class="name-pill name-pill--lat">
+                  <span class="lang-tag"><span class="flag-icon">🔬</span> LATIN</span>
+                  <span class="disease-val italic">{{ diseaseNameLat() }}</span>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- ── High-Risk / Mandatory Escalation Banner ── -->
+          @if (result()?.vision?.requires_expert_validation) {
+            <div class="escalation-banner animate-in">
+              <div class="escalation-banner__icon">🚨</div>
+              <div class="escalation-banner__content">
+                <p class="escalation-banner__msg-fr">{{ result()?.escalation_message || result()?.vision?.escalation_message || "Alerte phytosanitaire : confirmation recommandée auprès d’un expert phytopathologiste." }}</p>
+                <p class="escalation-banner__msg-ar" dir="rtl">يجب التحقق مع خبير متخصص في أمراض النباتات — أرسل طلب التحقق بالأسفل.</p>
+              </div>
+            </div>
+          }
+
+          <!-- Expert Validated / Safe Data Banner -->
+          @if (result()?.is_expert_validated) {
+            <div class="expert-verified-banner animate-in">
+              <div class="banner-icon-wrap">
+                <ng-icon name="lucideCheckCircle"></ng-icon>
+              </div>
+              <div class="banner-content">
+                <div class="banner-title-row">
+                  <h4>Donnée sécurisée & certifiée</h4>
+                  <span class="safe-tag">Safe Data</span>
+                </div>
+                <p class="banner-desc-fr">Ce diagnostic a été validé par un expert certifié du CRDA (Commissariat Régional au Développement Agricole).</p>
+                <p class="banner-desc-ar" dir="rtl">تم تأكيد هذا التشخيص من قبل خبير معتمد من المندوبية الجهوية للتنمية الفلاحية.</p>
+              </div>
+            </div>
+          }
+
+          <!-- What is happening -->
+          <div class="result-section">
+            <h3 class="section-title">
+              <ng-icon name="lucideActivity"></ng-icon> Ce qui se passe
+            </h3>
+            @if (result()?.decision?.explanation_fr || result()?.explanation_fr || result()?.recommendation_fr) {
+              <p class="section-text-fr">{{ result()?.decision?.explanation_fr || result()?.explanation_fr || result()?.recommendation_fr }}</p>
+            }
+            @if (result()?.decision?.explanation_darija || result()?.explanation_darija || result()?.decision?.recommendation_darija || result()?.recommendation_darija) {
+              <p class="section-text-ar" dir="rtl">{{ result()?.decision?.explanation_darija || result()?.explanation_darija || result()?.decision?.recommendation_darija || result()?.recommendation_darija }}</p>
+            }
+          </div>
+
+          <!-- Recommended Actions -->
+          <div class="result-section">
+            <h3 class="section-title">
+              <ng-icon name="lucideCheck"></ng-icon> Actions recommandées
+            </h3>
+            <div class="action-steps">
+              @for (step of getRecommendationSteps(); track $index) {
+                <div class="action-step">
+                  <div class="step-icon">
+                    <ng-icon [name]="getStepIcon($index)"></ng-icon>
+                  </div>
+                  <span class="step-text">{{ step }}</span>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Boutique Intrants & Prescriptions -->
+          @if (getRecommendedProducts().length > 0) {
+            <div class="result-section boutique-recommendations">
+              <div class="section-title-row">
+                <h3 class="section-title">
+                  <ng-icon name="lucideShoppingCart"></ng-icon> Traitements & Intrants Recommandés
+                </h3>
+                <a routerLink="/dashboard/farmer/supplies" class="boutique-link">
+                  Boutique Intrants <ng-icon name="lucideArrowRight"></ng-icon>
+                </a>
+              </div>
+              <p class="boutique-sub">Produits homologués en Tunisie et adaptés à ce diagnostic :</p>
+              
+              <div class="prescription-grid">
+                @for (prod of getRecommendedProducts(); track prod.name) {
+                  <div class="prescription-card">
+                    <div class="p-card-top">
+                      @if (prod.photo_url) {
+                        <img [src]="prod.photo_url" [alt]="prod.name" class="p-thumb" />
+                      } @else {
+                        <div class="p-thumb-fallback">
+                          <ng-icon name="lucideFlaskConical"></ng-icon>
+                        </div>
+                      }
+                      <div class="p-header">
+                        <span class="p-homolog-tag">Homologué CRDA</span>
+                        <h4 class="p-name">{{ prod.name }}</h4>
+                        @if (prod.price_tnd) {
+                          <span class="p-price">{{ prod.price_tnd | number:'1.2-2' }} TND</span>
+                        }
+                      </div>
+                    </div>
+
+                    <div class="p-meta-list">
+                      @if (prod.dosage) {
+                        <div class="p-meta-item">
+                          <span class="p-meta-label">Dose :</span>
+                          <span class="p-meta-val">{{ prod.dosage }}</span>
+                        </div>
+                      }
+                      @if (prod.application_method) {
+                        <div class="p-meta-item">
+                          <span class="p-meta-label">Application :</span>
+                          <span class="p-meta-val">{{ prod.application_method }}</span>
+                        </div>
+                      }
+                      @if (prod.pre_harvest_days) {
+                        <div class="p-meta-item">
+                          <span class="p-meta-label">Délai av. récolte :</span>
+                          <span class="p-meta-val">{{ prod.pre_harvest_days }} jours</span>
+                        </div>
+                      }
+                    </div>
+
+                    <div class="p-actions">
+                      <a routerLink="/dashboard/farmer/supplies" class="diag-btn primary-btn order-btn">
+                        <ng-icon name="lucideShoppingCart"></ng-icon> Commander en Boutique
+                      </a>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+
+          <!-- Expert Comments (if validated) -->
+          @if (result()?.expert_comments) {
+            <div class="result-section expert-assessment">
+              <h3 class="section-title">
+                <ng-icon name="lucideUser"></ng-icon> Avis de l'expert certifié CRDA
+              </h3>
+              <p class="expert-assessment__text">{{ result().expert_comments }}</p>
+            </div>
+          }
+
+          <!-- Consult an Expert -->
+          @if (!result()?.is_expert_validated) {
+            <div class="result-section expert-section">
+              <h3 class="section-title">
+                <ng-icon name="lucideUser"></ng-icon> Consulter un Expert
+              </h3>
+              @if (!expertSent()) {
+                <p class="expert-hint">Envoyez ce diagnostic à un expert certifié CRDA pour validation professionnelle.</p>
+                <div class="expert-select-row">
+                  <select class="diag-select" [(ngModel)]="selectedExpertId" name="expertId">
+                    <option value="">Premier expert disponible</option>
+                    @for (e of certifiedExperts(); track e.id) {
+                      <option [value]="e.id">{{ e.name }} — {{ e.governorate || 'Expert CRDA' }}</option>
+                    }
+                  </select>
+                  <button
+                    class="diag-btn primary-btn send-expert-btn"
+                    [disabled]="isSubmitting() || !savedDetectionId()"
+                    (click)="requestExpertValidation()"
+                  >
+                    @if (isSubmitting()) { <ng-icon name="lucideLoader" class="spin"></ng-icon> }
+                    @else { <ng-icon name="lucideSend"></ng-icon> }
+                    Envoyer au expert
+                  </button>
+                </div>
+              } @else {
+                <div class="expert-sent-confirm">
+                  <ng-icon name="lucideCheckCircle" class="sent-icon"></ng-icon>
+                  <p>Demande envoyée ! L'expert vous répondra par notification.</p>
+                </div>
+              }
+            </div>
+          }
+
+          <!-- Order treatment button -->
+          @if (result()?.treatment_products?.length > 0 && !isOrdering()) {
+            <button class="diag-btn order-btn" (click)="orderTreatment()" [disabled]="isOrdering()">
+              <ng-icon name="lucideShoppingCart"></ng-icon> Commander le traitement
+            </button>
+          }
+
+        </div>
+      </div>
+
+      <!-- History strip at bottom -->
+      @if (history().length > 0) {
+        <div class="history-section history-section--result">
+          <div class="history-section__header">
+            <h3>Autres diagnostics récents</h3>
+          </div>
+          <div class="history-strip">
+            @for (h of history(); track h.id) {
+              <button class="history-card" [class.active]="savedDetectionId() === h.id" (click)="openHistoryItem(h)">
+                <div class="history-card__img-wrap">
+                  <img [src]="h.photo_url || 'assets/images/leaf-placeholder.jpg'" [alt]="h.disease_name" class="history-card__img">
+                  @if (h.is_expert_validated) {
+                    <span class="expert-badge-mini" title="Validé par expert">✓</span>
+                  }
+                </div>
+                <div class="history-card__info">
+                  <span class="hc-disease">{{ h.disease_name }}</span>
+                  <span class="hc-date">{{ h.created_at | date:'dd/MM' }}</span>
+                  <span class="hc-conf" [style.color]="h.confidence_score >= 0.7 ? 'var(--success)' : 'var(--warning)'">
+                    {{ (h.confidence_score * 100 | number:'1.0-0') }}%
+                  </span>
+                </div>
+              </button>
+            }
+          </div>
+        </div>
+      }
+
+    </div>
+  }
+
+</div>

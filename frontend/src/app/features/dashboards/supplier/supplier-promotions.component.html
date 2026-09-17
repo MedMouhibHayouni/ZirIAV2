@@ -1,0 +1,213 @@
+<div class="sup-page fade-in">
+  <!-- Page Header -->
+  <div class="sup-page-header">
+    <div>
+      <h2 class="sup-page-title">Promotions & Offres Ciblées</h2>
+      <p class="sup-page-sub">Configurez des réductions ciblées par région pour dynamiser vos ventes B2B</p>
+    </div>
+    <button class="sup-btn sup-btn--primary" (click)="openModal()">
+      <ng-icon name="lucidePlus"></ng-icon> Créer une promotion
+    </button>
+  </div>
+
+  <!-- Stats Dashboard Banner -->
+  @if (!isLoading() && promotions().length > 0) {
+    <div class="stats-banner">
+      <div class="stat-banner-card">
+        <div class="stat-banner-icon-wrap emerald">
+          <ng-icon name="lucideTag"></ng-icon>
+        </div>
+        <div class="stat-banner-info">
+          <div class="stat-banner-title">Promotions Actives</div>
+          <div class="stat-banner-value">{{ activePromotionsCount() }}</div>
+        </div>
+      </div>
+
+      <div class="stat-banner-card">
+        <div class="stat-banner-icon-wrap amber">
+          <ng-icon name="lucideTrendingUp"></ng-icon>
+        </div>
+        <div class="stat-banner-info">
+          <div class="stat-banner-title">Meilleure Remise</div>
+          <div class="stat-banner-value">{{ maxDiscount() }}%</div>
+        </div>
+      </div>
+
+      <div class="stat-banner-card">
+        <div class="stat-banner-icon-wrap blue">
+          <ng-icon name="lucideGlobe"></ng-icon>
+        </div>
+        <div class="stat-banner-info">
+          <div class="stat-banner-title">Régions Ciblées</div>
+          <div class="stat-banner-value">{{ uniqueRegions() }}</div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Main Content -->
+  @if (isLoading()) {
+    <div class="sup-loading">
+      <ng-icon name="lucideLoader" class="spin"></ng-icon> Chargement des promotions...
+    </div>
+  } @else if (promotions().length === 0) {
+    <div class="sup-empty-full">
+      <div class="empty-icon-ring">
+        <ng-icon name="lucideTag"></ng-icon>
+      </div>
+      <h3>Aucune promotion en cours</h3>
+      <p>Créez des remises limitées dans le temps ou ciblées sur des gouvernorats spécifiques pour attirer plus d'acheteurs.</p>
+      <button class="sup-btn sup-btn--primary mt-4" (click)="openModal()">
+        <ng-icon name="lucidePlus"></ng-icon> Lancer ma première promotion
+      </button>
+    </div>
+  } @else {
+    <div class="promo-grid">
+      @for (promo of promotions(); track promo.id) {
+        @let prod = getProductById(promo.product_id);
+        <div class="promo-card" [class.inactive]="!promo.is_active">
+          <!-- Discount Badge -->
+          <div class="promo-discount-badge">
+            <span class="pct">-{{ promo.discount_pct }}%</span>
+          </div>
+
+          <!-- Product Image / Placeholder -->
+          <div class="promo-img-wrapper">
+            @if (prod?.photo_url) {
+              <img [src]="prod!.photo_url" alt="Produit Image">
+            } @else {
+              <div class="promo-img-fallback">
+                <ng-icon name="lucideTag"></ng-icon>
+              </div>
+            }
+          </div>
+
+          <!-- Card Content -->
+          <div class="promo-card-body">
+            <span class="promo-category">{{ prod?.category || 'Produit' }}</span>
+            <h3 class="promo-title">{{ prod?.name ?? productName(promo.product_id) }}</h3>
+            
+            <!-- Price Display with Calculation -->
+            <div class="promo-price-block">
+              @if (prod?.price_tnd) {
+                <div class="price-original">{{ prod!.price_tnd | number:'1.2-2' }} TND</div>
+                <div class="price-discounted">
+                  {{ (prod!.price_tnd * (1 - promo.discount_pct / 100)) | number:'1.2-2' }} TND
+                  <span class="unit">/ {{ prod!.unit }}</span>
+                </div>
+              } @else {
+                <div class="price-discounted">{{ promo.discount_pct }}% de réduction</div>
+              }
+            </div>
+
+            <!-- Targeting & Dates -->
+            <div class="promo-targeting-meta">
+              <div class="target-row">
+                <ng-icon name="lucideMapPin"></ng-icon>
+                <span>Cible : <strong>{{ promo.governorate_target || 'Tout le pays' }}</strong></span>
+              </div>
+              <div class="target-row">
+                <ng-icon name="lucideCalendar"></ng-icon>
+                <span>{{ promo.valid_from | date:'dd/MM/yy' }} — {{ promo.valid_until | date:'dd/MM/yy' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card Footer (Status and Actions) -->
+          <div class="promo-card-footer">
+            <div class="promo-status-indicator" [class.active]="promo.is_active">
+              <span class="dot"></span>
+              {{ promo.is_active ? 'Active' : 'Expirée' }}
+            </div>
+            
+            <button class="promo-delete-action tooltip" title="Annuler cette offre" (click)="deletePromo(promo.id)">
+              <ng-icon name="lucideTrash2"></ng-icon>
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>
+
+<!-- Modal -->
+@if (showModal) {
+  <div class="modal-container" (click)="closeModal()">
+    <div class="modal-backdrop"></div>
+    <div class="modal-panel" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title">
+          <ng-icon name="lucideTag"></ng-icon>
+          Lancer une offre promotionnelle
+        </div>
+        <button class="modal-close" (click)="closeModal()"><ng-icon name="lucideXCircle"></ng-icon></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-grid">
+
+          <!-- Product Selector -->
+          <div class="form-group form-group--full">
+            <label class="form-label">Sélectionner le produit *</label>
+            <select class="form-input" [(ngModel)]="form.product_id">
+              <option value="">— Choisir un produit —</option>
+              @for (p of products(); track p.id) {
+                <option [value]="p.id">{{ p.name }} ({{ p.price_tnd }} TND)</option>
+              }
+            </select>
+          </div>
+
+          <!-- Remise Percent -->
+          <div class="form-group">
+            <label class="form-label">
+              <ng-icon name="lucidePercent"></ng-icon> Pourcentage de remise *
+            </label>
+            <div class="input-number-wrap">
+              <input class="form-input" type="number" [(ngModel)]="form.discount_pct" min="1" max="90" placeholder="10">
+              <span class="suffix">%</span>
+            </div>
+          </div>
+
+          <!-- Governorate Target -->
+          <div class="form-group">
+            <label class="form-label">
+              <ng-icon name="lucideMapPin"></ng-icon> Gouvernorat cible
+            </label>
+            <select class="form-input" [(ngModel)]="form.governorate_target">
+              <option value="">— Tout le pays —</option>
+              @for (g of governorates; track g) { <option [value]="g">{{ g }}</option> }
+            </select>
+          </div>
+
+          <!-- Date Debut -->
+          <div class="form-group">
+            <label class="form-label"><ng-icon name="lucideCalendar"></ng-icon> Date de début</label>
+            <input class="form-input" type="date" [(ngModel)]="form.valid_from">
+          </div>
+
+          <!-- Date Fin -->
+          <div class="form-group">
+            <label class="form-label"><ng-icon name="lucideCalendar"></ng-icon> Date de fin</label>
+            <input class="form-input" type="date" [(ngModel)]="form.valid_until">
+          </div>
+
+        </div>
+
+        <div class="modal-info-alert mt-4">
+          <ng-icon name="lucideAlertCircle"></ng-icon>
+          <p>Les acheteurs situés dans la zone ciblée verront immédiatement la réduction s'afficher sur votre catalogue public.</p>
+        </div>
+      </div>
+      
+      <div class="modal-footer">
+        <button class="sup-btn sup-btn--ghost" (click)="closeModal()">Annuler</button>
+        <button class="sup-btn sup-btn--primary" (click)="submit()"
+                [disabled]="isSubmitting() || !form.product_id">
+          @if (isSubmitting()) { <ng-icon name="lucideLoader" class="spin"></ng-icon> }
+          @else { <ng-icon name="lucideCheckCircle"></ng-icon> }
+          Valider et Publier l'offre
+        </button>
+      </div>
+    </div>
+  </div>
+}
+

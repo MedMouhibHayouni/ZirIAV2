@@ -1,0 +1,179 @@
+<div class="overview-wrap">
+
+  <!-- ══ KPI STRIP ══════════════════════════════════════════════════════════ -->
+  <div class="kpi-strip">
+    <!-- Total Farmers -->
+    <div class="kpi-card kpi-emerald">
+      <div class="kpi-icon"><ng-icon name="lucideUsers"></ng-icon></div>
+      <div class="kpi-body">
+        <div class="kpi-value">{{ stats()?.total_farmers ?? '—' }}</div>
+        <div class="kpi-label">Total Agriculteurs</div>
+      </div>
+    </div>
+    <!-- Active This Week -->
+    <div class="kpi-card kpi-teal">
+      <div class="kpi-icon"><ng-icon name="lucideActivity"></ng-icon></div>
+      <div class="kpi-body">
+        <div class="kpi-value">{{ stats()?.active_farmers_this_week ?? '—' }}</div>
+        <div class="kpi-label">Actifs cette semaine</div>
+      </div>
+    </div>
+    <!-- Surface -->
+    <div class="kpi-card kpi-blue">
+      <div class="kpi-icon"><ng-icon name="lucideMap"></ng-icon></div>
+      <div class="kpi-body">
+        <div class="kpi-value">{{ stats()?.total_area_ha?.toFixed(1) ?? '—' }}<small> ha</small></div>
+        <div class="kpi-label">Surface Totale</div>
+      </div>
+    </div>
+    <!-- Health Score -->
+    <div class="kpi-card" [class]="'kpi-' + healthColor()">
+      <div class="kpi-icon"><ng-icon name="lucideHeart"></ng-icon></div>
+      <div class="kpi-body">
+        <div class="kpi-value">{{ stats()?.zone_health_score ?? '—' }}<small>/100</small></div>
+        <div class="kpi-label">Score Santé Zone</div>
+      </div>
+    </div>
+    <!-- Alerts -->
+    <div class="kpi-card kpi-red">
+      <div class="kpi-icon"><ng-icon name="lucideBell"></ng-icon></div>
+      <div class="kpi-body">
+        <div class="kpi-value alerts-val">
+          <span class="crit">{{ stats()?.active_alerts?.critical ?? 0 }}</span> crit.&nbsp;/&nbsp;
+          <span class="warn">{{ stats()?.active_alerts?.warning ?? 0 }}</span> aver.
+        </div>
+        <div class="kpi-label">Alertes Actives</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MAIN GRID ═══════════════════════════════════════════════════════════ -->
+  <div class="main-grid">
+
+    <!-- LEFT COL (60%) ───────────────────────────────────────────────────── -->
+    <div class="left-col">
+
+      <!-- Harvests Card -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <ng-icon name="lucideTreePine"></ng-icon> Récoltes Imminentes
+          </div>
+          <a [routerLink]="['../farmers']" class="card-link">
+            Voir tous <ng-icon name="lucideArrowRight"></ng-icon>
+          </a>
+        </div>
+        @if (!stats()?.harvests_this_week?.length) {
+          <div class="empty-state">Aucune récolte prévue dans les 14 prochains jours</div>
+        } @else {
+          @for (h of stats()!.harvests_this_week; track h.farmer_display_name) {
+            <div class="harvest-row">
+              <div class="harvest-farmer">{{ h.farmer_display_name }}</div>
+              <div class="harvest-crop">{{ h.crop_type }}</div>
+              <div class="harvest-eta" [class]="etaColor(h.eta_days)">
+                J-{{ h.eta_days }}
+              </div>
+            </div>
+          }
+        }
+      </div>
+
+      <!-- Recent Alerts -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <ng-icon name="lucideAlertTriangle"></ng-icon> Dernières Alertes
+          </div>
+          <a [routerLink]="['../alerts']" class="card-link">
+            Tout voir <ng-icon name="lucideArrowRight"></ng-icon>
+          </a>
+        </div>
+        @if (!alerts().length) {
+          <div class="empty-state">Aucune alerte récente — Zone en bonne santé</div>
+        } @else {
+          @for (a of alerts(); track a.id) {
+            <div class="alert-row">
+              <div class="alert-sev" [class]="severityClass(a.severity)"></div>
+              <div class="alert-info">
+                <div class="alert-disease">{{ a.disease_name }}</div>
+                <div class="alert-meta">{{ a.farmer_display_name }} · {{ a.crop_type }}</div>
+              </div>
+              <div class="alert-date">{{ a.detected_at | date:'dd/MM HH:mm' }}</div>
+            </div>
+          }
+        }
+      </div>
+
+    </div>
+
+    <!-- RIGHT COL (40%) ──────────────────────────────────────────────────── -->
+    <div class="right-col">
+
+      <!-- Quick Actions -->
+      <div class="card">
+        <div class="card-title" style="margin-bottom:16px">
+          <ng-icon name="lucideActivity"></ng-icon> Actions Rapides
+        </div>
+        <div class="quick-actions">
+          <a [routerLink]="['../onboarding']" class="qa-btn qa-btn--primary">
+            <ng-icon name="lucideUserPlus"></ng-icon> Inscrire un agriculteur
+          </a>
+          <a [routerLink]="['../field-reports']" class="qa-btn qa-btn--secondary">
+            <ng-icon name="lucidePackage"></ng-icon> Soumettre un signalement
+          </a>
+          <a [routerLink]="['../diagnostics']" class="qa-btn qa-btn--secondary">
+            <ng-icon name="lucideActivity"></ng-icon> Soumettre un diagnostic
+          </a>
+        </div>
+      </div>
+
+      <!-- Expert Alerts -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <ng-icon name="lucideBell"></ng-icon> Alertes Experts
+          </div>
+        </div>
+        @if (!expertAlerts().length) {
+          <div class="empty-state">Aucune alerte phytosanitaire active</div>
+        } @else {
+          @for (ea of expertAlerts(); track ea.id) {
+            <div class="expert-alert-row">
+              <div class="ea-disease">{{ ea.disease_name ?? ea.title }}</div>
+              <div class="ea-date">{{ ea.created_at | date:'dd/MM/yy' }}</div>
+            </div>
+          }
+        }
+      </div>
+
+      <!-- Sprint 10: Activity Feed -->
+      <div class="card activity-feed-card">
+        <div class="card-header">
+          <div class="card-title">
+            <ng-icon name="lucideZap"></ng-icon> Fil d'Activité Zone
+          </div>
+          <span class="feed-badge">7 derniers jours</span>
+        </div>
+        @if (!activityFeed().length) {
+          <div class="empty-state">Aucune activité récente dans votre zone.</div>
+        } @else {
+          <div class="feed-list">
+            @for (item of activityFeed(); track $index) {
+              <div class="feed-item">
+                <div class="feed-icon" [style.background]="feedItemColor(item.type) + '20'" [style.color]="feedItemColor(item.type)">
+                  <ng-icon [name]="feedItemIcon(item.type)"></ng-icon>
+                </div>
+                <div class="feed-body">
+                  <span class="feed-actor">{{ item.actor_name }}</span>
+                  <span class="feed-desc">{{ item.description }}</span>
+                </div>
+                <div class="feed-time">{{ formatRelativeTime(item.created_at) }}</div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+    </div>
+  </div>
+</div>

@@ -1,0 +1,282 @@
+<div class="profile-container max-w-6xl mx-auto p-4 md:p-8">
+  <!-- Dynamic Success Toast -->
+  <div *ngIf="saveSuccess()" class="toast-success fixed bottom-6 right-6 flex items-center gap-3 bg-emerald-500/90 text-white py-3 px-6 rounded-xl shadow-2xl backdrop-blur-md border border-emerald-400/30 animate-bounce">
+    <ng-icon name="lucideCheck" class="text-xl"></ng-icon>
+    <div class="text-sm font-medium">
+      <div>Profil mis à jour avec succès !</div>
+      <div class="text-xs text-emerald-100/80 dir-rtl">تم تحديث الملف الشخصي بنجاح!</div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+    <!-- Left Panel: Avatar & Nav (Glassmorphic Card) -->
+    <div class="lg:col-span-4 glass-card p-6 flex flex-col items-center text-center relative overflow-hidden">
+      <div class="glow-effect absolute -top-12 -left-12 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl"></div>
+      
+      <!-- Avatar Section with Hover Overlay -->
+      <div class="relative group cursor-pointer mb-4">
+        <div class="avatar-wrapper w-32 h-32 rounded-full overflow-hidden border-4 border-white/10 group-hover:border-emerald-500/50 transition-all duration-300 shadow-xl flex items-center justify-center bg-gradient-to-tr from-emerald-600 to-teal-500 text-white text-4xl font-bold">
+          <img *ngIf="profilePictureUrl" [src]="profilePictureUrl" alt="Avatar" class="w-full h-full object-cover">
+          <span *ngIf="!profilePictureUrl">{{ getInitials() }}</span>
+        </div>
+        <label for="avatar-input" class="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer">
+          <ng-icon name="lucideCamera" class="text-white text-2xl"></ng-icon>
+        </label>
+        <input type="file" id="avatar-input" (change)="onFileSelected($event)" accept="image/*" class="hidden">
+      </div>
+
+      <h2 class="text-xl font-bold text-slate-800 dark:text-white">{{ name || 'Utilisateur ZirIA' }}</h2>
+      <span class="px-3 py-1 mt-2 text-xs font-semibold rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+        {{ currentUser()?.role || 'FARMER' }}
+      </span>
+
+      <!-- Tab Buttons Navigation -->
+      <div class="w-full mt-8 flex flex-col gap-2">
+        <button 
+          (click)="activeTab.set('personal')"
+          [class.active]="activeTab() === 'personal'"
+          class="nav-tab-btn flex items-center gap-3 w-full px-4 py-3 rounded-xl transition-all duration-300 text-left text-sm font-medium border border-transparent">
+          <ng-icon name="lucideUser" class="text-lg"></ng-icon>
+          <span class="flex-grow">Détails Personnels</span>
+        </button>
+
+        <button 
+          *ngIf="currentUser()?.role !== 'ADMIN'"
+          (click)="activeTab.set('role')"
+          [class.active]="activeTab() === 'role'"
+          class="nav-tab-btn flex items-center gap-3 w-full px-4 py-3 rounded-xl transition-all duration-300 text-left text-sm font-medium border border-transparent">
+          <ng-icon name="lucideBriefcase" class="text-lg"></ng-icon>
+          <span class="flex-grow">Paramètres de Rôle</span>
+        </button>
+
+        <button 
+          (click)="activeTab.set('security')"
+          [class.active]="activeTab() === 'security'"
+          class="nav-tab-btn flex items-center gap-3 w-full px-4 py-3 rounded-xl transition-all duration-300 text-left text-sm font-medium border border-transparent">
+          <ng-icon name="lucideLock" class="text-lg"></ng-icon>
+          <span class="flex-grow">Sécurité</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Right Panel: Dynamic Tab Fields -->
+    <div class="lg:col-span-8 glass-card p-6 md:p-8 relative">
+      <!-- Error Alert -->
+      <div *ngIf="saveError()" class="mb-6 p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-sm flex items-start gap-3">
+        <ng-icon name="lucideInfo" class="text-lg mt-0.5"></ng-icon>
+        <div>{{ saveError() }}</div>
+      </div>
+
+      <form (submit)="onSubmit(); $event.preventDefault()" class="space-y-6">
+        <!-- TAB 1: PERSONAL DETAILS -->
+        <div *ngIf="activeTab() === 'personal'" class="space-y-6 animate-fade-in">
+          <h3 class="text-lg font-bold text-slate-800 dark:text-white border-b border-white/5 pb-2">Informations Générales</h3>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Full Name -->
+            <div class="flex flex-col gap-2">
+              <label class="text-xs font-semibold text-slate-500 dark:text-slate-400">Nom Complet / الاسم الكامل</label>
+              <div class="relative">
+                <ng-icon name="lucideUser" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></ng-icon>
+                <input type="text" [(ngModel)]="name" name="name" required class="input-field" placeholder="Ex: Med Mouhib">
+              </div>
+            </div>
+
+            <!-- Phone Number -->
+            <div class="flex flex-col gap-2">
+              <label class="text-xs font-semibold text-slate-500 dark:text-slate-400">Numéro de Téléphone / رقم الهاتف</label>
+              <div class="relative">
+                <ng-icon name="lucidePhone" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></ng-icon>
+                <input type="text" [(ngModel)]="phone" name="phone" class="input-field" placeholder="+216 99 999 999">
+              </div>
+            </div>
+
+            <!-- Email -->
+            <div class="flex flex-col gap-2">
+              <label class="text-xs font-semibold text-slate-500 dark:text-slate-400">Adresse Email / البريد الإلكتروني</label>
+              <div class="relative">
+                <ng-icon name="lucideMail" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></ng-icon>
+                <input type="email" [(ngModel)]="email" name="email" required class="input-field" placeholder="nom@ziria.tn">
+              </div>
+            </div>
+
+            <!-- Language preference -->
+            <div class="flex flex-col gap-2">
+              <label class="text-xs font-semibold text-slate-500 dark:text-slate-400">Langue Préférée / اللغة المفضلة</label>
+              <div class="relative">
+                <ng-icon name="lucideGlobe" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></ng-icon>
+                <select [(ngModel)]="language" name="language" class="input-field select-field">
+                  <option value="fr">Français (Standard)</option>
+                  <option value="ar">العربية (Tounsi)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 2: ROLE SPECIFIC PARAMETERS -->
+        <div *ngIf="activeTab() === 'role'" class="space-y-6 animate-fade-in">
+          <h3 class="text-lg font-bold text-slate-800 dark:text-white border-b border-white/5 pb-2">
+            Données Métier (Rôle: {{ currentUser()?.role }})
+          </h3>
+
+          <!-- Role: FARMER -->
+          <div *ngIf="currentUser()?.role === 'FARMER'" class="space-y-4">
+            <div class="flex flex-col gap-2">
+              <label class="text-xs font-semibold text-slate-500 dark:text-slate-400">Votre Coopérative Agricole (SMSA)</label>
+              <div class="relative">
+                <ng-icon name="lucideGlobe" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></ng-icon>
+                <select [(ngModel)]="farmerCooperativeId" name="farmerCooperativeId" class="input-field select-field">
+                  <option value="">Sélectionner une SMSA...</option>
+                  <option *ngFor="let coop of cooperatives" [value]="coop.id">{{ coop.name }}</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Role: WORKER -->
+          <div *ngIf="currentUser()?.role === 'WORKER' || currentUser()?.role === 'AGRI_WORKER'" class="space-y-6">
+            <div class="flex flex-col gap-2">
+              <label class="text-xs font-semibold text-slate-500 dark:text-slate-400">Tarif Journalier Demandé (TND)</label>
+              <div class="relative">
+                <input type="number" [(ngModel)]="workerDailyRate" name="workerDailyRate" class="input-field" placeholder="50">
+              </div>
+            </div>
+
+            <div class="flex flex-col gap-2">
+              <label class="text-xs font-semibold text-slate-500 dark:text-slate-400">Présentation / Bio courte</label>
+              <textarea [(ngModel)]="workerBio" name="workerBio" rows="3" class="input-field py-3 h-auto" placeholder="Parlez-nous de votre expérience..."></textarea>
+            </div>
+
+            <div class="flex flex-col gap-3">
+              <label class="text-xs font-semibold text-slate-500 dark:text-slate-400">Compétences Agricoles</label>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div *ngFor="let skill of availableSkills" 
+                     (click)="toggleSkill(skill.code)"
+                     [class.selected]="workerSkills.includes(skill.code)"
+                     class="skill-checkbox flex items-center justify-between p-3 rounded-xl border border-white/5 cursor-pointer bg-white/5 hover:bg-emerald-500/10 hover:border-emerald-500/30 transition-all duration-300">
+                  <span class="text-sm font-medium text-slate-700 dark:text-slate-300">{{ skill.name }}</span>
+                  <div class="w-5 h-5 rounded-md border border-slate-400/50 flex items-center justify-center text-xs text-white" [class.bg-emerald-500]="workerSkills.includes(skill.code)">
+                    <ng-icon *ngIf="workerSkills.includes(skill.code)" name="lucideCheck"></ng-icon>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Role: DRIVER -->
+          <div *ngIf="currentUser()?.role === 'DRIVER'" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="flex flex-col gap-2">
+              <label class="text-xs font-semibold text-slate-500 dark:text-slate-400">Type de Véhicule</label>
+              <select [(ngModel)]="driverVehicleType" name="driverVehicleType" class="input-field select-field">
+                <option *ngFor="let vt of vehicleTypes" [value]="vt.code">{{ vt.name }}</option>
+              </select>
+            </div>
+
+            <div class="flex flex-col gap-2">
+              <label class="text-xs font-semibold text-slate-500 dark:text-slate-400">Capacité de Charge (Tonnes)</label>
+              <input type="number" [(ngModel)]="driverCapacity" name="driverCapacity" class="input-field">
+            </div>
+
+            <div class="flex flex-col gap-2">
+              <label class="text-xs font-semibold text-slate-500 dark:text-slate-400">Plaque d'Immatriculation</label>
+              <div class="relative">
+                <ng-icon name="lucideTruck" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></ng-icon>
+                <input type="text" [(ngModel)]="driverPlate" name="driverPlate" class="input-field" placeholder="123 TUN 4567">
+              </div>
+            </div>
+
+            <div class="flex flex-col gap-2">
+              <label class="text-xs font-semibold text-slate-500 dark:text-slate-400">Numéro de Permis</label>
+              <div class="relative">
+                <ng-icon name="lucideShield" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></ng-icon>
+                <input type="text" [(ngModel)]="driverLicense" name="driverLicense" class="input-field" placeholder="Permis N°">
+              </div>
+            </div>
+          </div>
+
+          <!-- Role: EXPERT -->
+          <div *ngIf="currentUser()?.role === 'EXPERT'" class="space-y-4">
+            <div class="flex flex-col gap-2">
+              <label class="text-xs font-semibold text-slate-500 dark:text-slate-400">Spécialité Agronomique / التخصص الفلاحي</label>
+              <div class="relative">
+                <ng-icon name="lucideBriefcase" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></ng-icon>
+                <input type="text" [(ngModel)]="expertSpeciality" name="expertSpeciality" class="input-field" placeholder="Ex: Arboriculture, Oléiculture">
+              </div>
+            </div>
+          </div>
+
+          <!-- Role: EQUIP_OWNER -->
+          <div *ngIf="currentUser()?.role === 'EQUIP_OWNER'" class="space-y-4">
+            <div class="flex flex-col gap-2">
+              <label class="text-xs font-semibold text-slate-500 dark:text-slate-400">Type de Matériel Agricole</label>
+              <input type="text" [(ngModel)]="equipType" name="equipType" class="input-field" placeholder="Ex: Moissonneuse, Tracteur Massey">
+            </div>
+          </div>
+
+          <!-- Role: FARMER_AMBASSADOR -->
+          <div *ngIf="currentUser()?.role === 'FARMER_AMBASSADOR'" class="space-y-4">
+            <div class="flex flex-col gap-2">
+              <label class="text-xs font-semibold text-slate-500 dark:text-slate-400">Secteur / Zone d'Activité Ambassadeur</label>
+              <select [(ngModel)]="ambassadorZoneId" name="ambassadorZoneId" class="input-field select-field">
+                <option value="">Sélectionner votre secteur...</option>
+                <option *ngFor="let zone of zones" [value]="zone.id">{{ zone.name }}</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Role: SUPPLIER -->
+          <div *ngIf="currentUser()?.role === 'SUPPLIER'" class="space-y-4">
+            <div class="flex flex-col gap-2">
+              <label class="text-xs font-semibold text-slate-500 dark:text-slate-400">Nom commercial de l'Entreprise</label>
+              <input type="text" [(ngModel)]="supplierBusinessName" name="supplierBusinessName" class="input-field" placeholder="ZirIA Supplier Co.">
+            </div>
+
+            <div class="flex flex-col gap-2">
+              <label class="text-xs font-semibold text-slate-500 dark:text-slate-400">Description Commerciale</label>
+              <textarea [(ngModel)]="supplierDescription" name="supplierDescription" rows="4" class="input-field py-3 h-auto" placeholder="Présentation commerciale..."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 3: SECURITY / PASSWORD CHANGE -->
+        <div *ngIf="activeTab() === 'security'" class="space-y-6 animate-fade-in">
+          <h3 class="text-lg font-bold text-slate-800 dark:text-white border-b border-white/5 pb-2">Sécurité et Authentification</h3>
+          
+          <div class="grid grid-cols-1 gap-6 max-w-md">
+            <!-- New Password -->
+            <div class="flex flex-col gap-2">
+              <label class="text-xs font-semibold text-slate-500 dark:text-slate-400">Nouveau Mot de Passe / كلمة المرور الجديدة</label>
+              <div class="relative">
+                <ng-icon name="lucideLock" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></ng-icon>
+                <input type="password" [(ngModel)]="newPassword" name="newPassword" class="input-field" placeholder="Minimum 6 caractères">
+              </div>
+            </div>
+
+            <!-- Confirm Password -->
+            <div class="flex flex-col gap-2">
+              <label class="text-xs font-semibold text-slate-500 dark:text-slate-400">Confirmer le Mot de Passe / تأكيد كلمة المرور</label>
+              <div class="relative">
+                <ng-icon name="lucideLock" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></ng-icon>
+                <input type="password" [(ngModel)]="confirmPassword" name="confirmPassword" class="input-field" placeholder="Retapez le mot de passe">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Save Button -->
+        <div class="border-t border-white/5 pt-6 flex items-center justify-end">
+          <button 
+            type="submit" 
+            [disabled]="isSaving()"
+            class="submit-btn flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-semibold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-emerald-500/20">
+            <ng-icon *ngIf="!isSaving()" name="lucideSave" class="text-lg"></ng-icon>
+            <span *ngIf="!isSaving()">Enregistrer les Modifications</span>
+            <span *ngIf="isSaving()" class="loader w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+            <span *ngIf="isSaving()">Mise à jour...</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

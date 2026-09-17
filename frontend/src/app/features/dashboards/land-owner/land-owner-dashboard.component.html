@@ -1,0 +1,200 @@
+<div class="p-6 max-w-[1200px] mx-auto w-full space-y-6">
+  <!-- KPI Strip -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div class="zir-glass-panel p-4"><p class="text-xs text-slate-500 uppercase tracking-widest mb-1">Annonces</p><p class="text-2xl font-black text-slate-800 dark:text-white">{{ listings().length }}</p></div>
+    <div class="zir-glass-panel p-4"><p class="text-xs text-slate-500 uppercase tracking-widest mb-1">Enchères actives</p><p class="text-2xl font-black text-amber-500">{{ activeAuctions().length }}</p></div>
+    <div class="zir-glass-panel p-4 col-span-2"><p class="text-xs text-slate-500 uppercase tracking-widest mb-1">Valeur totale</p><p class="text-2xl font-black text-emerald-500">{{ totalListingValue() | number:'1.0-0' }} TND</p></div>
+  </div>
+
+  <!-- Nav -->
+  <div class="flex gap-3">
+    <button (click)="activeView.set('listings')" [class]="activeView()==='listings' ? 'px-4 py-2 bg-slate-800 dark:bg-white/10 text-white rounded-xl text-sm font-bold' : 'px-4 py-2 text-sm text-slate-500 hover:text-slate-800 dark:hover:text-white'">Mes Annonces</button>
+    <button (click)="activeView.set('auction-wizard'); wizardStep.set(1)" class="flex items-center gap-2 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-amber-500/30">
+      <ng-icon name="lucideGavel"></ng-icon> Nouvelle Enchère
+    </button>
+  </div>
+
+  <!-- LISTINGS VIEW -->
+  @if (activeView() === 'listings') {
+    <div class="space-y-3">
+      @if (isLoading()) { <div class="h-24 rounded-2xl animate-pulse bg-slate-200/50 dark:bg-white/5"></div> }
+      @else if (listings().length === 0) {
+        <div class="zir-glass-panel p-14 text-center"><p class="text-5xl mb-3 text-slate-300"><ng-icon name="lucideLeaf"></ng-icon></p><p class="text-slate-400 text-sm">Aucune annonce publiée.</p></div>
+      } @else {
+        @for (l of listings(); track l.id) {
+          <div class="zir-glass-panel p-4 flex flex-col md:flex-row items-start md:items-center gap-4">
+            <div class="flex-1 space-y-1">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="px-2 py-0.5 text-xs font-bold rounded-md border {{ statusBadge[l.status] }}">{{ l.status }}</span>
+                <span class="text-xs text-slate-400 border border-slate-200 dark:border-white/10 rounded-md px-2 py-0.5">{{ l.listing_type }}</span>
+                <h3 class="font-bold text-slate-800 dark:text-white">{{ l.surface_ha }} ha — {{ l.governorate ?? 'N/A' }}</h3>
+              </div>
+              <div class="flex flex-wrap gap-3 text-sm text-slate-500">
+                <span>{{ l.price_per_ha | number:'1.0-0' }} TND/ha</span>
+                @if (l.soil_type) { <span>{{ l.soil_type }}</span> }
+                @if (l.water_access) { <span>{{ l.water_access }}</span> }
+              </div>
+            </div>
+            <div class="flex gap-2 shrink-0">
+              @if (activeAuctions().length > 0) {
+                <button (click)="watchAuction(activeAuctions()[0])" class="px-3 py-2 text-xs font-bold rounded-xl bg-amber-500/10 text-amber-600 border border-amber-500/20 flex items-center gap-1">
+                  <ng-icon name="lucideActivity"></ng-icon> Live
+                </button>
+              }
+              <button (click)="deleteListing(l.id)" class="p-2 rounded-xl border border-red-500/20 bg-red-500/10 text-red-500 hover:bg-red-500/20">
+                <ng-icon name="lucideTrash2" class="text-sm"></ng-icon>
+              </button>
+            </div>
+          </div>
+        }
+      }
+    </div>
+    @if (auctions().length > 0) {
+      <div class="space-y-3 mt-4">
+        <h2 class="text-lg font-bold text-slate-800 dark:text-white">Enchères</h2>
+        @for (a of auctions(); track a.id) {
+          <div class="zir-glass-panel p-4 flex flex-col md:flex-row items-start md:items-center gap-4">
+            <div class="flex-1 space-y-1">
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 text-xs font-bold rounded-full border {{ auctionStatusBadge[a.status] }}">{{ a.status }}</span>
+                <p class="font-bold text-slate-800 dark:text-white">Parcelle {{ a.parcel_id | slice:0:8 }}</p>
+              </div>
+              <div class="flex gap-4 text-sm text-slate-500">
+                <span>Mise min: {{ a.min_increment | number:'1.0-0' }} TND</span>
+                <span>Fin: {{ a.end_at | date:'dd/MM HH:mm' }}</span>
+                @if (a.current_bid) { <span class="text-emerald-600 font-bold">{{ a.current_bid | number:'1.0-0' }} TND</span> }
+              </div>
+            </div>
+            <button (click)="watchAuction(a)" class="flex items-center gap-2 px-4 py-2 text-sm font-bold rounded-xl bg-slate-800 dark:bg-white/10 text-white">
+              <ng-icon name="lucideActivity"></ng-icon> Suivi Live
+            </button>
+          </div>
+        }
+      </div>
+    }
+  }
+
+  <!-- WIZARD VIEW -->
+  @if (activeView() === 'auction-wizard') {
+    <div class="max-w-2xl mx-auto">
+      <div class="flex gap-1.5 mb-8">
+        @for (s of [1,2,3,4,5]; track s) {
+          <div class="flex-1 h-1.5 rounded-full" [class]="wizardStep() >= s ? 'bg-amber-500' : 'bg-slate-200 dark:bg-white/10'"></div>
+        }
+      </div>
+      <div class="zir-glass-panel p-6 space-y-5">
+
+        @if (wizardStep() === 1) {
+          <h2 class="text-xl font-bold text-slate-800 dark:text-white">1. Sélection Parcelle</h2>
+          <div class="space-y-3">
+            @for (l of listings(); track l.id) {
+              <button (click)="wizardData.parcel_id = l.id" class="w-full text-left p-4 rounded-xl border-2 transition-all" [class]="wizardData.parcel_id === l.id ? 'border-amber-500 bg-amber-500/5' : 'border-slate-200 dark:border-white/10'">
+                <p class="font-bold text-slate-800 dark:text-white">{{ l.surface_ha }} ha — {{ l.governorate }}</p>
+                <p class="text-xs text-slate-400 mt-0.5">{{ l.soil_type }} · {{ l.listing_type }}</p>
+              </button>
+            }
+          </div>
+          <button (click)="goWizardStep(2)" [disabled]="!wizardData.parcel_id" class="w-full py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl disabled:opacity-40">Continuer → Estimation IA</button>
+        }
+
+        @if (wizardStep() === 2) {
+          <h2 class="text-xl font-bold text-slate-800 dark:text-white">2. Estimation IA</h2>
+          <div class="p-6 rounded-2xl bg-amber-500/5 border border-amber-500/20 text-center">
+            <p class="text-xs text-amber-600 font-bold uppercase tracking-widest mb-2">Prix recommandé XGBoost</p>
+            <p class="text-4xl font-black text-amber-500">{{ wizardData.aiEstimate | number:'1.0-0' }} TND</p>
+          </div>
+          <div>
+            <label class="text-xs font-bold text-slate-500 uppercase mb-1.5 block">Prix de réserve secret (TND)</label>
+            <input type="number" [(ngModel)]="wizardData.reserve_price_secret" class="zir-input w-full" />
+          </div>
+          <div class="flex gap-3">
+            <button (click)="goWizardStep(1)" class="flex-1 py-3 border border-slate-200 dark:border-white/10 rounded-xl text-sm text-slate-500">← Retour</button>
+            <button (click)="goWizardStep(3)" class="flex-1 py-3 bg-amber-500 text-white font-bold rounded-xl">Continuer → Règles</button>
+          </div>
+        }
+
+        @if (wizardStep() === 3) {
+          <h2 class="text-xl font-bold text-slate-800 dark:text-white">3. Règles d'Enchère</h2>
+          <div class="space-y-4">
+            <div><label class="text-xs font-bold text-slate-500 uppercase mb-1.5 block">Mise minimale (TND)</label><input type="number" [(ngModel)]="wizardData.min_increment" class="zir-input w-full" /></div>
+            <div><label class="text-xs font-bold text-slate-500 uppercase mb-1.5 block">Clôture</label><input type="datetime-local" [(ngModel)]="wizardData.end_at" class="zir-input w-full" /></div>
+            <div><label class="text-xs font-bold text-slate-500 uppercase mb-1.5 block">Extension auto (min)</label><input type="number" [(ngModel)]="wizardData.auto_extend_minutes" min="0" max="30" class="zir-input w-full" /></div>
+          </div>
+          <div class="flex gap-3">
+            <button (click)="goWizardStep(2)" class="flex-1 py-3 border border-slate-200 dark:border-white/10 rounded-xl text-sm text-slate-500">← Retour</button>
+            <button (click)="goWizardStep(4)" [disabled]="!wizardData.end_at" class="flex-1 py-3 bg-amber-500 text-white font-bold rounded-xl disabled:opacity-40">Continuer → Documents</button>
+          </div>
+        }
+
+        @if (wizardStep() === 4) {
+          <h2 class="text-xl font-bold text-slate-800 dark:text-white">4. Documents</h2>
+          <div class="border-2 border-dashed border-slate-200 dark:border-white/10 rounded-2xl p-10 text-center cursor-pointer hover:border-amber-400 transition-colors" (click)="wizardData.documentsUploaded = true">
+            @if (wizardData.documentsUploaded) {
+              <div class="flex flex-col items-center gap-2 text-emerald-500"><ng-icon name="lucideCheckCircle" class="text-4xl"></ng-icon><p class="font-bold">Documents téléchargés</p></div>
+            } @else {
+              <p class="text-slate-400 text-sm">Cliquez pour télécharger (PDF, JPG)</p>
+            }
+          </div>
+          <div class="flex gap-3">
+            <button (click)="goWizardStep(3)" class="flex-1 py-3 border border-slate-200 dark:border-white/10 rounded-xl text-sm text-slate-500">← Retour</button>
+            <button (click)="goWizardStep(5)" class="flex-1 py-3 bg-amber-500 text-white font-bold rounded-xl">Continuer → Activation</button>
+          </div>
+        }
+
+        @if (wizardStep() === 5) {
+          <h2 class="text-xl font-bold text-slate-800 dark:text-white">5. Activation</h2>
+          <div class="space-y-2 text-sm">
+            <div class="flex justify-between py-2 border-b border-slate-100 dark:border-white/5"><span class="text-slate-400">Parcelle</span><span class="font-bold">{{ wizardData.parcel_id | slice:0:12 }}…</span></div>
+            <div class="flex justify-between py-2 border-b border-slate-100 dark:border-white/5"><span class="text-slate-400">Prix de réserve</span><span class="font-bold">{{ wizardData.reserve_price_secret | number:'1.0-0' }} TND</span></div>
+            <div class="flex justify-between py-2 border-b border-slate-100 dark:border-white/5"><span class="text-slate-400">Mise minimale</span><span class="font-bold">{{ wizardData.min_increment | number:'1.0-0' }} TND</span></div>
+            <div class="flex justify-between py-2"><span class="text-slate-400">Clôture</span><span class="font-bold">{{ wizardData.end_at | date:'dd/MM/yyyy HH:mm' }}</span></div>
+          </div>
+          <div class="flex gap-3">
+            <button (click)="goWizardStep(4)" class="flex-1 py-3 border border-slate-200 dark:border-white/10 rounded-xl text-sm text-slate-500">← Retour</button>
+            <button (click)="submitAuction()" class="flex-1 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-black rounded-xl shadow-lg shadow-emerald-500/30 flex items-center justify-center gap-2">
+              <ng-icon name="lucideFlame"></ng-icon> Lancer l'Enchère
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- LIVE AUCTION VIEW -->
+  @if (activeView() === 'auction-live' && watchedAuction()) {
+    <div class="max-w-3xl mx-auto space-y-4">
+      <div class="flex items-center gap-3">
+        <button (click)="activeView.set('listings')" class="text-slate-400 hover:text-slate-600">← Retour</button>
+        <h2 class="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping inline-block"></span> Enchère en Direct
+        </h2>
+      </div>
+      <div class="zir-glass-panel p-8 text-center space-y-2">
+        <p class="text-xs text-slate-400 uppercase tracking-widest">Offre la plus haute</p>
+        <p class="text-5xl font-black text-amber-500">{{ (watchedAuction()?.current_bid ?? 0) | number:'1.0-0' }} TND</p>
+        <p class="text-slate-400 text-sm">{{ watchedAuction()?.bid_count ?? 0 }} enchérisseur(s)</p>
+        <p class="text-xs text-red-500 flex items-center gap-1 justify-center"><ng-icon name="lucideClock"></ng-icon> Fin : {{ watchedAuction()?.end_at | date:'dd/MM/yyyy HH:mm' }}</p>
+      </div>
+      @if (bidHistory().length > 1) {
+        <div class="zir-glass-panel p-5">
+          <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Courbe des Offres</p>
+          <svg viewBox="0 0 240 60" class="w-full h-16" preserveAspectRatio="none">
+            <defs><linearGradient id="bidGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#F59E0B" stop-opacity="0.3"/><stop offset="100%" stop-color="#F59E0B" stop-opacity="0"/></linearGradient></defs>
+            <path [attr.d]="sparklinePath() + ' V60 H0 Z'" fill="url(#bidGrad)"/>
+            <path [attr.d]="sparklinePath()" fill="none" stroke="#F59E0B" stroke-width="2"/>
+          </svg>
+        </div>
+      }
+      <div class="zir-glass-panel p-4 space-y-2 max-h-64 overflow-y-auto">
+        <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Historique</p>
+        @for (bid of bidHistory().slice().reverse(); track $index) {
+          <div class="flex items-center justify-between py-1.5 border-b border-slate-100 dark:border-white/5 last:border-0">
+            <span class="text-xs text-slate-400">{{ bid.time }}</span>
+            <span class="font-bold text-sm text-slate-800 dark:text-white">{{ bid.amount | number:'1.0-0' }} TND</span>
+          </div>
+        }
+        @if (bidHistory().length === 0) { <p class="text-center text-slate-400 text-sm py-4">Aucune offre.</p> }
+      </div>
+    </div>
+  }
+</div>

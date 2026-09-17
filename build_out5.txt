@@ -1,0 +1,50 @@
+[33m>[39m Building...
+[32m√[39m Building...
+[1mInitial chunk files[22m[2m | [22m[1mNames[22m                        [2m | [22m [1mRaw size[22m
+[32mchunk-YOXJH6FH.js[39m  [2m | [22m[2m-[22m                            [2m | [22m  [36m1.13 MB[39m[2m | [22m
+[32mmain.js[39m            [2m | [22m[2mmain[22m                         [2m | [22m[36m939.23 kB[39m[2m | [22m
+[32mchunk-67X6LTDJ.js[39m  [2m | [22m[2m-[22m                            [2m | [22m[36m440.56 kB[39m[2m | [22m
+[32mchunk-SDMDNDUJ.js[39m  [2m | [22m[2m-[22m                            [2m | [22m[36m387.25 kB[39m[2m | [22m
+[32mchunk-BUJBVQBL.js[39m  [2m | [22m[2m-[22m                            [2m | [22m[36m211.38 kB[39m[2m | [22m
+[32mchunk-UEAACZ2Z.js[39m  [2m | [22m[2m-[22m                            [2m | [22m[36m152.86 kB[39m[2m | [22m
+[32mstyles.css[39m         [2m | [22m[2mstyles[22m                       [2m | [22m[36m114.03 kB[39m[2m | [22m
+[32mchunk-JZPCLBMO.js[39m  [2m | [22m[2m-[22m                            [2m | [22m[36m106.46 kB[39m[2m | [22m
+[32mpolyfills.js[39m       [2m | [22m[2mpolyfills[22m                    [2m | [22m [36m92.92 kB[39m[2m | [22m
+[32mchunk-TU7VJWT7.js[39m  [2m | [22m[2m-[22m                            [2m | [22m [36m79.95 kB[39m[2m | [22m
+[32mchunk-EHL7L3LP.js[39m  [2m | [22m[2m-[22m                            [2m | [22m [36m49.00 kB[39m[2m | [22m
+[32mchunk-5CLRLHX4.js[39m  [2m | [22m[2m-[22m                            [2m | [22m [36m37.88 kB[39m[2m | [22m
+[32mchunk-NCRR6NS6.js[39m  [2m | [22m[2m-[22m                            [2m | [22m [36m22.74 kB[39m[2m | [22m
+[32mchunk-WMDOGQUI.js[39m  [2m | [22m[2m-[22m                            [2m | [22m  [36m9.57 kB[39m[2m | [22m
+[32mchunk-FFYAI4D3.js[39m  [2m | [22m[2m-[22m                            [2m | [22m  [36m5.89 kB[39m[2m | [22m
+[32mchunk-RTE6GU6B.js[39m  [2m | [22m[2m-[22m                            [2m | [22m  [36m5.07 kB[39m[2m | [22m
+[32mchunk-4C6TNFG6.js[39m  [2m | [22m[2m-[22m                            [2m | [22m  [36m3.48 kB[39m[2m | [22m
+[32mchunk-PIW2SP2J.js[39m  [2m | [22m[2m-[22m                            [2m | [22m  [36m3.41 kB[39m[2m | [22m
+[32mchunk-IBAX7YGW.js[39m  [2m | [22m[2m-[22m                            [2m | [22m  [36m2.82 kB[39m[2m | [22m
+[32mchunk-YI2AJESF.js[39m  [2m | [22m[2m-[22m                            [2m | [22m  [36m2.67 kB[39m[2m | [22m
+[32mchunk-EVL75BR5.js[39m  [2m | [22m[2m-[22m                            [2m | [22m  [36m1.78 kB[39m[2m | [22m
+[32mchunk-M243CY6E.js[39m  [2m | [22m[2m-[22m                            [2m | [22m[36m217 bytes[39m[2m | [22m
+
+[1m [22m                  [2m | [22m[1mInitial total[22m                [2m | [22m  [1m3.80 MB[22m
+
+[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                        [2m | [22m [1mRaw size[22m
+[32mchunk-UJXWGZZD.js[39m  [2m | [22m[2m-[22m                            [2m | [22m[36m737.81 kB[39m[2m | [22m
+[32mchunk-EEDLLUDF.js[39m  [2m | [22m[2mfarmer-erp-component[22m         [2m | [22m[36m575.18 kB[39m[2m | [22m
+[32mchunk-PUYRXDB3.js[39m  [2m | [22m[2mzirfeed-component[22m            [2m | [22m[36m497.40 kB[39m[2m | [22m
+[32mchunk-IED6CQOD.js[39m  [2m | [22m[2mhtml2canvas[22m                  [2m | [22m[36m399.42 kB[39m[2m | [22m
+[32mchunk-5W3ZKFK4.js[39m  [2m | [22m[2mindex-es[22m                     [2m | [22m[36m368.44 kB[39m[2m | [22m
+[32mchunk-ZDJCVC2A.js[39m  [2m | [22m[2msupplier-mon-bureau-component[22m[2m | [22m[36m266.24 kB[39m[2m | [22m
+[32mchunk-IDTHI24J.js[39m  [2m | [22m[2mfarmer-marketplace-component[22m [2m | [22m[36m237.17 kB[39m[2m | [22m
+[32mchunk-35GV3T7G.js[39m  [2m | [22m[2msupplier-crm-component[22m       [2m | [22m[36m191.53 kB[39m[2m | [22m
+[32mchunk-WOCPPMIJ.js[39m  [2m | [22m[2mpublic-marketplace-component[22m [2m | [22m[36m161.45 kB[39m[2m | [22m
+[32mchunk-FPPUVBIE.js[39m  [2m | [22m[2mparcel-map-component[22m         [2m | [22m[36m159.56 kB[39m[2m | [22m
+[32mchunk-JXD7AGTZ.js[39m  [2m | [22m[2mfarmer-diagnostic-component[22m  [2m | [22m[36m142.38 kB[39m[2m | [22m
+[32mchunk-L3LFWEMA.js[39m  [2m | [22m[2mfarmer-supplies-component[22m    [2m | [22m[36m126.10 kB[39m[2m | [22m
+[32mchunk-HMDH5ENC.js[39m  [2m | [22m[2mworker-jobs-component[22m        [2m | [22m[36m113.21 kB[39m[2m | [22m
+[32mchunk-VYBLDDDM.js[39m  [2m | [22m[2mworker-profile-component[22m     [2m | [22m[36m102.83 kB[39m[2m | [22m
+[32mchunk-NAGNYQSI.js[39m  [2m | [22m[2mdriver-missions-component[22m    [2m | [22m [36m95.36 kB[39m[2m | [22m
+[2m...and 63 more lazy chunks files. Use "--verbose" to show all the files.[22m
+
+Application bundle generation complete. [30.133 seconds] - 2026-06-04T00:43:24.176Z
+
+Output location: d:\ZirIA\frontend\dist\frontend
+

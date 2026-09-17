@@ -1,0 +1,473 @@
+<div class="admin-users">
+
+  <!-- ═══ HEADER ═══ -->
+  <div class="page-header">
+    <div class="title-area">
+      <h2><ng-icon name="lucideUsers"></ng-icon> Gestion des Utilisateurs</h2>
+      <p>{{ total() }} utilisateurs enregistrés sur la plateforme</p>
+    </div>
+    <div class="header-actions">
+      <div class="tabs-pills">
+        <button class="tab-pill" [class.active]="activeTab() === 'ALL'" (click)="setTab('ALL')">
+          Tous les utilisateurs
+        </button>
+        <button class="tab-pill warning" [class.active]="activeTab() === 'PENDING'" (click)="setTab('PENDING')">
+          ⚠️ En attente
+          @if (pendingUsers().length > 0) {
+            <span class="badge">{{ pendingUsers().length }}</span>
+          }
+        </button>
+      </div>
+      <button class="btn-add-user" (click)="openAddModal()">
+        <ng-icon name="lucideUserPlus"></ng-icon>
+        Ajouter
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══ ALL USERS TAB ═══ -->
+  @if (activeTab() === 'ALL') {
+
+    <!-- Filter Bar -->
+    <div class="filter-bar zir-card">
+      <div class="search-wrap">
+        <ng-icon name="lucideSearch" class="search-icon"></ng-icon>
+        <input class="zir-input search-input" type="text" placeholder="Rechercher par nom ou email..."
+               [(ngModel)]="searchQuery" (keyup.enter)="applyFilters()">
+      </div>
+      <select class="zir-input" [(ngModel)]="roleFilter" (change)="applyFilters()">
+        <option value="">Tous les rôles</option>
+        @for (r of roles; track r) { <option [value]="r">{{ getRoleLabel(r) }}</option> }
+      </select>
+      <select class="zir-input" [(ngModel)]="govFilter" (change)="applyFilters()">
+        <option value="">Tous les gouvernorats</option>
+        @for (g of governorates; track g) { <option [value]="g">{{ g }}</option> }
+      </select>
+      <select class="zir-input" [(ngModel)]="statusFilter" (change)="applyFilters()">
+        <option value="">Tous statuts</option>
+        <option value="ACTIVE">✅ Actifs</option>
+        <option value="SUSPENDED">⏸ Suspendus</option>
+        <option value="BANNED">🚫 Bannis</option>
+        <option value="DELETED">🗑 Supprimés</option>
+      </select>
+      <select class="zir-input" [(ngModel)]="planFilter" (change)="applyFilters()">
+        <option value="">Tous plans</option>
+        <option value="FREE">🌱 Gratuit</option>
+        <option value="STARTER">⚡ Starter</option>
+        <option value="PRO">👑 Pro</option>
+        <option value="BUSINESS">💎 Business</option>
+      </select>
+      <button class="btn-clear" (click)="clearFilters()">
+        <ng-icon name="lucideRefreshCw"></ng-icon>
+      </button>
+    </div>
+
+    <!-- Table -->
+    <div class="zir-card table-card">
+      @if (isLoading()) {
+        <div class="loading-state">
+          <ng-icon name="lucideLoader" class="spin"></ng-icon>
+          Chargement des utilisateurs...
+        </div>
+      } @else {
+        <div class="table-wrapper">
+          <table class="zir-table">
+            <thead>
+              <tr>
+                <th>Utilisateur</th>
+                <th>Rôle</th>
+                <th>Gouvernorat</th>
+                <th>Plan</th>
+                <th>Statut</th>
+                <th>Inscrit le</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (user of users(); track user.id) {
+                <tr class="user-row" (click)="openUserDrawer(user.id)">
+                  <td>
+                    <div class="user-cell">
+                      <div class="avatar" [class.suspended]="!user.verified">{{ user.name.charAt(0).toUpperCase() }}</div>
+                      <span class="font-medium">{{ user.name }}</span>
+                    </div>
+                  </td>
+                  <td><span class="role-badge" [ngClass]="getRoleColor(user.role)">{{ getRoleEmoji(user.role) }} {{ getRoleLabel(user.role) }}</span></td>
+                  <td class="text-muted">{{ user.governorate || '—' }}</td>
+                  <td><span class="plan-pill" [style.background]="getPlanColor(user.plan) + '18'" [style.color]="getPlanColor(user.plan)">{{ getPlanLabel(user.plan) }}</span></td>
+                  <td>
+                    <span class="status-badge" [class.ok]="user.verified && !user.is_banned" [class.pending]="!user.verified && !user.is_banned" [class.banned]="user.is_banned">
+                      @if (user.is_banned) { <ng-icon name="lucideBan"></ng-icon> Banni }
+                      @else if (user.verified) { <ng-icon name="lucideCheckCircle"></ng-icon> Actif }
+                      @else { <ng-icon name="lucideClock"></ng-icon> Suspendu }
+                    </span>
+                  </td>
+                  <td class="text-muted text-sm">{{ user.created_at | date:'dd/MM/yyyy' }}</td>
+                  <td>
+                    <button class="btn-eye" (click)="openUserDrawer(user.id); $event.stopPropagation()" title="Détails">
+                      <ng-icon name="lucideEye"></ng-icon>
+                    </button>
+                  </td>
+                </tr>
+              } @empty {
+                <tr><td colspan="7" class="empty-row">Aucun utilisateur trouvé.</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination">
+          <span class="page-info">Page {{ page }} / {{ totalPages }} · {{ total() }} résultats</span>
+          <div class="page-btns">
+            <button class="pg-btn" (click)="prevPage()" [disabled]="page === 1">
+              <ng-icon name="lucideChevronLeft"></ng-icon>
+            </button>
+            <button class="pg-btn" (click)="nextPage()" [disabled]="page >= totalPages">
+              <ng-icon name="lucideChevronRight"></ng-icon>
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- ═══ PENDING TAB ═══ -->
+  @if (activeTab() === 'PENDING') {
+    <div class="pending-list">
+      @for (user of pendingUsers(); track user.id) {
+        <div class="pending-card zir-card" [class.fade-out]="user._animating">
+          <div class="card-left">
+            <div class="avatar-lg">{{ user.name.charAt(0).toUpperCase() }}</div>
+            <div class="user-info">
+              <h4>{{ getRoleEmoji(user.role) }} {{ user.name }}</h4>
+              <p>{{ user.email }} · <strong>{{ getRoleLabel(user.role) }}</strong></p>
+              <span class="text-muted-sm">{{ user.governorate }} · Inscrit le {{ user.created_at | date:'dd/MM/yyyy' }}</span>
+            </div>
+          </div>
+          <div class="card-right">
+            <button class="btn-approve-big" (click)="approveUser(user)" [disabled]="user._approving || user._rejecting">
+              <ng-icon [name]="user._approving ? 'lucideLoader' : 'lucideCheckCircle'" [class.spin]="user._approving"></ng-icon>
+              Approuver
+            </button>
+            <button class="btn-reject-big" (click)="rejectUser(user)" [disabled]="user._approving || user._rejecting">
+              <ng-icon [name]="user._rejecting ? 'lucideLoader' : 'lucideXCircle'" [class.spin]="user._rejecting"></ng-icon>
+              Rejeter
+            </button>
+          </div>
+        </div>
+      } @empty {
+        <div class="empty-verify zir-card">
+          <ng-icon name="lucideShieldCheck"></ng-icon>
+          <p>Aucune vérification en attente — tout est à jour ✅</p>
+        </div>
+      }
+    </div>
+  }
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     RIGHT DRAWER
+════════════════════════════════════════════════════════ -->
+<div class="drawer-overlay" [class.visible]="selectedUser()" (click)="closeUserDrawer()"></div>
+<div class="user-drawer" [class.open]="selectedUser()">
+  @if (selectedUser()) {
+    <button class="drawer-close" (click)="closeUserDrawer()">
+      <ng-icon name="lucideX"></ng-icon>
+    </button>
+
+    @if (isLoadingDetails()) {
+      <div class="drawer-loading">
+        <ng-icon name="lucideLoader" class="spin"></ng-icon>
+        <p>Chargement...</p>
+      </div>
+    } @else if (selectedUser().user) {
+      <!-- DRAWER HEADER -->
+      <div class="drawer-hero">
+        <div class="drawer-avatar">{{ getRoleEmoji(selectedUser().user.role) }}</div>
+        <div>
+          <h2 class="drawer-name">{{ selectedUser().user.name }}</h2>
+          <div class="drawer-meta-row">
+            <span class="drawer-role-badge">{{ getRoleLabel(selectedUser().user.role) }}</span>
+            <span class="drawer-status" [class.active]="selectedUser().user.verified && !selectedUser().user.is_banned" [class.suspended]="!selectedUser().user.verified && !selectedUser().user.is_banned" [class.banned]="selectedUser().user.is_banned">
+              @if (selectedUser().user.is_banned) { ● Banni }
+              @else if (selectedUser().user.verified) { ● Actif }
+              @else { ● Suspendu }
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- DRAWER TABS -->
+      <div class="drawer-tabs">
+        <button [class.active]="drawerTab() === 'PROFILE'" (click)="setDrawerTab('PROFILE')">
+          <ng-icon name="lucideUsers"></ng-icon> Profil
+        </button>
+        <button [class.active]="drawerTab() === 'PAYMENTS'" (click)="setDrawerTab('PAYMENTS')">
+          <ng-icon name="lucideBanknote"></ng-icon> Paiements
+        </button>
+        <button [class.active]="drawerTab() === 'ACTIONS'" (click)="setDrawerTab('ACTIONS')">
+          <ng-icon name="lucideShield"></ng-icon> Actions
+        </button>
+      </div>
+
+      <div class="drawer-body">
+
+        <!-- ─── PROFILE TAB ─── -->
+        @if (drawerTab() === 'PROFILE') {
+          <div class="info-section">
+            <div class="info-row">
+              <ng-icon name="lucideUsers" class="info-icon"></ng-icon>
+              <span class="info-label">Email</span>
+              <span class="info-val">{{ selectedUser().user.email || '—' }}</span>
+            </div>
+            <div class="info-row">
+              <ng-icon name="lucidePhone" class="info-icon"></ng-icon>
+              <span class="info-label">Téléphone</span>
+              <span class="info-val">{{ selectedUser().user.phone || '—' }}</span>
+            </div>
+            <div class="info-row">
+              <ng-icon name="lucideMapPin" class="info-icon"></ng-icon>
+              <span class="info-label">Gouvernorat</span>
+              <span class="info-val">{{ selectedUser().user.governorate || '—' }}</span>
+            </div>
+            <div class="info-row">
+              <ng-icon name="lucideCalendar" class="info-icon"></ng-icon>
+              <span class="info-label">Inscrit le</span>
+              <span class="info-val">{{ selectedUser().user.created_at | date:'dd MMMM yyyy' }}</span>
+            </div>
+            @if (selectedUser().user.expert_type) {
+              <div class="info-row">
+                <ng-icon name="lucideActivity" class="info-icon"></ng-icon>
+                <span class="info-label">Spécialité</span>
+                <span class="info-val">{{ getExpertTypeLabel(selectedUser().user.expert_type) }}</span>
+              </div>
+            }
+            @if (selectedUser().user.activity_type) {
+              <div class="info-row">
+                <ng-icon name="lucideActivity" class="info-icon"></ng-icon>
+                <span class="info-label">Activité</span>
+                <span class="info-val">{{ selectedUser().user.activity_type }}</span>
+              </div>
+            }
+          </div>
+
+          <!-- Activity KPIs -->
+          <div class="kpi-tiles">
+            <div class="kpi-tile">
+              <ng-icon name="lucideActivity"></ng-icon>
+              <span class="count">{{ selectedUser().stats?.diagnostics || 0 }}</span>
+              <span class="label">Diagnostics</span>
+            </div>
+            <div class="kpi-tile">
+              <ng-icon name="lucidePackage"></ng-icon>
+              <span class="count">{{ selectedUser().stats?.activeListings || 0 }}</span>
+              <span class="label">Annonces</span>
+            </div>
+            <div class="kpi-tile">
+              <ng-icon name="lucideShoppingCart"></ng-icon>
+              <span class="count">{{ selectedUser().stats?.orders || 0 }}</span>
+              <span class="label">Commandes</span>
+            </div>
+          </div>
+
+          <!-- Subscription -->
+          <div class="sub-section">
+            <h4><ng-icon name="lucideCrown"></ng-icon> Abonnement Actuel</h4>
+            <div class="sub-card">
+              @if (selectedUser().subscription) {
+                <div class="sub-plan-pill">{{ getPlanLabel(selectedUser().subscription.plan_name) }}</div>
+                <p class="sub-dates">
+                  Expire le {{ selectedUser().subscription.end_date | date:'dd/MM/yyyy' }}
+                </p>
+              } @else {
+                <div class="sub-plan-pill free">🌱 Gratuit — Aucun abonnement</div>
+              }
+              <div class="change-plan">
+                <select class="zir-input plan-select" #planSel>
+                  @if (selectedUser().user.role === 'SUPPLIER') {
+                    <option value="freemium">Sans Abonnement</option>
+                    <option value="VITRINE_BASIC">Vitrine Essentielle</option>
+                    <option value="VITRINE_PRO">Vitrine Professionnelle</option>
+                    <option value="ERP_STARTER">ERP Débutant</option>
+                    <option value="ERP_FULL">ERP Complet</option>
+                  } @else {
+                    <option value="free">Freemium</option>
+                    <option value="starter">Starter</option>
+                    <option value="pro">Pro</option>
+                    <option value="business">Enterprise</option>
+                  }
+                </select>
+                <button class="btn-apply-plan" (click)="changeUserPlan(planSel.value)">
+                  Appliquer
+                </button>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- ─── PAYMENTS TAB ─── -->
+        @if (drawerTab() === 'PAYMENTS') {
+          @if (isLoadingHistory()) {
+            <div class="loading-state">
+              <ng-icon name="lucideLoader" class="spin"></ng-icon>
+              Chargement de l'historique...
+            </div>
+          } @else if (paymentHistory()) {
+            <div class="payment-timeline">
+              <h4><ng-icon name="lucideHistory"></ng-icon> Historique des Abonnements</h4>
+              @for (sub of paymentHistory().subscriptions; track sub.id) {
+                <div class="timeline-item" [class.active]="sub.status === 'ACTIVE'">
+                  <div class="tl-dot" [class.active]="sub.status === 'ACTIVE'"></div>
+                  <div class="tl-body">
+                    <div class="tl-plan">{{ sub.plan_name || sub.plan_code }}</div>
+                    <div class="tl-dates">
+                      {{ sub.start_date | date:'dd/MM/yyyy' }} → {{ sub.end_date | date:'dd/MM/yyyy' }}
+                    </div>
+                    @if (sub.price_tnd) {
+                      <div class="tl-amount">{{ sub.price_tnd | number:'1.2-2' }} TND</div>
+                    }
+                    <span class="tl-status" [class.active]="sub.status === 'ACTIVE'" [class.cancelled]="sub.status === 'CANCELLED'">
+                      {{ sub.status === 'ACTIVE' ? '● Actif' : '● Terminé' }}
+                    </span>
+                  </div>
+                </div>
+              } @empty {
+                <div class="empty-timeline">Aucun historique d'abonnement.</div>
+              }
+
+              @if (paymentHistory().commissions?.length > 0) {
+                <h4 class="mt-section"><ng-icon name="lucideBanknote"></ng-icon> Commissions Plateforme</h4>
+                @for (c of paymentHistory().commissions; track c.id) {
+                  <div class="commission-row">
+                    <span class="c-type">{{ c.type }}</span>
+                    <span class="c-amount">{{ c.transaction_value_tnd | number:'1.2-2' }} TND</span>
+                    <span class="c-date">{{ c.date | date:'dd/MM/yy HH:mm' }}</span>
+                  </div>
+                }
+              }
+            </div>
+          } @else {
+            <div class="empty-state">Aucun historique disponible.</div>
+          }
+        }
+
+        <!-- ─── ACTIONS TAB ─── -->
+        @if (drawerTab() === 'ACTIONS') {
+          <div class="actions-section">
+            <p class="actions-warning">Ces actions affectent directement le compte de l'utilisateur et lui envoient une notification.</p>
+
+            <button class="action-btn amber" (click)="suspendUser(selectedUser().user.id)">
+              <ng-icon name="lucideShieldAlert"></ng-icon>
+              <div>
+                <strong>Suspendre le compte</strong>
+                <span>Accès désactivé temporairement</span>
+              </div>
+            </button>
+
+            <button class="action-btn red" (click)="banUser(selectedUser().user.id)">
+              <ng-icon name="lucideBan"></ng-icon>
+              <div>
+                <strong>Bannir définitivement</strong>
+                <span>Annule abonnements + désactive annonces</span>
+              </div>
+            </button>
+
+            <button class="action-btn dark-red" (click)="deleteUser(selectedUser().user.id)">
+              <ng-icon name="lucideTrash2"></ng-icon>
+              <div>
+                <strong>Supprimer le compte</strong>
+                <span>Suppression douce (soft delete)</span>
+              </div>
+            </button>
+          </div>
+        }
+      </div>
+    }
+  }
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     ADD USER MODAL
+════════════════════════════════════════════════════════ -->
+@if (showAddModal()) {
+  <div class="modal-overlay" (click)="closeAddModal()">
+    <div class="add-modal" (click)="$event.stopPropagation()">
+      <div class="modal-head">
+        <h3><ng-icon name="lucideUserPlus"></ng-icon> Ajouter un Utilisateur</h3>
+        <button class="modal-close" (click)="closeAddModal()"><ng-icon name="lucideX"></ng-icon></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Nom complet *</label>
+            <input class="zir-input" type="text" [(ngModel)]="newUser.name" placeholder="Dr. Ahmed Mansour">
+          </div>
+          <div class="form-group">
+            <label>Email *</label>
+            <input class="zir-input" type="email" [(ngModel)]="newUser.email" placeholder="ahmed@ziria.tn">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Téléphone</label>
+            <input class="zir-input" type="tel" [(ngModel)]="newUser.phone" placeholder="+216 XX XXX XXX">
+          </div>
+          <div class="form-group">
+            <label>Gouvernorat</label>
+            <select class="zir-input" [(ngModel)]="newUser.governorate">
+              <option value="">Sélectionner...</option>
+              @for (g of governorates; track g) { <option [value]="g">{{ g }}</option> }
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Rôle *</label>
+            <select class="zir-input" [(ngModel)]="newUser.role">
+              @for (r of roles; track r) { <option [value]="r">{{ getRoleLabel(r) }}</option> }
+            </select>
+          </div>
+          @if (newUser.role === 'EXPERT') {
+            <div class="form-group">
+              <label>Type d'expert</label>
+              <select class="zir-input" [(ngModel)]="newUser.expert_type">
+                <option value="">Sélectionner...</option>
+                @for (t of expertTypes; track t) { <option [value]="t">{{ getExpertTypeLabel(t) }}</option> }
+              </select>
+            </div>
+          }
+          @if (newUser.role === 'FARMER') {
+            <div class="form-group">
+              <label>Type d'activité</label>
+              <select class="zir-input" [(ngModel)]="newUser.activity_type">
+                <option value="CROP">Végétal 🌿</option>
+                <option value="LIVESTOCK">Élevage 🐄</option>
+                <option value="MIXED">Mixte 🌾🐄</option>
+              </select>
+            </div>
+          }
+        </div>
+        <div class="form-group">
+          <label>Plan d'abonnement initial</label>
+          <select class="zir-input" [(ngModel)]="newUser.planId">
+            <option value="">Freemium (Gratuit)</option>
+            <option value="starter">Starter</option>
+            <option value="pro">Pro</option>
+          </select>
+        </div>
+        <p class="modal-note">
+          🔑 Le mot de passe par défaut sera <strong>Ziria2026!</strong>. L'utilisateur sera notifié et devra le changer.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="closeAddModal()">Annuler</button>
+        <button class="btn-submit" (click)="submitNewUser()" [disabled]="isSavingUser() || !newUser.name || !newUser.email">
+          <ng-icon [name]="isSavingUser() ? 'lucideLoader' : 'lucideUserPlus'" [class.spin]="isSavingUser()"></ng-icon>
+          {{ isSavingUser() ? 'Création...' : 'Créer le compte' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

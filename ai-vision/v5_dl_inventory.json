@@ -1,0 +1,62 @@
+{
+  "almond": {
+    "images": 0,
+    "files": 1,
+    "top_dirs": []
+  },
+  "apple_scab": {
+    "images": 0,
+    "files": 1,
+    "top_dirs": []
+  },
+  "barley_seg": {
+    "images": 27,
+    "files": 101,
+    "top_dirs": [
+      ".git",
+      "Complete Pipeline",
+      "Figure Reproduction",
+      "Test_sample_data",
+      "barley_disease_segmentation"
+    ]
+  },
+  "cactivit.zip": {
+    "bytes": 26338227,
+    "type": "file"
+  },
+  "cactivit_git": {
+    "images": 0,
+    "files": 21,
+    "top_dirs": [
+      ".git"
+    ]
+  },
+  "cactivit_master.zip.part": {
+    "bytes": 7340032,
+    "type": "file"
+  },
+  "date_hadjer": {
+    "images": 0,
+    "files": 1,
+    "top_dirs": []
+  },
+  "date_yehia": {
+    "images": 0,
+    "files": 1,
+    "top_dirs": []
+  },
+  "olive_tech": {
+    "images": 0,
+    "files": 1,
+    "top_dirs": []
+  },
+  "wheat_jic.zip": {
+    "bytes": 763,
+    "type": "file"
+  },
+  "wheat_khan": {
+    "images": 0,
+    "files": 1,
+    "top_dirs": []
+  }
+}

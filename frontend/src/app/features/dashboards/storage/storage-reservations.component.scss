@@ -1,0 +1,122 @@
+.storage-reservations-container {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.header-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+
+  h2 { font-size: 1.35rem; font-weight: 800; color: var(--zir-text, #111827); margin: 0; }
+  .subtitle { font-size: 0.875rem; color: var(--zir-text-muted, #6b7280); margin: 0.25rem 0 0 0; }
+}
+
+.filter-tabs {
+  display: flex;
+  gap: 0.5rem;
+  background: var(--zir-bg, rgba(0,0,0,0.04));
+  padding: 0.25rem;
+  border-radius: 8px;
+  border: 1px solid var(--zir-border, rgba(0,0,0,0.08));
+
+  button {
+    border: none;
+    background: transparent;
+    padding: 0.4rem 0.85rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+    color: var(--zir-text-muted, #6b7280);
+    transition: all .15s;
+
+    &.active {
+      background: var(--zir-card-bg, #ffffff);
+      color: #10b981;
+      box-shadow: var(--zir-shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.08));
+    }
+  }
+}
+
+.table-card {
+  background: var(--zir-card-bg, #ffffff);
+  border: 1px solid var(--zir-border, rgba(0,0,0,0.1));
+  border-radius: 12px;
+  overflow-x: auto;
+  box-shadow: var(--zir-shadow-sm, 0 1px 3px rgba(0,0,0,0.05));
+}
+
+.res-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+
+  th, td {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--zir-border, rgba(0,0,0,0.08));
+    font-size: 0.875rem;
+    color: var(--zir-text, #111827);
+  }
+
+  th {
+    background: var(--zir-bg, rgba(0,0,0,0.02));
+    color: var(--zir-text-muted, #6b7280);
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: .7rem;
+    letter-spacing: .04em;
+  }
+
+  .subtext { font-size: 0.75rem; color: var(--zir-text-muted, #6b7280); }
+}
+
+.status-badge {
+  padding: 0.25rem 0.6rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+
+  &.en_attente { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+  &.confirmee, &.en_cours { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+  &.annulee { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+}
+
+.btn-group {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.btn-sm {
+  display: flex; align-items: center; gap: .25rem;
+  border: none; padding: 0.35rem 0.65rem; border-radius: 6px; font-weight: 700; font-size: .75rem; cursor: pointer;
+  transition: opacity .2s;
+  &:hover { opacity: .88; }
+}
+.btn-accept { background: #10b981; color: white; }
+.btn-reject { background: #ef4444; color: white; }
+
+.pagination-footer {
+  padding: 1rem;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.85rem;
+  color: var(--zir-text, #111827);
+
+  button {
+    padding: 0.35rem 0.75rem;
+    border: 1px solid var(--zir-border, rgba(0,0,0,0.1));
+    background: var(--zir-card-bg, #ffffff);
+    color: var(--zir-text, #111827);
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    &:disabled { opacity: .5; cursor: not-allowed; }
+  }
+}

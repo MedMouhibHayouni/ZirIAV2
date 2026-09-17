@@ -1,0 +1,621 @@
+<app-public-navbar
+  [showScrollEffect]="true"
+  [scrollToFeatures]="scrollToFeatures.bind(this)"
+  [scrollToPricing]="scrollToPricing.bind(this)"
+/>
+
+
+<section class="hero-section">
+
+  <!-- Layered background -->
+  <div class="hero-bg">
+    <div class="hero-bg__overlay"></div>
+    <!-- Animated floating orbs -->
+    <div class="orb orb--1"></div>
+    <div class="orb orb--2"></div>
+    <div class="orb orb--3"></div>
+    <!-- Floating dots -->
+    <div class="dots-field"></div>
+  </div>
+
+  <div class="hero-content zir-container">
+    <!-- LEFT -->
+    <div class="hero-left">
+      <div class="hero-badge">
+        <span class="hero-badge__dot"></span>
+        <ng-icon name="lucideLeaf" [size]="'14'"></ng-icon>
+        Plateforme AgriTech Tunisienne
+      </div>
+
+      <h1 class="hero-title">
+        <img src="assets/ziria-logo-hero.png" alt="ZirIA" class="hero-title__logo" />
+        <span class="hero-title__tagline" dir="rtl" lang="ar">زريعة الاقتصاد الريفي الرقمي</span>
+        <span class="hero-title__sub">L'infrastructure numérique<br>de l'agriculture tunisienne</span>
+      </h1>
+
+      <p class="hero-subtitle">
+        De Kasserine au monde — l'IA qui parle Darija, prédit les récoltes,
+        et connecte vos champs aux marchés B2B mondiaux.
+      </p>
+
+      <div class="hero-actions">
+        <a [routerLink]="auth.isAuthenticated() ? auth.dashboardRoute() : '/register'" class="hero-cta hero-cta--primary">
+          <span>{{ auth.isAuthenticated() ? 'Accéder à mon tableau de bord' : 'Commencer — C\'est gratuit' }}</span>
+          <ng-icon name="lucideArrowRight" [size]="'18'"></ng-icon>
+        </a>
+        <button class="hero-cta hero-cta--ghost" (click)="scrollToFeatures()">
+          Voir la démo
+          <ng-icon name="lucideChevronDown" [size]="'16'"></ng-icon>
+        </button>
+      </div>
+
+      <!-- Trust badges -->
+      <div class="hero-trust">
+        <span class="trust-item">
+          <ng-icon name="lucideShieldAlert" [size]="'14'"></ng-icon>
+          100% Données Tunisie
+        </span>
+        <span class="trust-sep">·</span>
+        <span class="trust-item">
+          <ng-icon name="lucideZap" [size]="'14'"></ng-icon>
+          Startup Act Certifié
+        </span>
+        <span class="trust-sep">·</span>
+        <span class="trust-item">
+          <ng-icon name="lucideStar" [size]="'14'"></ng-icon>
+          Partenaire CRDA
+        </span>
+      </div>
+    </div>
+
+    <!-- RIGHT — preserved phone mockup (luxurified) -->
+    <div class="hero-right">
+      <div class="phone-glow"></div>
+      <div class="mockup-phone">
+        <div class="mockup-phone__notch"></div>
+        <div class="mockup-phone__screen">
+          <div class="chat-header">
+            <div class="chat-header__avatar">
+              <img src="assets/ziria-logo-icon.png" alt="ZirIA" class="chat-header__logo" />
+            </div>
+            <div class="chat-header__info">
+              <div class="chat-header__name">ZirIA Agent</div>
+              <div class="chat-header__status">
+                <span class="status-dot"></span>En ligne
+              </div>
+            </div>
+          </div>
+          <div class="chat-body">
+            @for (msg of chatMessages; track $index) {
+              @if (msg.text) {
+                <div class="chat-msg" [class.chat-msg--user]="msg.isUser">
+                  <div class="chat-msg__bubble">
+                    {{ msg.text }}<span class="chat-msg__cursor" *ngIf="msg.text.length < msg.fullText.length">|</span>
+                  </div>
+                </div>
+              }
+            }
+          </div>
+          <div class="chat-input">
+            <div class="chat-input__box">Message en Darija...</div>
+            <div class="chat-input__send">
+              <ng-icon name="lucideMic" [size]="'16'"></ng-icon>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scroll indicator -->
+  <div class="scroll-indicator">
+    <div class="scroll-indicator__wheel"></div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     STATS BAR — CountUp on scroll
+     ══════════════════════════════════════════════════════════════ -->
+<section class="stats-bar" #statsSection>
+  <div class="zir-container">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-card__value">{{ statCounters.digitalAccess }}</div>
+        <div class="stat-card__unit">rôles métier</div>
+        <div class="stat-card__label">Couverts par la plateforme</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card__value">{{ statCounters.losses }}</div>
+        <div class="stat-card__unit">flux de revenus</div>
+        <div class="stat-card__label">Générable via ZirIA</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card__value">{{ statCounters.noMarket }}%</div>
+        <div class="stat-card__unit">données locales</div>
+        <div class="stat-card__label">Hébergé en Tunisie</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card__value">{{ statCounters.platformRoles }}</div>
+        <div class="stat-card__unit">seule plateforme</div>
+        <div class="stat-card__label">Intégrant toute la chaîne</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     KNOW MY PLANT — Free AI Banner
+     ══════════════════════════════════════════════════════════════ -->
+<section class="kmp-banner-section">
+  <div class="zir-container">
+    <div class="kmp-banner">
+      <div class="kmp-banner__visual">
+        <div class="kmp-banner__orb"></div>
+        <div class="kmp-banner__icon">
+          <ng-icon name="lucideLeaf" [size]="'40'"></ng-icon>
+        </div>
+      </div>
+      <div class="kmp-banner__content">
+        <div class="kmp-banner__pill">
+          <ng-icon name="lucideSparkles" [size]="'12'"></ng-icon>
+          100% Gratuit · Alimenté par l'IA
+        </div>
+        <h2 class="kmp-banner__title">Identifiez votre plante en 5 secondes</h2>
+        <p class="kmp-banner__title-ar" dir="rtl" lang="ar">عرف نبتتك في 5 ثواني</p>
+        <p class="kmp-banner__desc">
+          Prenez une photo — ZirIA vous donne le nom scientifique, les conseils d'entretien
+          et la valeur agricole de votre plante, en français et en Darija tunisienne.
+        </p>
+        <div class="kmp-banner__tags">
+          <span><ng-icon name="lucideCamera" [size]="'13'"></ng-icon> Photo ou caméra mobile</span>
+          <span><ng-icon name="lucideGlobe" [size]="'13'"></ng-icon> Bilingue FR / عربي</span>
+          <span><ng-icon name="lucideTractor" [size]="'13'"></ng-icon> Valeur agricole</span>
+        </div>
+      </div>
+      <div class="kmp-banner__cta">
+        <a routerLink="/know-my-plant" class="kmp-banner__btn">
+          <ng-icon name="lucideLeaf" [size]="'18'"></ng-icon>
+          Essayer gratuitement
+        </a>
+        <p class="kmp-banner__limit">1 identification / jour sans compte</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     HOW IT WORKS — 3 steps
+     ══════════════════════════════════════════════════════════════ -->
+<section class="features-section" id="features" #featuresSection>
+  <div class="zir-container">
+    <div class="section-header">
+      <div class="section-pill">Comment ça marche</div>
+      <h2 class="section-title">Trois étapes vers l'agriculture numérique</h2>
+    </div>
+
+    <div class="steps-grid">
+      @for (step of steps; track step.number) {
+        <div class="step-card">
+          <div class="step-card__number">{{ step.number }}</div>
+          <div class="step-card__icon">
+            <ng-icon [name]="step.icon" [size]="'28'"></ng-icon>
+          </div>
+          <h3 class="step-card__title">{{ step.title }}</h3>
+          <p class="step-card__desc">{{ step.desc }}</p>
+
+          @if (step.number === '01') {
+            <!-- Chat mockup -->
+            <div class="step-mockup step-mockup--chat">
+              <div class="mini-bubble mini-bubble--user">n7eb nbi3 tmatem</div>
+              <div class="mini-bubble mini-bubble--ai">Annonce créée — 500kg à 0.65 TND/kg. 3 acheteurs disponibles.</div>
+            </div>
+          }
+          @if (step.number === '02') {
+            <!-- Listing mockup -->
+            <div class="step-mockup step-mockup--card">
+              <div class="mini-listing">
+                <div class="mini-listing__badge">Tomates</div>
+                <div class="mini-listing__title">500 kg · 0.65 TND/kg</div>
+                <div class="mini-listing__buyers">
+                  <ng-icon name="lucideUsers" [size]="'12'"></ng-icon> 3 acheteurs en attente
+                </div>
+              </div>
+            </div>
+          }
+          @if (step.number === '03') {
+            <!-- Alert mockup -->
+            <div class="step-mockup step-mockup--alert">
+              <div class="mini-alert">
+                <div class="mini-alert__header">
+                  <ng-icon name="lucideShieldAlert" [size]="'14'"></ng-icon>
+                  Mildiou détecté
+                </div>
+                <div class="mini-alert__bar">
+                  <div class="mini-alert__fill" style="width: 87%"></div>
+                </div>
+                <div class="mini-alert__label">87% de confiance</div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     ROLE CARDS — 8 actors
+     ══════════════════════════════════════════════════════════════ -->
+<section class="roles-section">
+  <div class="zir-container">
+    <div class="section-header">
+      <div class="section-pill">Acteurs</div>
+      <h2 class="section-title">Une plateforme pour tous les acteurs</h2>
+    </div>
+
+    <div class="roles-grid">
+      @for (role of roles; track role.id) {
+        <a [routerLink]="['/register']" [queryParams]="{ role: role.id }" class="role-card-wrap">
+          <div class="role-card" [style.--role-color]="role.color">
+            <div class="role-card__shine"></div>
+            <div class="role-card__icon">
+              <ng-icon [name]="role.icon" [size]="'28'"></ng-icon>
+            </div>
+            <h3 class="role-card__name">{{ role.name }}</h3>
+            <ul class="role-card__features">
+              @for (feat of role.features; track feat) {
+                <li>
+                  <ng-icon name="lucideCheck" [size]="'12'"></ng-icon>
+                  {{ feat }}
+                </li>
+              }
+            </ul>
+            <div class="role-card__cta">
+              Rejoindre <ng-icon name="lucideArrowRight" [size]="'14'"></ng-icon>
+            </div>
+          </div>
+        </a>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     PRICING — with modal detail
+     ══════════════════════════════════════════════════════════════ -->
+<section class="pricing-section" #pricingSection>
+  <div class="zir-container">
+    <div class="section-header">
+      <div class="section-pill">Tarifs</div>
+      <h2 class="section-title">Transparent. Scalable. Tunisien.</h2>
+      <p class="section-subtitle">Commencez gratuitement, évoluez à votre rythme.</p>
+    </div>
+
+    <div class="pricing-grid">
+      @for (plan of pricingPlans(); track plan.id) {
+        <div class="pricing-card" [class.pricing-card--featured]="plan.is_recommended" (click)="openPlanModal(plan, $event)">
+          @if (plan.is_recommended) {
+            <div class="pricing-badge">
+              <ng-icon name="lucideStar" [size]="'12'"></ng-icon>
+              Recommandé
+            </div>
+          }
+          <div class="pricing-card__name">{{ plan.name }}</div>
+          <div class="pricing-card__price">
+            @if (plan.price_tnd_monthly === 0) {
+              <span class="price-value">Gratuit</span>
+            } @else {
+              <span class="price-value">{{ plan.price_tnd_monthly }}</span>
+              <span class="price-currency">TND<span class="price-period">/mois</span></span>
+            }
+          </div>
+          <ul class="pricing-card__features">
+            @for (feat of plan.features; track feat) {
+              <li class="feat--yes">
+                <ng-icon name="lucideCheck" [size]="'14'"></ng-icon>
+                {{ feat }}
+              </li>
+            }
+          </ul>
+          <button class="pricing-card__detail-btn">
+            Voir les détails
+          </button>
+          <a [routerLink]="auth.isAuthenticated() ? auth.dashboardRoute() : '/register'"
+             [queryParams]="auth.isAuthenticated() ? undefined : { plan: plan.code }"
+             class="pricing-card__cta" [class.pricing-card__cta--featured]="plan.is_recommended"
+             (click)="$event.stopPropagation()">
+            {{ auth.isAuthenticated() ? 'Accéder' : 'Commencer' }}
+          </a>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     PLAN DETAIL MODAL
+     ══════════════════════════════════════════════════════════════ -->
+@if (showPlanModal()) {
+  <div class="plan-modal-overlay" (click)="closePlanModal()">
+    <div class="plan-modal" (click)="$event.stopPropagation()">
+      @if (selectedPlanForModal(); as plan) {
+
+        <!-- Modal Header -->
+        <div class="plan-modal__header" [attr.data-plan]="plan.code">
+          <div class="plan-modal__header-bg"></div>
+          <div class="plan-modal__header-content">
+            <div class="plan-modal__badge">
+              @if (plan.code === 'FREE') { <ng-icon name="lucideLeaf" [size]="'16'"></ng-icon> }
+              @if (plan.code === 'STARTER') { <ng-icon name="lucideZap" [size]="'16'"></ng-icon> }
+              @if (plan.code === 'PRO') { <ng-icon name="lucideShield" [size]="'16'"></ng-icon> }
+              @if (plan.code === 'BUSINESS') { <ng-icon name="lucideBuilding2" [size]="'16'"></ng-icon> }
+              {{ plan.name }}
+            </div>
+            <div class="plan-modal__price-display">
+              @if (plan.price_tnd_monthly === 0) {
+                <span class="modal-price">Gratuit</span>
+                <span class="modal-price-note">Pour toujours</span>
+              } @else {
+                <span class="modal-price">{{ plan.price_tnd_monthly }} <small>TND</small></span>
+                <span class="modal-price-note">par mois, sans engagement</span>
+              }
+            </div>
+          </div>
+          <button class="plan-modal__close" (click)="closePlanModal()">
+            <ng-icon name="lucideX" [size]="'18'"></ng-icon>
+          </button>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="plan-modal__body">
+
+          <!-- What's included -->
+          <div class="plan-modal__section">
+            <h4 class="plan-modal__section-title">
+              <ng-icon name="lucideCheck" [size]="'16'"></ng-icon>
+              Inclus dans ce plan
+            </h4>
+            <div class="plan-modal__features-grid">
+              @for (feat of plan.features; track feat) {
+                <div class="modal-feature-item">
+                  <div class="modal-feature-icon">✓</div>
+                  <span>{{ feat }}</span>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Full comparison table -->
+          <div class="plan-modal__section">
+            <h4 class="plan-modal__section-title">
+              <ng-icon name="lucideBarChart3" [size]="'16'"></ng-icon>
+              Comparaison des plans
+            </h4>
+            <div class="plan-modal__table-wrap">
+              <table class="modal-compare-table">
+                <thead>
+                  <tr>
+                    <th>Fonctionnalité</th>
+                    <th [class.modal-col--active]="plan.code==='FREE'">Gratuit</th>
+                    <th [class.modal-col--active]="plan.code==='STARTER'">Starter</th>
+                    <th [class.modal-col--active]="plan.code==='PRO'">Pro <ng-icon name="lucideZap" [size]="'14'"></ng-icon></th>
+                    <th [class.modal-col--active]="plan.code==='BUSINESS'">Business</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Parcelles</td>
+                    <td>1</td><td>5</td><td>Illimitées</td><td>Illimitées</td>
+                  </tr>
+                  <tr>
+                    <td>Agent IA Darija</td>
+                    <td>Limité</td><td>✓</td><td>Avancé</td><td>Avancé</td>
+                  </tr>
+                  <tr>
+                    <td>Marketplace</td>
+                    <td>Lecture</td><td>Complète</td><td>Complète</td><td>White-label</td>
+                  </tr>
+                  <tr>
+                    <td>Diagnostic IA</td>
+                    <td>—</td><td>✓</td><td>✓</td><td>✓</td>
+                  </tr>
+                  <tr>
+                    <td>Alertes SMS</td>
+                    <td>—</td><td>✓</td><td>✓</td><td>✓</td>
+                  </tr>
+                  <tr>
+                    <td>Rapports CRDA</td>
+                    <td>—</td><td>—</td><td>✓</td><td>✓</td>
+                  </tr>
+                  <tr>
+                    <td>API Access</td>
+                    <td>—</td><td>—</td><td>✓</td><td>✓</td>
+                  </tr>
+                  <tr>
+                    <td>Multi-coopérative</td>
+                    <td>—</td><td>—</td><td>—</td><td>✓</td>
+                  </tr>
+                  <tr>
+                    <td>SLA garanti</td>
+                    <td>—</td><td>—</td><td>—</td><td>99.9%</td>
+                  </tr>
+                  <tr>
+                    <td>Support</td>
+                    <td>Email</td><td>Email</td><td>Prioritaire</td><td>Dédié</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Highlights -->
+          <div class="plan-modal__highlights">
+            <div class="modal-highlight">
+              <span class="modal-highlight__icon">
+                <ng-icon name="lucideShield" [size]="'24'"></ng-icon>
+              </span>
+              <div>
+                <strong>Sans engagement</strong>
+                <p>Annulez à tout moment, aucune pénalité.</p>
+              </div>
+            </div>
+            <div class="modal-highlight">
+              <span class="modal-highlight__icon">
+                <ng-icon name="lucideGlobe" [size]="'24'"></ng-icon>
+              </span>
+              <div>
+                <strong>Données en Tunisie</strong>
+                <p>100% hébergé localement, conforme ANPDP.</p>
+              </div>
+            </div>
+            <div class="modal-highlight">
+              <span class="modal-highlight__icon">
+                <ng-icon name="lucideSmartphone" [size]="'24'"></ng-icon>
+              </span>
+              <div>
+                <strong>Mobile & Web</strong>
+                <p>Accès complet sur tous vos appareils.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="plan-modal__footer">
+          <button class="plan-modal__cancel" (click)="closePlanModal()">Fermer</button>
+          <a [routerLink]="auth.isAuthenticated() ? auth.dashboardRoute() : '/register'"
+             [queryParams]="auth.isAuthenticated() ? undefined : { plan: plan.code }"
+             class="plan-modal__cta" [class.plan-modal__cta--featured]="plan.is_recommended"
+             (click)="closePlanModal()">
+            @if (auth.isAuthenticated()) {
+              Accéder au tableau de bord →
+            } @else if (plan.price_tnd_monthly === 0) {
+              Commencer gratuitement →
+            } @else {
+              S'abonner au plan {{ plan.name }} →
+            }
+          </a>
+        </div>
+      }
+    </div>
+  </div>
+}
+
+<!-- ══════════════════════════════════════════════════════════════
+     LIVE MAP
+     ══════════════════════════════════════════════════════════════ -->
+
+<section class="map-section">
+  <div class="zir-container">
+    <div class="map-header">
+      <div>
+        <div class="section-pill">Live</div>
+        <h2 class="section-title" style="margin-bottom: 0;">ZirIA en action — Kasserine</h2>
+      </div>
+      <div class="map-kpis">
+        <div class="map-kpi">
+          <div class="map-kpi__value">{{ displayKpis().activeUsers }}</div>
+          <div class="map-kpi__label">Agriculteurs Actifs</div>
+        </div>
+        <div class="map-kpi">
+          <div class="map-kpi__value">{{ displayKpis().b2bTransactions }}</div>
+          <div class="map-kpi__label">Transactions/Jour</div>
+        </div>
+        <div class="map-kpi">
+          <div class="map-kpi__value">{{ displayKpis().activeDiseases }}</div>
+          <div class="map-kpi__label">Alertes Actives</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="map-wrapper">
+      <div #mapContainer class="leaflet-map"></div>
+      <div class="map-live-badge">
+        <span class="live-dot"></span> Live Data Feed
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     CTA SECTION
+     ══════════════════════════════════════════════════════════════ -->
+<section class="cta-section">
+  <div class="cta-glow"></div>
+  <div class="cta-content zir-container">
+    <h2 class="cta-title">Rejoignez la révolution agricole tunisienne</h2>
+    <p class="cta-subtitle">Gratuit pour commencer. Puissant pour grandir.</p>
+    <a routerLink="/register" class="hero-cta hero-cta--primary">
+      <span>Créer mon compte gratuit</span>
+      <ng-icon name="lucideArrowRight" [size]="'18'"></ng-icon>
+    </a>
+    <div class="cta-partners">
+      <span>CRDA Kasserine</span>
+      <span class="sep">·</span>
+      <span>APIA Tunisie</span>
+      <span class="sep">·</span>
+      <span>Startup Act Tunisia</span>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     FOOTER
+     ══════════════════════════════════════════════════════════════ -->
+<footer class="footer">
+  <div class="zir-container">
+    <div class="footer-grid">
+      <!-- Brand -->
+      <div class="footer-col footer-col--brand">
+        <div class="footer-brand">
+          <div class="footer-logo">
+            <img src="assets/ziria-logo-main.png" alt="ZirIA" class="footer-logo__img" />
+          </div>
+        </div>
+        <p class="footer-desc">
+          L'infrastructure numérique de l'économie rurale tunisienne.
+          Propulsé par l'IA, conçu pour l'inclusion.
+        </p>
+        <div class="footer-socials">
+          <a href="https://linkedin.com" target="_blank" class="social-link" aria-label="LinkedIn">in</a>
+          <a href="https://twitter.com" target="_blank" class="social-link" aria-label="Twitter">X</a>
+          <a href="https://github.com" target="_blank" class="social-link" aria-label="GitHub">gh</a>
+        </div>
+      </div>
+
+      <!-- Plateforme -->
+      <div class="footer-col">
+        <h4 class="footer-heading">Plateforme</h4>
+        <ul class="footer-links">
+          <li><a routerLink="/login">Connexion</a></li>
+          <li><a routerLink="/register">Inscription</a></li>
+          <li><a routerLink="/register" [queryParams]="{ plan: 'PRO' }">Passer au Pro</a></li>
+        </ul>
+      </div>
+
+      <!-- Ressources -->
+      <div class="footer-col">
+        <h4 class="footer-heading">Ressources</h4>
+        <ul class="footer-links">
+          <li><a href="http://localhost:3000/api" target="_blank">Documentation API</a></li>
+          <li><a href="https://aikup.tn" target="_blank">AiKup Tech</a></li>
+          <li><a routerLink="/unauthorized">Sécurité</a></li>
+        </ul>
+      </div>
+
+      <!-- Légal -->
+      <div class="footer-col">
+        <h4 class="footer-heading">Légal</h4>
+        <ul class="footer-links">
+          <li><a href="#">Conditions d'utilisation</a></li>
+          <li><a href="#">Politique de confidentialité</a></li>
+          <li><a href="#">Mentions légales</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <span>© 2026 ZirIA · Développé par <a href="https://aikup.tn" target="_blank">AiKup Tech</a> — Kasserine, Tunisie</span>
+    </div>
+  </div>
+</footer>

@@ -1,0 +1,229 @@
+<div class="smsa-parcels zir-animate-in">
+
+  <!-- Header -->
+  <header class="page-header" style="display:flex; justify-content:space-between; align-items:flex-start;">
+    <div>
+      <h2>Parcelles Agricoles</h2>
+      <p>Supervisez le cadastre et l'état sanitaire de vos terres coopératives.</p>
+    </div>
+    <div style="display:flex; gap: 12px; align-items: center;">
+      
+      <!-- View Toggle -->
+      <div class="smsa-parcels__toggle">
+        <button [class.active]="viewMode === 'LIST'" (click)="toggleView('LIST')">
+          <ng-icon name="lucideList"></ng-icon> Liste
+        </button>
+        <button [class.active]="viewMode === 'MAP'" (click)="toggleView('MAP')">
+          <ng-icon name="lucideMap"></ng-icon> Carte
+        </button>
+      </div>
+
+      <button class="zir-btn zir-btn--primary" (click)="showWizard = true; wizardStep = 1">
+         <ng-icon name="lucidePlus"></ng-icon>
+         Déclarer Parcelle
+      </button>
+    </div>
+  </header>
+
+  <!-- LIST VIEW -->
+  @if (viewMode === 'LIST') {
+    <div class="zir-card">
+      @if (isLoading()) {
+        <div style="padding: 24px;">
+          @for (_ of [1,2,3]; track $index) {
+            <div class="zir-skeleton--text" style="height: 50px; margin-bottom: 12px; border-radius: 8px;"></div>
+          }
+        </div>
+      } @else if (hasError()) {
+        <div class="zir-alert zir-alert--danger" style="margin: 24px;">
+          <span>Erreur lors du chargement des parcelles.</span>
+        </div>
+      } @else if (parcels().length > 0) {
+        <div style="overflow-x: auto;">
+          <table class="zir-table">
+            <thead>
+              <tr>
+                <th>Propriétaire</th>
+                <th>Culture</th>
+                <th>Surface</th>
+                <th>Statut</th>
+                <th style="text-align: right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (p of parcels(); track p.id) {
+                <tr class="smsa-parcels__row" (click)="openDetails(p.id)">
+                  <td>
+                    <div style="font-weight: 600;">{{ p.owner?.name || 'Inconnu' }}</div>
+                    <div style="font-size: 11px; color: var(--text-muted);">{{ p.id.substring(0,8) }}</div>
+                  </td>
+                  <td>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                      <div class="smsa-parcels__crop-icon">
+                        <ng-icon name="lucideSprout"></ng-icon>
+                      </div>
+                      <span>{{ p.crop_type }}</span>
+                    </div>
+                  </td>
+                  <td>{{ p.surface_ha }} ha</td>
+                  <td>
+                    <span class="zir-badge" [ngClass]="{
+                      'zir-badge--success': p.status === 'ok',
+                      'zir-badge--warning': p.status === 'weather_risk',
+                      'zir-badge--danger': p.status === 'disease_alert'
+                    }">
+                      @if (p.status === 'ok') { <span class="flex items-center gap-1"><ng-icon name="lucideCheckCircle"></ng-icon> OK</span> }
+                      @else if (p.status === 'disease_alert') { <span class="flex items-center gap-1"><ng-icon name="lucideAlertTriangle"></ng-icon> ALERTE</span> }
+                      @else { <span class="flex items-center gap-1"><ng-icon name="lucideCloud"></ng-icon> MÉTÉO</span> }
+                    </span>
+                  </td>
+                  <td style="text-align: right;">
+                    <button class="zir-btn zir-btn--ghost">Voir détails</button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <div class="zir-empty" style="padding: 40px;">
+          <div class="zir-empty__icon"><ng-icon name="lucideMap"></ng-icon></div>
+          <div class="zir-empty__desc">Aucune parcelle déclarée.</div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- MAP VIEW -->
+  @if (viewMode === 'MAP') {
+    <div class="zir-card smsa-parcels__map-wrapper">
+      <div #mapContainer class="smsa-parcels__map"></div>
+    </div>
+  }
+
+</div>
+
+<!-- DETAILS MODAL -->
+@if (showDetailsModal) {
+  <div class="zir-modal">
+    <div class="zir-modal__backdrop" (click)="showDetailsModal = false"></div>
+    <div class="zir-modal__content zir-card" style="max-width: 800px; width: 100%; display: flex; flex-direction: column;">
+      
+      <div class="zir-modal__header">
+        <h3>Détails Parcelle</h3>
+        <button class="zir-btn zir-btn--ghost zir-btn--icon-only" (click)="showDetailsModal = false">
+          <ng-icon name="lucideX"></ng-icon>
+        </button>
+      </div>
+      
+      <div class="zir-modal__body" style="padding: 0; display: grid; grid-template-columns: 1fr 1fr;">
+        <!-- Left: Minimap -->
+        <div #miniMapContainer style="height: 400px; background: var(--bg-primary); border-right: 1px solid var(--border);"></div>
+        
+        <!-- Right: Info & Crop Zones -->
+        <div style="padding: 24px; overflow-y: auto; max-height: 400px;">
+          @if (!selectedParcelDetails()) {
+            <div class="zir-skeleton--text" style="height: 100%; border-radius: 8px;"></div>
+          } @else {
+            <h4 style="font-size: 18px; font-weight: 700; color: var(--text-primary); margin-bottom: 8px;">
+              {{ selectedParcelDetails().crop_type }}
+            </h4>
+            <p style="color: var(--text-secondary); margin-bottom: 24px;">
+              {{ selectedParcelDetails().surface_ha }} Hectares — Appartenant à {{ selectedParcelDetails().owner?.name || 'Inconnu' }}
+            </p>
+
+            <h5 style="font-size: 13px; text-transform: uppercase; font-weight: 700; color: var(--text-muted); margin-bottom: 12px; letter-spacing: 0.05em;">
+              Zones de Culture (Crop Zones)
+            </h5>
+            
+            <div style="display:flex; flex-direction:column; gap:12px;">
+              @for (cz of selectedCropZones(); track cz.id) {
+                <div style="padding: 12px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: var(--radius-md);">
+                  <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                    <b style="font-size:13px; color:var(--text-primary);">{{ cz.name || 'Zone Principale' }}</b>
+                    <span class="zir-badge zir-badge--info">{{ cz.plant_count }} Plants</span>
+                  </div>
+                  <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-secondary);">
+                    <span>GDD: {{ cz.gdd_accumulated || 0 }} / {{ cz.gdd_target || 1200 }}</span>
+                    <span style="color: var(--zir-emerald); font-weight: 700;">
+                      Récolte: {{ (cz.harvest_prediction_date | date:'dd MMM yyyy') || 'N/A' }}
+                    </span>
+                  </div>
+                </div>
+              }
+              @if (selectedCropZones().length === 0) {
+                <p style="font-size:12px; color:var(--text-muted); font-style:italic;">Aucune zone définie.</p>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- WIZARD CREATE PARCEL -->
+@if (showWizard) {
+  <div class="zir-modal">
+    <div class="zir-modal__backdrop" (click)="showWizard = false"></div>
+    <div class="zir-modal__content zir-card">
+      <div class="zir-modal__header">
+        <h3>Déclarer une nouvelle parcelle</h3>
+        <button class="zir-btn zir-btn--ghost zir-btn--icon-only" (click)="showWizard = false">
+          <ng-icon name="lucideX"></ng-icon>
+        </button>
+      </div>
+
+      <div class="zir-modal__body">
+        <!-- Step 1 -->
+        @if (wizardStep === 1) {
+          <div style="display:flex; flex-direction:column; gap: 16px;">
+            <div class="zir-input-group">
+              <label class="zir-label">Nom de la parcelle (Optionnel)</label>
+              <input type="text" class="zir-input" [(ngModel)]="newParcel.name" placeholder="Ex: Terrain Nord">
+            </div>
+            <div class="zir-input-group">
+              <label class="zir-label">Type de culture</label>
+              <input type="text" class="zir-input" [(ngModel)]="newParcel.crop_type" placeholder="Ex: Tomate, Blé">
+            </div>
+            <div style="display:flex; gap: 16px;">
+              <div class="zir-input-group" style="flex:1;">
+                <label class="zir-label">Surface (ha)</label>
+                <input type="number" class="zir-input" [(ngModel)]="newParcel.surface_ha" placeholder="Ex: 5.5">
+              </div>
+              <div class="zir-input-group" style="flex:1;">
+                <label class="zir-label">Gouvernorat</label>
+                <select class="zir-input" [(ngModel)]="newParcel.governorate">
+                  <option value="Kasserine">Kasserine</option>
+                  <option value="Sidi Bouzid">Sidi Bouzid</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        }
+        
+        <!-- Step 2 -->
+        @if (wizardStep === 2) {
+          <div style="text-align:center; padding: 24px 0;">
+            <p style="color:var(--text-secondary); margin-bottom:16px;">(Simulation) Pointez l'emplacement GPS de la parcelle sur la carte.</p>
+            <div style="width:100%; height:200px; background:#1e293b; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#94a3b8; border:1px dashed #475569;">
+               <ng-icon name="lucideMapPin" style="font-size: 32px; color: var(--zir-emerald);"></ng-icon>
+               <span style="margin-left:8px;">[ CARTE INTERACTIVE ICI ]</span>
+            </div>
+            <p style="font-size:11px; margin-top:8px; color:var(--text-muted);">Lat: {{ newParcel.lat }}, Lng: {{ newParcel.lng }}</p>
+          </div>
+        }
+      </div>
+
+      <div class="zir-modal__footer" style="display:flex; justify-content:space-between; margin-top:24px;">
+        @if (wizardStep === 1) {
+          <button class="zir-btn zir-btn--ghost" (click)="showWizard = false">Annuler</button>
+          <button class="zir-btn zir-btn--primary" (click)="wizardStep = 2" [disabled]="!newParcel.crop_type || !newParcel.surface_ha">Suivant</button>
+        } @else {
+          <button class="zir-btn zir-btn--ghost" (click)="wizardStep = 1">Retour</button>
+          <button class="zir-btn zir-btn--primary" (click)="submitParcel()">Confirmer & Déclarer</button>
+        }
+      </div>
+    </div>
+  </div>
+}

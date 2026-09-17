@@ -1,0 +1,367 @@
+<div class="cases-page">
+
+  <!-- ── Tab Row ── -->
+  <div class="tab-row">
+    <button class="tab-btn" [class.active]="activeTab() === 'ai'" (click)="activeTab.set('ai')">
+      <ng-icon name="lucideCpu"></ng-icon>
+      Diagnostics IA
+      <span class="tab-badge" [class.alert]="aiCases().length > 0">{{ aiCases().length }}</span>
+    </button>
+    <button class="tab-btn" [class.active]="activeTab() === 'field'" (click)="activeTab.set('field')">
+      <ng-icon name="lucideFlag"></ng-icon>
+      Rapports Terrain
+      <span class="tab-badge" [class.alert]="fieldReports().length > 0">{{ fieldReports().length }}</span>
+    </button>
+  </div>
+
+  <!-- ══════════════════ AI DIAGNOSIS TAB ══════════════════ -->
+  @if (activeTab() === 'ai') {
+    <div class="cases-wrap animate-in">
+
+      <!-- Left: Queue Sidebar (380px) -->
+      <div class="cases-list">
+        <div class="list-header">
+          <h2>File de Triage</h2>
+          <div class="case-count">{{ aiCases().length }} en attente</div>
+        </div>
+        <div class="list-content">
+          @if (isLoadingCases()) {
+            @for (i of [1,2,3]; track i) {
+              <app-skeleton-loader width="100%" height="100px" borderRadius="14px"></app-skeleton-loader>
+            }
+          } @else {
+            @for (c of aiCases(); track c.id) {
+              <div class="case-card" [class.selected]="selected()?.id === c.id" (click)="selectCase(c)">
+                <div class="case-card__img-wrap">
+                  <img [src]="c.photo_url || 'assets/images/leaf-placeholder.jpg'" alt="Preview" class="case-card__img">
+                  <span class="sev-pill sev-{{ c.severity.toLowerCase() }}">{{ getSevLabel(c.severity) }}</span>
+                </div>
+                <div class="case-card__details">
+                  <div class="case-title">{{ c.title }}</div>
+                  <div class="case-meta">
+                    <span class="meta-item"><ng-icon name="lucideUser"></ng-icon> {{ c.farmer_display_name }}</span>
+                    <span class="meta-item"><ng-icon name="lucideMapPin"></ng-icon> {{ c.delegation ?? '—' }}</span>
+                  </div>
+                  <div class="case-date">{{ c.created_at | date:'dd/MM/yyyy HH:mm' }}</div>
+                </div>
+                <div class="urgency-indicator" [style.background]="getConfidenceColor(c.confidence_score ?? 0)"></div>
+              </div>
+            }
+            @if (!aiCases().length) {
+              <div class="empty-state">
+                <ng-icon name="lucideCheckCircle"></ng-icon>
+                <p>Excellent ! Aucun diagnostic en attente de validation.</p>
+              </div>
+            }
+          }
+        </div>
+      </div>
+
+      <!-- Right: Detailed Triage Workspace -->
+      <div class="case-workspace">
+        @if (selected(); as c) {
+          <div class="workspace-card animate-in">
+
+            <div class="workspace-header">
+              <div class="ws-title-row">
+                <h2>Diagnostic #{{ c.id.substring(0, 8).toUpperCase() }}</h2>
+                <span class="ws-sev-badge sev-{{ c.severity.toLowerCase() }}">{{ getSevLabel(c.severity) }}</span>
+              </div>
+              <p class="ws-subtitle">Soumis par <strong>{{ c.farmer_display_name }}</strong> le {{ c.created_at | date:'dd MMMM yyyy à HH:mm' }}</p>
+            </div>
+
+            <div class="workspace-body">
+
+              <!-- Split view inside workspace -->
+              <div class="ws-grid">
+
+                <!-- Left panel: Media & AI Analysis -->
+                <div class="ws-media-panel">
+                  @if (c.photo_url) {
+                    <div class="ws-photo-wrap">
+                      <img [src]="c.photo_url" class="ws-photo" alt="Plante affectée">
+                    </div>
+                  }
+
+                  <div class="ai-stats-card">
+                    <div class="ai-stat-row">
+                      <span class="label"><ng-icon name="lucideCpu"></ng-icon> Diagnostic IA :</span>
+                      <span class="val">{{ c.title }}</span>
+                    </div>
+                    <div class="ai-stat-row">
+                      <span class="label">Confiance :</span>
+                      <div class="confidence-bar-wrap">
+                        <div class="confidence-bar" [style.width.%]="(c.confidence_score ?? 0) * 100" [style.background]="getConfidenceColor(c.confidence_score ?? 0)"></div>
+                        <span class="confidence-text" [style.color]="getConfidenceColor(c.confidence_score ?? 0)">{{ ((c.confidence_score ?? 0) * 100 | number:'1.0-0') }}%</span>
+                      </div>
+                    </div>
+                    @if (c.recommendation_fr) {
+                      <div class="ai-reco-box">
+                        <strong>Recommandation :</strong>
+                        <p>{{ c.recommendation_fr }}</p>
+                      </div>
+                    }
+                  </div>
+
+                  <!-- AI Suggestion Chips -->
+                  @if (aiSuggestions().length > 0) {
+                    <div class="ai-suggestions">
+                      <div class="suggestions-title">Suggestions IA</div>
+                      <div class="suggestion-chips">
+                        @for (s of aiSuggestions(); track $index) {
+                          <button class="suggestion-chip" (click)="insertSuggestion(s.text)" [style.borderColor]="s.color">
+                            <ng-icon [name]="s.icon" [style.color]="s.color"></ng-icon>
+                            <span>{{ s.text }}</span>
+                          </button>
+                        }
+                      </div>
+                    </div>
+                  }
+                </div>
+
+                <!-- Right panel: Action / Validation Form -->
+                <div class="ws-action-panel">
+
+                  @if (validationMode() === 'idle') {
+                    <div class="ws-initial-actions">
+                      <h3>Triage & Validation</h3>
+                      <p class="hint-text">Veuillez examiner la photo ci-contre ainsi que le diagnostic formulé par le modèle de vision artificielle Sentinel.</p>
+
+                      <!-- Radio-style validation buttons -->
+                      <div class="validation-radio-group">
+                        <button class="validation-radio correct" [class.selected]="isCorrect()" (click)="setValidation(true)">
+                          <div class="radio-circle"></div>
+                          <div class="radio-content">
+                            <span class="radio-icon">✓</span>
+                            <span class="radio-label">Diagnostic Correct</span>
+                          </div>
+                        </button>
+                        <button class="validation-radio incorrect" [class.selected]="!isCorrect()" (click)="setValidation(false)">
+                          <div class="radio-circle"></div>
+                          <div class="radio-content">
+                            <span class="radio-icon">✗</span>
+                            <span class="radio-label">Incorrect — Corriger</span>
+                          </div>
+                        </button>
+                      </div>
+                    </div>
+                  } @else {
+                    <div class="validation-form animate-in slide-down">
+                      <div class="form-header">
+                        <span class="form-badge" [class.accept]="isCorrect()" [class.reject]="!isCorrect()">
+                          {{ isCorrect() ? '✓ Confirmation' : '✗ Correction' }}
+                        </span>
+                        <button class="cancel-form-btn" (click)="validationMode.set('idle')">
+                          <ng-icon name="lucideXCircle"></ng-icon>
+                        </button>
+                      </div>
+
+                      <div class="db-integrity-alert">
+                        <ng-icon name="lucideInfo"></ng-icon>
+                        <p><strong>Nomenclature trilingue obligatoire :</strong> Afin de garantir l'intégrité de la base phytosanitaire globale de ZirIA, vous devez spécifier le nom dans ses trois déclinaisons.</p>
+                      </div>
+
+                      <!-- 1. Scientific / French Name -->
+                      <div class="form-group">
+                        <label class="form-label">Nom scientifique (Français / Commun) <span class="required">*</span></label>
+                        <input
+                          type="text"
+                          class="form-input"
+                          placeholder="Ex: Mildiou de la tomate, Alternariose..."
+                          [(ngModel)]="scientificName"
+                          [disabled]="isCorrect()"
+                        >
+                      </div>
+
+                      <!-- 2. Arabic Name -->
+                      <div class="form-group">
+                        <label class="form-label">Nom en arabe tunisien (Darija) <span class="required">*</span></label>
+                        <input
+                          type="text"
+                          class="form-input text-right"
+                          placeholder="Ex: مرض اللفحة المتأخرة، البياض الزغبي..."
+                          [(ngModel)]="arabicName"
+                          dir="rtl"
+                        >
+                      </div>
+
+                      <!-- 3. Latin Binomial Name -->
+                      <div class="form-group">
+                        <label class="form-label">Nom scientifique latin (Binominal) <span class="required">*</span></label>
+                        <input
+                          type="text"
+                          class="form-input italic"
+                          placeholder="Ex: Phytophthora infestans, Alternaria solani..."
+                          [(ngModel)]="latinName"
+                        >
+                      </div>
+
+                      <!-- 4. Expert Observations -->
+                      <div class="form-group">
+                        <label class="form-label">Observations & Conseils professionnels</label>
+                        <textarea
+                          class="form-textarea"
+                          placeholder="Ajoutez des détails, méthodes de lutte biologique, doses recommandées..."
+                          [(ngModel)]="validationComments"
+                        ></textarea>
+                      </div>
+
+                      <button
+                        class="submit-validation-btn"
+                        [disabled]="isSubmitting() || !scientificName || !arabicName || !latinName"
+                        (click)="submitValidation()"
+                      >
+                        @if (isSubmitting()) { <ng-icon name="lucideLoader" class="spin"></ng-icon> }
+                        @else { <ng-icon name="lucideCheck"></ng-icon> }
+                        Enregistrer & Valider le Diagnostic
+                      </button>
+                    </div>
+                  }
+
+                  <!-- Rapid Prescription Section -->
+                  <div class="prescription-section">
+                    <button class="prescription-toggle" (click)="showPrescription.update(v => !v)">
+                      <ng-icon name="lucideSend"></ng-icon>
+                      <span>Prescription Rapide</span>
+                      <ng-icon [name]="showPrescription() ? 'lucideChevronUp' : 'lucideChevronDown'"></ng-icon>
+                    </button>
+                    @if (showPrescription()) {
+                      <div class="prescription-form animate-in slide-down">
+                        <textarea
+                          class="form-textarea"
+                          placeholder="Rédigez votre prescription rapide (traitement, dosage, délai d'attente)..."
+                          [(ngModel)]="prescriptionText"
+                        ></textarea>
+                        <button
+                          class="submit-prescription-btn"
+                          [disabled]="!prescriptionText.trim()"
+                          (click)="sendRapidPrescription()"
+                        >
+                          <ng-icon name="lucideSend"></ng-icon>
+                          Envoyer la Prescription
+                        </button>
+                      </div>
+                    }
+                  </div>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+        } @else {
+          <div class="empty-ws animate-in">
+            <div class="empty-ws__icon">
+              <ng-icon name="lucideClipboardList"></ng-icon>
+            </div>
+            <h3>Sélectionnez un diagnostic</h3>
+            <p>Choisissez l'un des cas dans la file d'attente à gauche pour entamer l'examen technique et la validation de la nomenclature.</p>
+          </div>
+        }
+      </div>
+
+    </div>
+  }
+
+  <!-- ══════════════════ FIELD REPORTS TAB ══════════════════ -->
+  @if (activeTab() === 'field') {
+    <div class="field-reports-panel animate-in">
+      @if (isLoadingField()) {
+        <div class="fr-loading">
+          <app-skeleton-loader width="100%" height="120px" borderRadius="18px"></app-skeleton-loader>
+          <app-skeleton-loader width="100%" height="120px" borderRadius="18px"></app-skeleton-loader>
+        </div>
+      } @else if (!fieldReports().length) {
+        <div class="fr-empty">
+          <ng-icon name="lucideFlag"></ng-icon>
+          <p>Aucun rapport terrain à trier dans votre zone.</p>
+        </div>
+      } @else {
+        <div class="fr-list">
+          @for (r of fieldReports(); track r.id) {
+            <div class="fr-card" [class.expanded]="expandedId() === r.id" (click)="toggleExpand(r.id)">
+
+              <!-- Card Header Row -->
+              <div class="fr-card-header">
+                <div class="fr-amb-info">
+                  <div class="amb-avatar">{{ (r.ambassador_name || 'A').charAt(0) }}</div>
+                  <div>
+                    <div class="amb-name">{{ r.ambassador_name }}</div>
+                    <div class="amb-zone">{{ r.zone_name }} — {{ r.delegation }}</div>
+                  </div>
+                </div>
+
+                <div class="fr-meta-pills">
+                  <span class="sev-pill sev-{{ r.severity.toLowerCase() }}">{{ getSevLabel(r.severity) }}</span>
+                  @if (r.crop_type || r.affected_crop_type) {
+                    <span class="meta-pill">
+                      <ng-icon name="lucideSprout"></ng-icon> {{ r.crop_type || r.affected_crop_type }}
+                    </span>
+                  }
+                  @if (r.affected_area_ha) {
+                    <span class="meta-pill">
+                      <ng-icon name="lucideRuler"></ng-icon> {{ r.affected_area_ha | number:'1.0-1' }} ha
+                    </span>
+                  }
+                  <span class="meta-pill date-pill">{{ r.created_at | date:'dd/MM/yyyy' }}</span>
+                </div>
+
+                <ng-icon [name]="expandedId() === r.id ? 'lucideChevronUp' : 'lucideChevronDown'" class="expand-icon"></ng-icon>
+              </div>
+
+              <!-- Brief observations preview -->
+              <div class="fr-preview">{{ r.description | slice:0:120 }}...</div>
+
+              <!-- Expanded Content -->
+              @if (expandedId() === r.id) {
+                <div class="fr-expanded animate-in slide-down" (click)="$event.stopPropagation()">
+                  <div class="fr-expand-grid">
+
+                    <div class="fr-obs-col">
+                      @if (r.description) {
+                        <div class="expand-section">
+                          <div class="expand-label">Description initiale</div>
+                          <p class="expand-text">{{ r.description }}</p>
+                        </div>
+                      }
+                      @if (r.observations) {
+                        <div class="expand-section">
+                          <div class="expand-label">Observations Terrain</div>
+                          <p class="expand-text">{{ r.observations }}</p>
+                        </div>
+                      }
+                      @if (r.recommendations) {
+                        <div class="expand-section">
+                          <div class="expand-label">Recommandations Envoyées</div>
+                          <p class="expand-text">{{ r.recommendations }}</p>
+                        </div>
+                      }
+                    </div>
+
+                    @if (r.photo_urls && r.photo_urls.length > 0) {
+                      <div class="fr-photos-col">
+                        <div class="expand-label">Photos de terrain</div>
+                        <div class="photo-thumbs">
+                          @for (url of (r.photo_urls || []); track $index) {
+                            <a [href]="url" target="_blank">
+                              <img [src]="url" class="photo-thumb" alt="Photo terrain">
+                            </a>
+                          }
+                        </div>
+                      </div>
+                    }
+
+                  </div>
+                </div>
+              }
+
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+
+</div>

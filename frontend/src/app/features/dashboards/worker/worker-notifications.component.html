@@ -1,0 +1,70 @@
+<div class="worker-notifications zir-animate-in">
+
+  <header class="page-header">
+    <div class="header-titles">
+      <h1>
+        <ng-icon name="lucideBell" style="color:var(--zir-emerald);"></ng-icon>
+        Centre de Notifications
+      </h1>
+      <p>Retrouvez vos validations de certifications, alertes de missions et suivis de revenus.</p>
+    </div>
+    
+    <button class="zir-btn zir-btn--secondary clear-all-btn" (click)="markAllAsRead()" [disabled]="isLoading() || !notifications().length">
+      <ng-icon name="lucideCheckCircle"></ng-icon>
+      Tout marquer comme lu
+    </button>
+  </header>
+
+  @if (isLoading()) {
+    <div class="loading-state">
+      <div class="zir-spinner"></div>
+      <p>Synchronisation de vos alertes...</p>
+    </div>
+  } @else {
+
+    <div class="notifications-card-wrapper">
+      <div class="notifications-list">
+        @for (notif of notifications(); track notif.id) {
+          <div class="notif-item-card" [class.unread]="!notif.is_read" (click)="handleNotificationClick(notif)">
+            
+            <!-- Indicator point for unread notifications -->
+            @if (!notif.is_read) {
+              <div class="unread-dot"></div>
+            }
+
+            <!-- Icon Column based on type -->
+            <div class="notif-icon-circle" [class]="notif.payload?.type?.toLowerCase() || ''">
+              <ng-icon [name]="getNotificationIcon(notif.payload?.type)"></ng-icon>
+            </div>
+
+            <!-- Content Column -->
+            <div class="notif-body">
+              <div class="notif-title-row">
+                <h3>{{ notif.title }}</h3>
+                <span class="notif-time">{{ notif.created_at | date:'dd MMM yyyy à HH:mm' }}</span>
+              </div>
+              <p class="notif-message">{{ notif.message }}</p>
+            </div>
+
+            <!-- Link arrow Column -->
+            <div class="notif-action-arrow">
+              <ng-icon name="lucideArrowRight"></ng-icon>
+            </div>
+
+          </div>
+        } @empty {
+          <div class="empty-notifications-card text-center">
+            <div class="illustration-bell">
+              <div class="pulsing-halo"></div>
+              <ng-icon name="lucideBell" class="bell-icon"></ng-icon>
+            </div>
+            <h3>Vous êtes à jour !</h3>
+            <p>Aucune nouvelle notification pour le moment. Nous vous alerterons dès qu'une action nécessitera votre attention.</p>
+          </div>
+        }
+      </div>
+    </div>
+
+  }
+
+</div>

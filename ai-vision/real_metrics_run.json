@@ -1,0 +1,404 @@
+{
+  "num_training_samples": 341,
+  "num_val_calib_samples": 119,
+  "num_test_samples": 136,
+  "num_hard_field_samples": 6,
+  "classes": [
+    "Ble_dur_Feuille_Saine",
+    "Ble_dur_Rouille_jaune",
+    "Olivier_Deficience_Nutritionnelle",
+    "Olivier_Fumagine",
+    "Olivier_Virose",
+    "Poivron_Feuille_Saine",
+    "Poivron_Tache_bacterienne",
+    "Pomme_de_terre_Feuille_Saine",
+    "Pomme_de_terre_Mildiou_precoce",
+    "Pomme_de_terre_Mildiou_tardif",
+    "Tomate_Acarien",
+    "Tomate_Feuille_Saine",
+    "Tomate_Mildiou_precoce",
+    "Tomate_Mildiou_tardif",
+    "Tomate_Moisissure_foliaire",
+    "Tomate_Septoriose",
+    "Tomate_Tache_bacterienne",
+    "Tomate_Virus_mosaique"
+  ],
+  "model1_name": "EfficientNet-B0",
+  "model2_name": "MobileNetV2",
+  "temp1": 2.151,
+  "temp2": 2.206,
+  "test_accuracy": 0.1544,
+  "ece_raw": 0.573,
+  "ece_calib": 0.2933,
+  "ece_ensemble": 0.2527,
+  "bins_raw": [
+    {
+      "bin": "0.1-0.2",
+      "count": 1,
+      "acc": 0.0,
+      "conf": 0.1477,
+      "error": 0.1477
+    },
+    {
+      "bin": "0.2-0.3",
+      "count": 4,
+      "acc": 0.0,
+      "conf": 0.2719,
+      "error": 0.2719
+    },
+    {
+      "bin": "0.3-0.4",
+      "count": 11,
+      "acc": 0.0909,
+      "conf": 0.3566,
+      "error": 0.2657
+    },
+    {
+      "bin": "0.4-0.5",
+      "count": 14,
+      "acc": 0.2857,
+      "conf": 0.4424,
+      "error": 0.1567
+    },
+    {
+      "bin": "0.5-0.6",
+      "count": 20,
+      "acc": 0.25,
+      "conf": 0.553,
+      "error": 0.303
+    },
+    {
+      "bin": "0.6-0.7",
+      "count": 7,
+      "acc": 0.1429,
+      "conf": 0.6381,
+      "error": 0.4953
+    },
+    {
+      "bin": "0.7-0.8",
+      "count": 12,
+      "acc": 0.0833,
+      "conf": 0.7682,
+      "error": 0.6849
+    },
+    {
+      "bin": "0.8-0.9",
+      "count": 21,
+      "acc": 0.1905,
+      "conf": 0.8493,
+      "error": 0.6588
+    },
+    {
+      "bin": "0.9-1.0",
+      "count": 46,
+      "acc": 0.087,
+      "conf": 0.9564,
+      "error": 0.8695
+    }
+  ],
+  "bins_calib": [
+    {
+      "bin": "0.1-0.2",
+      "count": 11,
+      "acc": 0.0909,
+      "conf": 0.1544,
+      "error": 0.0635
+    },
+    {
+      "bin": "0.2-0.3",
+      "count": 33,
+      "acc": 0.303,
+      "conf": 0.2377,
+      "error": 0.0654
+    },
+    {
+      "bin": "0.3-0.4",
+      "count": 26,
+      "acc": 0.0385,
+      "conf": 0.3464,
+      "error": 0.3079
+    },
+    {
+      "bin": "0.4-0.5",
+      "count": 28,
+      "acc": 0.2143,
+      "conf": 0.4445,
+      "error": 0.2302
+    },
+    {
+      "bin": "0.5-0.6",
+      "count": 17,
+      "acc": 0.0,
+      "conf": 0.5571,
+      "error": 0.5571
+    },
+    {
+      "bin": "0.6-0.7",
+      "count": 9,
+      "acc": 0.1111,
+      "conf": 0.6484,
+      "error": 0.5373
+    },
+    {
+      "bin": "0.7-0.8",
+      "count": 7,
+      "acc": 0.1429,
+      "conf": 0.7357,
+      "error": 0.5928
+    },
+    {
+      "bin": "0.8-0.9",
+      "count": 5,
+      "acc": 0.0,
+      "conf": 0.826,
+      "error": 0.826
+    }
+  ],
+  "bins_ensemble": [
+    {
+      "bin": "0.1-0.2",
+      "count": 12,
+      "acc": 0.1667,
+      "conf": 0.1658,
+      "error": 0.0009
+    },
+    {
+      "bin": "0.2-0.3",
+      "count": 29,
+      "acc": 0.1724,
+      "conf": 0.2568,
+      "error": 0.0844
+    },
+    {
+      "bin": "0.3-0.4",
+      "count": 35,
+      "acc": 0.1714,
+      "conf": 0.3369,
+      "error": 0.1655
+    },
+    {
+      "bin": "0.4-0.5",
+      "count": 21,
+      "acc": 0.0952,
+      "conf": 0.4519,
+      "error": 0.3567
+    },
+    {
+      "bin": "0.5-0.6",
+      "count": 20,
+      "acc": 0.2,
+      "conf": 0.5508,
+      "error": 0.3508
+    },
+    {
+      "bin": "0.6-0.7",
+      "count": 11,
+      "acc": 0.1818,
+      "conf": 0.6637,
+      "error": 0.4819
+    },
+    {
+      "bin": "0.7-0.8",
+      "count": 6,
+      "acc": 0.0,
+      "conf": 0.7636,
+      "error": 0.7636
+    },
+    {
+      "bin": "0.8-0.9",
+      "count": 2,
+      "acc": 0.0,
+      "conf": 0.8673,
+      "error": 0.8673
+    }
+  ],
+  "median_margin": 0.2229,
+  "acc_low_margin": 0.1463,
+  "acc_high_margin": 0.1579,
+  "hard_accuracy": 0.3333,
+  "hard_ece": 0.1295,
+  "class_metrics_sorted": [
+    {
+      "class_id": 1,
+      "name": "Ble_dur_Rouille_jaune",
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 8
+    },
+    {
+      "class_id": 2,
+      "name": "Olivier_Deficience_Nutritionnelle",
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 8
+    },
+    {
+      "class_id": 4,
+      "name": "Olivier_Virose",
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 8
+    },
+    {
+      "class_id": 7,
+      "name": "Pomme_de_terre_Feuille_Saine",
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 8
+    },
+    {
+      "class_id": 9,
+      "name": "Pomme_de_terre_Mildiou_tardif",
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 8
+    },
+    {
+      "class_id": 10,
+      "name": "Tomate_Acarien",
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 8
+    },
+    {
+      "class_id": 11,
+      "name": "Tomate_Feuille_Saine",
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 8
+    },
+    {
+      "class_id": 14,
+      "name": "Tomate_Moisissure_foliaire",
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 8
+    },
+    {
+      "class_id": 16,
+      "name": "Tomate_Tache_bacterienne",
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 8
+    },
+    {
+      "class_id": 17,
+      "name": "Tomate_Virus_mosaique",
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 0
+    },
+    {
+      "class_id": 5,
+      "name": "Poivron_Feuille_Saine",
+      "precision": 0.1,
+      "recall": 0.125,
+      "f1": 0.111,
+      "support": 8
+    },
+    {
+      "class_id": 6,
+      "name": "Poivron_Tache_bacterienne",
+      "precision": 0.1,
+      "recall": 0.125,
+      "f1": 0.111,
+      "support": 8
+    },
+    {
+      "class_id": 8,
+      "name": "Pomme_de_terre_Mildiou_precoce",
+      "precision": 0.125,
+      "recall": 0.125,
+      "f1": 0.125,
+      "support": 8
+    },
+    {
+      "class_id": 13,
+      "name": "Tomate_Mildiou_tardif",
+      "precision": 0.167,
+      "recall": 0.125,
+      "f1": 0.143,
+      "support": 8
+    },
+    {
+      "class_id": 3,
+      "name": "Olivier_Fumagine",
+      "precision": 0.2,
+      "recall": 0.25,
+      "f1": 0.222,
+      "support": 8
+    },
+    {
+      "class_id": 15,
+      "name": "Tomate_Septoriose",
+      "precision": 0.273,
+      "recall": 0.375,
+      "f1": 0.316,
+      "support": 8
+    },
+    {
+      "class_id": 12,
+      "name": "Tomate_Mildiou_precoce",
+      "precision": 0.333,
+      "recall": 0.5,
+      "f1": 0.4,
+      "support": 8
+    },
+    {
+      "class_id": 0,
+      "name": "Ble_dur_Feuille_Saine",
+      "precision": 0.889,
+      "recall": 1.0,
+      "f1": 0.941,
+      "support": 8
+    }
+  ],
+  "confusable_pairs": [
+    {
+      "true_class": "Ble_dur_Rouille_jaune",
+      "pred_class": "Olivier_Deficience_Nutritionnelle",
+      "error_count": 8,
+      "total_true": 8
+    },
+    {
+      "true_class": "Olivier_Deficience_Nutritionnelle",
+      "pred_class": "Olivier_Fumagine",
+      "error_count": 8,
+      "total_true": 8
+    },
+    {
+      "true_class": "Olivier_Virose",
+      "pred_class": "Poivron_Feuille_Saine",
+      "error_count": 8,
+      "total_true": 8
+    },
+    {
+      "true_class": "Poivron_Feuille_Saine",
+      "pred_class": "Poivron_Tache_bacterienne",
+      "error_count": 7,
+      "total_true": 8
+    },
+    {
+      "true_class": "Pomme_de_terre_Feuille_Saine",
+      "pred_class": "Pomme_de_terre_Mildiou_precoce",
+      "error_count": 7,
+      "total_true": 8
+    },
+    {
+      "true_class": "Pomme_de_terre_Mildiou_precoce",
+      "pred_class": "Pomme_de_terre_Mildiou_tardif",
+      "error_count": 7,
+      "total_true": 8
+    }
+  ]
+}

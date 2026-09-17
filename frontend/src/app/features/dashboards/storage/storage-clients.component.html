@@ -1,0 +1,231 @@
+<div class="storage-clients-page">
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Mes Clients & Suivi des Impayés</h1>
+      <p class="page-sub">Vue agrégée par client avec calcul automatique des jours de retard</p>
+    </div>
+    <button class="btn-refresh" (click)="loadClients()">
+      <ng-icon name="lucideRefreshCw" size="14" /> Actualiser
+    </button>
+  </div>
+
+  <!-- Retards Focus Banner & KPI Cards -->
+  <div class="kpi-banner">
+    <div class="kpi-card danger-60" [class.active]="filterTab() === 'OVERDUE_60'" (click)="filterTab.set('OVERDUE_60')">
+      <div class="kpi-icon icon-red">
+        <ng-icon name="lucideAlertTriangle" size="20" />
+      </div>
+      <div class="kpi-info">
+        <span class="kpi-value">{{ overdue60Count }}</span>
+        <span class="kpi-label">Retard 60+ Jours</span>
+      </div>
+    </div>
+
+    <div class="kpi-card warning-30" [class.active]="filterTab() === 'OVERDUE_30'" (click)="filterTab.set('OVERDUE_30')">
+      <div class="kpi-icon icon-amber">
+        <ng-icon name="lucideClock" size="20" />
+      </div>
+      <div class="kpi-info">
+        <span class="kpi-value">{{ overdue30Count }}</span>
+        <span class="kpi-label">Retard 30-59 Jours</span>
+      </div>
+    </div>
+
+    <div class="kpi-card total-due">
+      <div class="kpi-icon icon-purple">
+        <ng-icon name="lucideDollarSign" size="20" />
+      </div>
+      <div class="kpi-info">
+        <span class="kpi-value">{{ totalUnpaid | number:'1.0-0' }} TND</span>
+        <span class="kpi-label">Total Impayés Plateforme</span>
+      </div>
+    </div>
+
+    <div class="kpi-card ok" [class.active]="filterTab() === 'OK'" (click)="filterTab.set('OK')">
+      <div class="kpi-icon icon-emerald">
+        <ng-icon name="lucideCheckCircle2" size="20" />
+      </div>
+      <div class="kpi-info">
+        <span class="kpi-value">{{ clients().length - overdue60Count - overdue30Count }}</span>
+        <span class="kpi-label">Clients à Jour</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter Tabs & Search -->
+  <div class="controls-row">
+    <div class="tabs">
+      <button class="tab-btn" [class.active]="filterTab() === 'ALL'" (click)="filterTab.set('ALL')">Tous ({{ clients().length }})</button>
+      <button class="tab-btn danger" [class.active]="filterTab() === 'OVERDUE_60'" (click)="filterTab.set('OVERDUE_60')">60+ Jours ({{ overdue60Count }})</button>
+      <button class="tab-btn warning" [class.active]="filterTab() === 'OVERDUE_30'" (click)="filterTab.set('OVERDUE_30')">30-59 Jours ({{ overdue30Count }})</button>
+      <button class="tab-btn ok" [class.active]="filterTab() === 'OK'" (click)="filterTab.set('OK')">À Jour</button>
+    </div>
+
+    <div class="search-box">
+      <ng-icon name="lucideSearch" size="16" class="search-icon" />
+      <input
+        type="text"
+        placeholder="Rechercher par nom de client ou téléphone..."
+        [ngModel]="searchQuery()"
+        (ngModelChange)="searchQuery.set($event)"
+        class="search-input" />
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  @if (loading()) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Chargement du répertoire clients...</p>
+    </div>
+  }
+
+  <!-- Clients List -->
+  @if (!loading()) {
+    @if (filteredClients.length === 0) {
+      <div class="empty-state">
+        <ng-icon name="lucideCheckCircle2" size="48" class="empty-icon" />
+        <h3>Aucun client trouvé dans cette catégorie</h3>
+        <p>Tous vos règlements sont en ordre pour ce filtre.</p>
+      </div>
+    } @else {
+      <div class="clients-list">
+        @for (client of filteredClients; track client.phone) {
+          <div class="client-card" [class.card-overdue-60]="client.max_days_overdue >= 60" [class.card-overdue-30]="client.max_days_overdue >= 30 && client.max_days_overdue < 60">
+
+            <!-- Summary Row -->
+            <div class="client-summary" (click)="toggleExpand(client.phone)">
+              <div class="avatar" [class.avatar-danger]="client.max_days_overdue >= 60" [class.avatar-warning]="client.max_days_overdue >= 30 && client.max_days_overdue < 60">
+                {{ client.client_name?.charAt(0) || '?' }}
+              </div>
+
+              <div class="client-meta">
+                <h3 class="client-name">{{ client.client_name || 'Client Inconnu' }}</h3>
+                <span class="client-phone">
+                  <ng-icon name="lucidePhoneCall" size="12" />
+                  {{ client.phone }}
+                </span>
+              </div>
+
+              <div class="overdue-badge-wrapper">
+                <span class="status-badge" [class]="getOverdueBadge(client.max_days_overdue).class">
+                  {{ getOverdueBadge(client.max_days_overdue).label }}
+                </span>
+              </div>
+
+              <div class="financial-summary">
+                <span class="unpaid-val" [class.has-debt]="client.total_unpaid_tnd > 0">
+                  {{ client.total_unpaid_tnd | number:'1.0-0' }} TND
+                </span>
+                <span class="unpaid-lbl">impayé dû</span>
+              </div>
+
+              <div class="quick-actions">
+                <button class="btn-call" (click)="callClient(client.phone); $event.stopPropagation()" title="Appeler">
+                  <ng-icon name="lucidePhoneCall" size="14" />
+                </button>
+                <ng-icon [name]="expandedPhone() === client.phone ? 'lucideChevronUp' : 'lucideChevronDown'" size="18" class="chevron" />
+              </div>
+            </div>
+
+            <!-- Expanded Details -->
+            @if (expandedPhone() === client.phone) {
+              <div class="client-details">
+                <h4 class="details-heading">Détail des Réservations & Part Électricité STEG</h4>
+                @for (res of client.reservations; track res.reservation_id) {
+                  <div class="reservation-item" [class.item-overdue]="res.days_overdue > 0">
+                    <div class="res-room">
+                      <span class="room-name">
+                        <ng-icon name="lucideBox" size="14" />
+                        {{ res.room_name }}
+                      </span>
+                      @if (res.days_overdue > 0) {
+                        <span class="days-badge">Retard de {{ res.days_overdue }} jours</span>
+                      }
+                    </div>
+
+                    <div class="res-breakdown">
+                      <div class="breakdown-col">
+                        <span class="b-lbl">Loyer Stockage</span>
+                        <span class="b-val">{{ res.total_price | number:'1.0-0' }} TND</span>
+                      </div>
+                      <div class="breakdown-col">
+                        <span class="b-lbl">Payé</span>
+                        <span class="b-val ok">{{ res.amount_paid_tnd | number:'1.0-0' }} TND</span>
+                      </div>
+                      <div class="breakdown-col">
+                        <span class="b-lbl">Reste Dû</span>
+                        <span class="b-val" [class.due-alert]="res.amount_due_tnd > 0">{{ res.amount_due_tnd | number:'1.0-0' }} TND</span>
+                      </div>
+                    </div>
+
+                    @if (res.amount_due_tnd > 0) {
+                      <button class="btn-pay" (click)="openPaymentModal(client, res)">
+                        <ng-icon name="lucideCreditCard" size="14" />
+                        Enregistrer Paiement
+                      </button>
+                    } @else {
+                      <span class="settled-tag">
+                        <ng-icon name="lucideCheck" size="14" />
+                        Soldé
+                      </span>
+                    }
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+  }
+
+  <!-- Payment Modal -->
+  @if (paymentModal()) {
+    <div class="modal-overlay" (click)="closePaymentModal()">
+      <div class="modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>Enregistrer un Paiement Client</h3>
+          <button class="modal-close" (click)="closePaymentModal()">
+            <ng-icon name="lucideX" size="16" />
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="info-box">
+            <p><strong>Client:</strong> {{ paymentModal()!.client.client_name }} ({{ paymentModal()!.client.phone }})</p>
+            <p><strong>Salle:</strong> {{ paymentModal()!.reservation.room_name }}</p>
+            <p class="due-text"><strong>Reste à régler:</strong> {{ paymentModal()!.reservation.amount_due_tnd | number:'1.0-0' }} TND</p>
+          </div>
+
+          <div class="form-field">
+            <label>Montant encaissé (TND)</label>
+            <input
+              type="number"
+              [ngModel]="paymentAmount()"
+              (ngModelChange)="paymentAmount.set($event)"
+              [max]="paymentModal()!.reservation.amount_due_tnd"
+              min="1"
+              class="form-input" />
+          </div>
+
+          <div class="form-field">
+            <label>Note / Mode de règlement</label>
+            <textarea
+              [ngModel]="paymentNote()"
+              (ngModelChange)="paymentNote.set($event)"
+              placeholder="Ex: Espèces, chèque n°..., virement"
+              class="form-textarea" rows="2"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-cancel" (click)="closePaymentModal()">Annuler</button>
+          <button class="btn-confirm" (click)="submitPayment()" [disabled]="paymentLoading() || paymentAmount() <= 0">
+            {{ paymentLoading() ? 'Enregistrement...' : 'Confirmer le Règlement' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

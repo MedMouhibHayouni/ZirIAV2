@@ -1,0 +1,279 @@
+<div class="driver-missions zir-animate-in">
+
+  <!-- Header -->
+  <div class="missions-header">
+    <div class="header-info">
+      <h1><ng-icon name="lucidePackage"></ng-icon> Missions Disponibles</h1>
+      <p>Sélectionnez une mission de fret agricole et commencez votre trajet.</p>
+    </div>
+    <div class="header-actions">
+      <div class="search-bar">
+        <ng-icon name="lucideSearch"></ng-icon>
+        <input type="text" placeholder="Rechercher une ville, cargaison..."
+               [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event); currentPage.set(1)">
+        @if (searchQuery()) {
+          <button class="clear-search" (click)="searchQuery.set(''); currentPage.set(1)">
+            <ng-icon name="lucideX"></ng-icon>
+          </button>
+        }
+      </div>
+      <button class="filter-toggle-btn" [class.active]="showFilters()" (click)="showFilters.update(v => !v)">
+        <ng-icon name="lucideFilter"></ng-icon>
+        Filtres
+      </button>
+      <button class="zir-btn zir-btn--ghost btn-sm" (click)="load()">
+        <ng-icon name="lucideLoader" [class.spin]="isLoading()"></ng-icon>
+        Rafraîchir
+      </button>
+    </div>
+  </div>
+
+  <!-- Filter Bar -->
+  @if (showFilters()) {
+    <div class="filter-bar">
+      <select class="zir-input filter-select" [ngModel]="filterGov()" (ngModelChange)="filterGov.set($event); currentPage.set(1)">
+        <option value="">Toute la Tunisie</option>
+        @for (g of governorates; track g) { <option [value]="g">{{ g }}</option> }
+      </select>
+
+      <select class="zir-input filter-select" [ngModel]="filterCargo()" (ngModelChange)="filterCargo.set($event); currentPage.set(1)">
+        <option value="">Toutes cargaisons</option>
+        @for (c of cargoTypes; track c) { <option [value]="c">{{ c }}</option> }
+      </select>
+
+      @if (filterGov() || filterCargo() || searchQuery()) {
+        <button class="zir-btn zir-btn--ghost btn-sm" (click)="clearFilters()">
+          <ng-icon name="lucideX"></ng-icon> Réinitialiser
+        </button>
+      }
+
+      <span class="result-count">
+        {{ filteredMissions().length }} mission{{ filteredMissions().length !== 1 ? 's' : '' }} trouvée{{ filteredMissions().length !== 1 ? 's' : '' }}
+      </span>
+    </div>
+  }
+
+  <!-- Content -->
+  @if (isLoading()) {
+    <div class="loading-state">
+      <div class="zir-spinner"></div>
+      <p>Chargement des missions de fret...</p>
+    </div>
+  } @else {
+    <div class="missions-grid">
+      @for (m of paginatedMissions(); track m.id) {
+        <div class="mission-card" [class.accepting]="acceptingId() === m.id">
+          
+          <!-- Price Banner -->
+          <div class="mission-price-banner">
+            <div class="price-content">
+              <span class="price-amount">{{ formatPrice(m.proposed_price_tnd) }}</span>
+              <span class="price-currency">TND</span>
+            </div>
+            <div class="cargo-chip">
+              <ng-icon name="lucideBox"></ng-icon>
+              {{ m.cargo_type || 'Cargaison' }}
+            </div>
+          </div>
+
+          <!-- Route -->
+          <div class="route-section">
+            <div class="route-point origin">
+              <div class="point-dot origin-dot"></div>
+              <div class="point-info">
+                <label>Départ</label>
+                <span>{{ m.origin_address }}</span>
+              </div>
+            </div>
+            <div class="route-line">
+              <ng-icon name="lucideArrowRight"></ng-icon>
+            </div>
+            <div class="route-point destination">
+              <div class="point-dot dest-dot"></div>
+              <div class="point-info">
+                <label>Arrivée</label>
+                <span>{{ m.destination_address }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Meta Info -->
+          <div class="mission-meta">
+            <div class="meta-item">
+              <ng-icon name="lucideWeight"></ng-icon>
+              <span>{{ m.weight_tonnes }} Tonnes</span>
+            </div>
+            <div class="meta-item">
+              <ng-icon name="lucideClock"></ng-icon>
+              <span>{{ m.created_at | date:'dd MMM HH:mm' }}</span>
+            </div>
+          </div>
+
+          <!-- Footer -->
+          <div class="mission-footer" style="display: flex; gap: 8px; justify-content: space-between; align-items: center; width: 100%;">
+            @if (m.requester?.name) {
+              <div class="requester-info" style="flex: 1; min-width: 0;">
+                <div class="requester-avatar">{{ m.requester!.name[0].toUpperCase() }}</div>
+                <span class="requester-name" style="text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">{{ m.requester!.name }}</span>
+              </div>
+            } @else {
+              <span></span>
+            }
+            <div style="display: flex; gap: 8px;">
+              <button class="zir-btn zir-btn--ghost btn-sm" (click)="openNegotiations(m)" style="height: 36px; padding: 0 12px; font-weight: 700; border-color: var(--border); display: flex; align-items: center; gap: 4px;">
+                <ng-icon name="lucideMessageSquare"></ng-icon>
+                Négocier
+              </button>
+              <button class="accept-btn" (click)="accept(m)" [disabled]="acceptingId() === m.id" style="height: 36px; padding: 0 16px; font-weight: 800;">
+                @if (acceptingId() === m.id) {
+                  <div class="zir-spinner zir-spinner--white"></div>
+                } @else {
+                  <ng-icon name="lucideCheckCircle"></ng-icon>
+                  Accepter
+                }
+              </button>
+            </div>
+          </div>
+        </div>
+      } @empty {
+        <div class="empty-state">
+          <div class="empty-icon"><ng-icon name="lucideTruck"></ng-icon></div>
+          <h3>Aucune mission disponible</h3>
+          <p>Aucune mission de fret n'est disponible pour le moment. Réessayez dans quelques instants ou vérifiez vos filtres.</p>
+          <button class="zir-btn zir-btn--ghost" (click)="clearFilters()">
+            <ng-icon name="lucideX"></ng-icon> Supprimer les filtres
+          </button>
+        </div>
+      }
+    </div>
+
+    <!-- Pagination -->
+    @if (totalPages() > 1) {
+      <div class="pagination-row">
+        <button class="page-btn" [disabled]="currentPage() === 1" (click)="goToPage(currentPage() - 1)">‹</button>
+        @for (p of pages(); track p) {
+          <button class="page-btn" [class.active]="p === currentPage()" (click)="goToPage(p)">{{ p }}</button>
+        }
+        <button class="page-btn" [disabled]="currentPage() === totalPages()" (click)="goToPage(currentPage() + 1)">›</button>
+      </div>
+    }
+  }
+
+</div>
+
+<!-- Interactive Logistics Negotiations Board Modal for Driver -->
+@if (showNegotiationsModal()) {
+  <div class="zir-modal">
+    <div class="zir-modal__backdrop" (click)="closeNegotiations()"></div>
+    <div class="zir-modal__content negotiation-modal-content">
+      
+      <!-- Modal Header -->
+      <div class="zir-modal__header negotiation-header">
+        <div>
+          <h3 style="margin: 0; font-size: 18px; font-weight: 800; display: flex; align-items: center; gap: 8px;">
+            <ng-icon name="lucideMessageSquare" style="color: var(--zir-emerald);"></ng-icon>
+            Négociation de Fret : {{ selectedMissionForNegotiations()?.cargo_type }} · {{ selectedMissionForNegotiations()?.weight_tonnes }}T
+          </h3>
+          <p style="margin: 4px 0 0 0; font-size: 12px; color: var(--text-secondary);">
+            {{ selectedMissionForNegotiations()?.origin_address }} → {{ selectedMissionForNegotiations()?.destination_address }} · Budget initial: {{ selectedMissionForNegotiations()?.proposed_price_tnd || 300 }} TND
+          </p>
+        </div>
+        <button class="close-btn" (click)="closeNegotiations()"><ng-icon name="lucideXCircle"></ng-icon></button>
+      </div>
+
+      <!-- Main Negotiating Layout -->
+      <div class="negotiation-layout">
+        
+        <!-- Left Side: Farmer details & Counter-offer Console -->
+        <div class="bidders-sidebar" style="width: 320px; padding: 24px; display: flex; flex-direction: column; gap: 20px;">
+          <div class="sidebar-title" style="padding: 0; border: none; background: transparent; font-size: 13px; color: var(--text-primary);">
+            Propriétaire du Fret
+          </div>
+          
+          <div style="padding: 16px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px;">
+            <div style="font-weight: 800; font-size: 16px; color: var(--text-primary);">{{ selectedMissionForNegotiations()?.requester?.name }}</div>
+            <div style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">{{ selectedMissionForNegotiations()?.requester?.phone }}</div>
+            <div style="margin-top: 12px; font-size: 11px; padding: 4px 8px; background: rgba(16, 185, 129, 0.08); color: var(--zir-emerald); font-weight: 700; border-radius: 4px; display: inline-block;">
+              Client Vérifié
+            </div>
+          </div>
+
+          <div style="flex: 1;"></div>
+
+          <!-- Proposal Form -->
+          <div style="display: flex; flex-direction: column; gap: 12px; padding-top: 16px; border-top: 1px solid var(--border);">
+            <label style="font-size: 12px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Proposer un autre prix</label>
+            <div style="display: flex; gap: 8px;">
+              <input type="number" 
+                     class="zir-input" 
+                     [ngModel]="newBidPriceInput()" 
+                     (ngModelChange)="newBidPriceInput.set($event)"
+                     style="flex: 1; height: 42px; border-radius: 12px; padding: 0 12px; font-weight: 800;" 
+                     placeholder="TND">
+              <button class="zir-btn zir-btn--primary" (click)="submitCustomBid()" style="height: 42px; padding: 0 16px; border-radius: 12px; font-weight: 800;">
+                Proposer
+              </button>
+            </div>
+            <p style="font-size: 11px; color: var(--text-muted); margin: 0;">Le client sera notifié de votre contre-proposition.</p>
+          </div>
+        </div>
+
+        <!-- Right Side: Chat Container -->
+        <div class="chat-area">
+          
+          <!-- Actions bar showing current active offer -->
+          <div class="chat-actions-bar">
+            <div>
+              <span style="font-size: 12px; color: var(--text-secondary); font-weight: 600;">Offre négociée en cours :</span>
+              <div style="font-size: 20px; font-weight: 900; color: var(--zir-emerald);">{{ activeBidPrice() }} TND</div>
+            </div>
+            <div>
+              <button class="accept-btn" (click)="accept(selectedMissionForNegotiations())" style="font-weight: 800; height: 42px;">
+                <ng-icon name="lucideCheckCircle"></ng-icon>
+                Accepter la mission
+              </button>
+            </div>
+          </div>
+
+          <!-- Messages list -->
+          <div class="chat-messages-container">
+            @for (msg of chatMessages(); track msg.text) {
+              <div class="chat-bubble" [class.farmer]="msg.sender === 'farmer'" [class.driver]="msg.sender === 'driver'">
+                <div class="bubble-content">
+                  {{ msg.text }}
+                </div>
+                <span class="bubble-time">
+                  {{ msg.time }}
+                </span>
+              </div>
+            } @empty {
+              <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-muted); padding: 40px; text-align: center;">
+                <ng-icon name="lucideMessageSquare" style="font-size: 36px; opacity: 0.3; margin-bottom: 8px;"></ng-icon>
+                <p style="font-size: 13px; margin: 0;">Envoyez un message pour entamer la discussion ou proposer un tarif.</p>
+              </div>
+            }
+          </div>
+
+          <!-- Input bar -->
+          <div class="chat-input-bar">
+            <input type="text" 
+                   class="chat-input-field" 
+                   [ngModel]="newChatMessageText()"
+                   (ngModelChange)="newChatMessageText.set($event)"
+                   (keyup.enter)="sendChatMessage()"
+                   placeholder="Tapez votre message ici...">
+            <button class="send-btn" 
+                    (click)="sendChatMessage()"
+                    [disabled]="!newChatMessageText().trim()">
+              <ng-icon name="lucideSend" style="font-size: 18px;"></ng-icon>
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+}
+

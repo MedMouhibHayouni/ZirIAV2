@@ -1,0 +1,277 @@
+<div class="admin-experts">
+
+  <div class="page-header">
+    <div class="title-area">
+      <h2><ng-icon name="lucideGlobe"></ng-icon> Experts & Ambassadeurs</h2>
+      <p>Couverture par gouvernorat et gestion des profils terrain</p>
+    </div>
+    <button class="btn-refresh" (click)="loadData()" [disabled]="isLoading()">
+      <ng-icon [name]="isLoading() ? 'lucideLoader' : 'lucideRefreshCw'" [class.spin]="isLoading()"></ng-icon>
+      Actualiser
+    </button>
+  </div>
+
+  <div class="tabs-bar">
+    <button class="tab-btn" [class.active]="activeTab() === 'GOVERNORATES'" (click)="activeTab.set('GOVERNORATES')">
+      <ng-icon name="lucideMap"></ng-icon> Couverture Géographique
+    </button>
+    <button class="tab-btn" [class.active]="activeTab() === 'EXPERTS'" (click)="activeTab.set('EXPERTS')">
+      <ng-icon name="lucideAward"></ng-icon> Experts
+      @if (data()?.experts?.length) { <span class="tab-count">{{ data()?.experts?.length }}</span> }
+    </button>
+    <button class="tab-btn" [class.active]="activeTab() === 'AMBASSADORS'" (click)="activeTab.set('AMBASSADORS')">
+      <ng-icon name="lucideUsers"></ng-icon> Ambassadeurs
+      @if (data()?.ambassadors?.length) { <span class="tab-count">{{ data()?.ambassadors?.length }}</span> }
+    </button>
+  </div>
+
+  @if (isLoading()) {
+    <div class="loading-hero">
+      <ng-icon name="lucideLoader" class="spin"></ng-icon>
+      <span>Chargement des données...</span>
+    </div>
+  } @else {
+
+    <!-- ═══ GOVERNORATE GRID ═══ -->
+    @if (activeTab() === 'GOVERNORATES') {
+      <div class="gov-grid">
+        @for (gov of govList; track gov) {
+          @let coverage = getGovCoverage(gov);
+          <div class="gov-card" [class.covered]="coverage">
+            <div class="gov-header">
+              <ng-icon name="lucideMapPin"></ng-icon>
+              <h3>{{ gov }}</h3>
+            </div>
+            @if (coverage) {
+              <div class="gov-stats">
+                <div class="gov-stat">
+                  <span class="stat-icon" style="color:#10b981">🔬</span>
+                  <span class="stat-val">{{ coverage.expert_count }}</span>
+                  <span class="stat-label">Experts</span>
+                </div>
+                <div class="gov-stat">
+                  <span class="stat-icon" style="color:#f59e0b">🌍</span>
+                  <span class="stat-val">{{ coverage.ambassador_count }}</span>
+                  <span class="stat-label">Ambassadeurs</span>
+                </div>
+                <div class="gov-stat">
+                  <span class="stat-icon" style="color:#3b82f6">🌾</span>
+                  <span class="stat-val">{{ coverage.farmer_count }}</span>
+                  <span class="stat-label">Agriculteurs</span>
+                </div>
+              </div>
+            } @else {
+              <div class="gov-empty">Aucune donnée</div>
+            }
+          </div>
+        }
+      </div>
+    }
+
+    <!-- ═══ EXPERTS TAB ═══ -->
+    @if (activeTab() === 'EXPERTS') {
+      <div class="search-bar zir-card">
+        <div class="search-wrap">
+          <ng-icon name="lucideSearch" class="search-icon"></ng-icon>
+          <input class="zir-input" type="text" placeholder="Rechercher par nom, email ou gouvernorat..."
+                 [(ngModel)]="searchQuery">
+        </div>
+      </div>
+
+      <div class="zir-card table-card">
+        <div class="table-wrapper">
+          <table class="zir-table">
+            <thead>
+              <tr>
+                <th>Expert</th>
+                <th>Spécialité</th>
+                <th>Gouvernorat</th>
+                <th>Statut</th>
+                <th>Agriculteurs</th>
+                <th>Note</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (expert of filteredExperts; track expert.id) {
+                <tr>
+                  <td>
+                    <div class="user-cell">
+                      <div class="av" [style.background]="getExpertTypeColor(expert.expert_type)">{{ expert.name.charAt(0) }}</div>
+                      <div>
+                        <span class="font-medium">{{ expert.name }}</span>
+                        <span class="text-xs text-muted">{{ expert.email }}</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="exp-type-badge" [style.background]="getExpertTypeColor(expert.expert_type) + '18'" [style.color]="getExpertTypeColor(expert.expert_type)">
+                      {{ getExpertTypeLabel(expert.expert_type) }}
+                    </span>
+                  </td>
+                  <td class="text-muted">{{ expert.governorate || '—' }}</td>
+                  <td>
+                    <span class="status-badge" [class.ok]="expert.verified" [class.pending]="!expert.verified">
+                      {{ expert.verified ? 'Vérifié' : 'En attente' }}
+                    </span>
+                  </td>
+                  <td class="font-bold">{{ expert.farmer_count || 0 }}</td>
+                  <td>
+                    <div class="rating">
+                      <ng-icon name="lucideStar" style="color:#f59e0b;font-size:12px"></ng-icon>
+                      {{ parseFloat(expert.avg_rating || 0).toFixed(1) }}
+                    </div>
+                  </td>
+                  <td>
+                    <button class="btn-eye" (click)="openExpertDrawer(expert)" title="Détails">
+                      <ng-icon name="lucideEye"></ng-icon>
+                    </button>
+                  </td>
+                </tr>
+              } @empty {
+                <tr><td colspan="7" class="empty-row">Aucun expert trouvé.</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+
+    <!-- ═══ AMBASSADORS TAB ═══ -->
+    @if (activeTab() === 'AMBASSADORS') {
+      <div class="search-bar zir-card">
+        <div class="search-wrap">
+          <ng-icon name="lucideSearch" class="search-icon"></ng-icon>
+          <input class="zir-input" type="text" placeholder="Rechercher par nom, email ou gouvernorat..."
+                 [(ngModel)]="searchQuery">
+        </div>
+      </div>
+
+      <div class="zir-card table-card">
+        <div class="table-wrapper">
+          <table class="zir-table">
+            <thead>
+              <tr>
+                <th>Ambassadeur</th>
+                <th>Zone</th>
+                <th>Agriculteurs</th>
+                <th>Diagnostics</th>
+                <th>Statut</th>
+                <th>Inscrit le</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (amb of filteredAmbassadors; track amb.id) {
+                <tr>
+                  <td>
+                    <div class="user-cell">
+                      <div class="av amb" style="background:linear-gradient(135deg,#f59e0b,#d97706)">{{ amb.name.charAt(0) }}</div>
+                      <div>
+                        <span class="font-medium">{{ amb.name }}</span>
+                        <span class="text-xs text-muted">{{ amb.email }}</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="text-muted">{{ amb.governorate || '—' }}</td>
+                  <td class="font-bold">{{ amb.farmers_registered || 0 }}</td>
+                  <td class="font-bold">{{ amb.diagnostics_filed || 0 }}</td>
+                  <td>
+                    <span class="status-badge" [class.ok]="amb.verified" [class.pending]="!amb.verified">
+                      {{ amb.verified ? 'Actif' : 'Inactif' }}
+                    </span>
+                  </td>
+                  <td class="text-muted text-sm">{{ amb.created_at | date:'dd/MM/yyyy' }}</td>
+                  <td>
+                    <button class="btn-eye" (click)="openExpertDrawer(amb)" title="Détails">
+                      <ng-icon name="lucideEye"></ng-icon>
+                    </button>
+                  </td>
+                </tr>
+              } @empty {
+                <tr><td colspan="7" class="empty-row">Aucun ambassadeur trouvé.</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+  }
+</div>
+
+<!-- ═══ EXPERT DRAWER ═══ -->
+@if (showExpertDrawer()) {
+  <div class="drawer-overlay" (click)="closeExpertDrawer()"></div>
+  <div class="expert-drawer open">
+    <button class="drawer-close" (click)="closeExpertDrawer()">
+      <ng-icon name="lucideX"></ng-icon>
+    </button>
+
+    @if (selectedExpert(); as exp) {
+      <div class="drawer-hero">
+        <div class="drawer-avatar" [style.background]="getExpertTypeColor(exp.expert_type) || '#10b981'">
+          {{ exp.name?.charAt(0) }}
+        </div>
+        <div>
+          <h2 class="drawer-name">{{ exp.name }}</h2>
+          <div class="drawer-meta-row">
+            <span class="drawer-role-badge">{{ exp.expert_type ? getExpertTypeLabel(exp.expert_type) : 'Ambassadeur' }}</span>
+            <span class="drawer-status" [class.active]="exp.verified">{{ exp.verified ? '● Actif' : '● Inactif' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="drawer-body">
+        <div class="info-section">
+          <div class="info-row">
+            <ng-icon name="lucideUsers" class="info-icon"></ng-icon>
+            <span class="info-label">Email</span>
+            <span class="info-val">{{ exp.email || '—' }}</span>
+          </div>
+          <div class="info-row">
+            <ng-icon name="lucideMapPin" class="info-icon"></ng-icon>
+            <span class="info-label">Gouvernorat</span>
+            <span class="info-val">{{ exp.governorate || '—' }}</span>
+          </div>
+          <div class="info-row">
+            <ng-icon name="lucideActivity" class="info-icon"></ng-icon>
+            <span class="info-label">Spécialité</span>
+            <span class="info-val">{{ exp.expert_type ? getExpertTypeLabel(exp.expert_type) : 'Ambassadeur Terrain' }}</span>
+          </div>
+          <div class="info-row">
+            <ng-icon name="lucideShieldCheck" class="info-icon"></ng-icon>
+            <span class="info-label">Vérifié</span>
+            <span class="info-val">{{ exp.verified ? '✅ Oui' : '❌ Non' }}</span>
+          </div>
+          <div class="info-row">
+            <ng-icon name="lucideFileText" class="info-icon"></ng-icon>
+            <span class="info-label">Inscrit le</span>
+            <span class="info-val">{{ exp.created_at | date:'dd MMMM yyyy' }}</span>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          @if (exp.expert_type) {
+            <div class="stat-card">
+              <span class="stat-number" style="color:#10b981">{{ exp.farmer_count || 0 }}</span>
+              <span class="stat-desc">Agriculteurs assignés</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-number" style="color:#f59e0b">{{ parseFloat(exp.avg_rating || 0).toFixed(1) }}</span>
+              <span class="stat-desc">Note moyenne ({{ exp.review_count || 0 }} avis)</span>
+            </div>
+          } @else {
+            <div class="stat-card">
+              <span class="stat-number" style="color:#10b981">{{ exp.farmers_registered || 0 }}</span>
+              <span class="stat-desc">Agriculteurs enregistrés</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-number" style="color:#3b82f6">{{ exp.diagnostics_filed || 0 }}</span>
+              <span class="stat-desc">Diagnostics effectués</span>
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </div>
+}

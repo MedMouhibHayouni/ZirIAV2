@@ -1,0 +1,153 @@
+<div class="worker-earnings zir-animate-in">
+
+  <header class="page-header">
+    <div class="header-main-titles">
+      <h1>
+        <ng-icon name="lucideDollarSign" style="color:var(--zir-emerald);"></ng-icon>
+        Mon Portefeuille & Revenus
+      </h1>
+      <p>Suivez vos gains en temps réel, vos fonds sécurisés et vos transactions.</p>
+    </div>
+    
+    <button class="zir-btn zir-btn--primary export-btn" (click)="exportToPdf()" [disabled]="isLoading() || !wallet()?.transactions?.length">
+      <ng-icon name="lucideDownload"></ng-icon>
+      Télécharger mon Relevé PDF
+    </button>
+  </header>
+
+  @if (isLoading()) {
+    <div class="loading-state">
+      <div class="zir-spinner"></div>
+      <p>Analyse de votre solde financier...</p>
+    </div>
+  } @else {
+
+    <!-- Section KPIs Financiers -->
+    <div class="earnings-kpi-grid">
+      
+      <!-- Card 1: Available -->
+      <div class="kpi-card-wallet main-wallet">
+        <div class="wallet-background-overlay"></div>
+        <div class="wallet-content">
+          <div class="wallet-header">
+            <span class="label">Solde Disponible</span>
+            <ng-icon name="lucideCreditCard" class="card-icon"></ng-icon>
+          </div>
+          <div class="wallet-amount">
+            {{ formatAmount(wallet()?.balance_available_tnd) }} <span class="currency">TND</span>
+          </div>
+          <div class="wallet-footer">
+            <ng-icon name="lucideTrendingUp"></ng-icon>
+            <span>Prêt au retrait vers votre compte</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2: Pending -->
+      <div class="kpi-card-wallet secondary">
+        <div class="wallet-content">
+          <div class="wallet-header">
+            <span class="label">En attente (bloqué 48h)</span>
+            <ng-icon name="lucideClock" class="trend-icon"></ng-icon>
+          </div>
+          <div class="wallet-amount mini">
+            {{ formatAmount(wallet()?.balance_pending_tnd) }} <span class="currency">TND</span>
+          </div>
+          <div class="wallet-footer">
+            <span>Fonds en cours de libération</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 3: Total earned -->
+      <div class="kpi-card-wallet secondary">
+        <div class="wallet-content">
+          <div class="wallet-header">
+            <span class="label">Total gagné</span>
+            <ng-icon name="lucideCheckCircle" class="check-icon"></ng-icon>
+          </div>
+          <div class="wallet-amount mini">
+            {{ formatAmount(wallet()?.total_earned_all_time_tnd) }} <span class="currency">TND</span>
+          </div>
+          <div class="wallet-footer">
+            <span>Revenus cumulés</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 4: Commissions -->
+      <div class="kpi-card-wallet secondary">
+        <div class="wallet-content">
+          <div class="wallet-header">
+            <span class="label">Commissions déduites</span>
+            <ng-icon name="lucideAward" class="award-icon"></ng-icon>
+          </div>
+          <div class="wallet-amount mini font-emerald">
+            {{ formatAmount(wallet()?.total_platform_commission_deducted_tnd) }} <span class="currency">TND</span>
+          </div>
+          <div class="wallet-footer">
+            <span>Part de service de la plateforme</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Section Historique des Transactions -->
+    <div class="transactions-container">
+      <div class="section-header">
+        <h2>
+          <ng-icon name="lucideCalendar"></ng-icon>
+          Historique des Paiements
+        </h2>
+        <span class="count-badge" *ngIf="wallet()?.transactions?.length">{{ wallet()?.transactions?.length }} transactions</span>
+      </div>
+
+      <div class="transactions-list">
+        @for (tx of wallet()?.transactions; track tx.id) {
+          <div class="transaction-item-row">
+            
+            <!-- Left Info: Icon & Task -->
+            <div class="tx-col task-info">
+              <div class="briefcase-circle">
+                <ng-icon name="lucideBriefcase"></ng-icon>
+              </div>
+              <div class="tx-text">
+                <h3>{{ tx.transaction_type }}</h3>
+                <div class="location-badge">
+                  {{ tx.description || 'Transaction financière' }}
+                </div>
+              </div>
+            </div>
+
+            <!-- Date completion -->
+            <div class="tx-col date-info">
+              <div class="meta-desc">Date de transaction</div>
+              <div class="meta-val">{{ tx.created_at | date:'dd/MM/yyyy HH:mm' }}</div>
+            </div>
+
+            <!-- Right Info: Amount Earned -->
+            <div class="tx-col amount-info text-right">
+              <span class="earned-pill" [class.negative]="tx.amount_tnd < 0">{{ formatAmount(tx.amount_tnd) }} TND</span>
+              <span class="status-success">
+                <ng-icon name="lucideCheckCircle"></ng-icon>
+                Confirmé
+              </span>
+            </div>
+
+          </div>
+        } @empty {
+          <div class="empty-earnings-card">
+            <div class="empty-illustration">
+              <ng-icon name="lucideClock" class="clock-icon"></ng-icon>
+            </div>
+            <h3>Aucune transaction trouvée</h3>
+            <p>Vos revenus s'accumuleront ici dès qu'un agriculteur marquera une de vos missions acceptées comme complétée.</p>
+          </div>
+        }
+      </div>
+    </div>
+
+  }
+
+</div>

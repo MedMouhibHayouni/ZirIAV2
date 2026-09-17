@@ -1,0 +1,45 @@
+{
+  "almond": {
+    "images": 736,
+    "dir1": {
+      "dataset": 736
+    }
+  },
+  "apple_scab": {
+    "images": 297,
+    "dir1": {
+      "AppleScabFDs": 297
+    }
+  },
+  "barley_seg": {
+    "images": 27,
+    "dir1": {
+      "Figure Reproduction": 1,
+      "Test_sample_data": 26
+    }
+  },
+  "date_hadjer": {
+    "images": 5262,
+    "dir1": {
+      "Date Palm data": 5262
+    }
+  },
+  "date_yehia": {
+    "images": 3089,
+    "dir1": {
+      "Processed": 3089
+    }
+  },
+  "olive_tech": {
+    "images": 6961,
+    "dir1": {
+      "Olive_Leaf_Disease_Datasets_After_Preprocessing": 6961
+    }
+  },
+  "wheat_khan": {
+    "images": 4810,
+    "dir1": {
+      "Wheat Leaf Disease": 4810
+    }
+  }
+}

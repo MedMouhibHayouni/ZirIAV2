@@ -1,0 +1,774 @@
+/* ═══════════════════════════════════════════════════════════
+   KNOW MY PLANT — Premium redesign, fully responsive
+   Mobile-first, compact navbar, clean layout
+   ═══════════════════════════════════════════════════════════ */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+:host {
+  display: block;
+}
+
+/* ── Design tokens ─────────────────────────────────────────── */
+.kmp-page {
+  --g: #16a34a;
+  --gd: #14532d;
+  --gl: #dcfce7;
+  --gm: #bbf7d0;
+  --gold: #d97706;
+  --text: #0f172a;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --bg: #f8fafc;
+  --card: #ffffff;
+  --r: 16px;
+  --shadow: 0 4px 20px rgba(0,0,0,.07);
+  --shadow-lg: 0 12px 40px rgba(0,0,0,.10);
+
+  min-height: 100vh;
+  background: linear-gradient(160deg, #f0fdf4 0%, #f8fafc 60%, #eff6ff 100%);
+  font-family: 'Inter', sans-serif;
+  padding-bottom: 80px;
+}
+
+/* Unified navbar is managed globally in styles.scss */
+
+/* ── Hero ─────────────────────────────────────────────────── */
+.kmp-hero {
+  position: relative;
+  text-align: center;
+  padding: 48px 24px 36px;
+  overflow: hidden;
+
+  &__bg {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  &__content {
+    position: relative;
+    z-index: 1;
+    max-width: 640px;
+    margin: 0 auto;
+  }
+
+  &__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--gl);
+    color: var(--gd);
+    border: 1px solid var(--gm);
+    padding: 5px 14px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    margin-bottom: 16px;
+  }
+
+  &__title {
+    font-size: clamp(28px, 5vw, 44px);
+    font-weight: 900;
+    color: var(--text);
+    margin: 0 0 8px;
+    line-height: 1.15;
+  }
+
+  &__title-ar {
+    font-size: clamp(18px, 3vw, 26px);
+    color: var(--g);
+    font-weight: 700;
+    margin: 0 0 12px;
+    direction: rtl;
+  }
+
+  &__desc {
+    font-size: 15px;
+    color: var(--muted);
+    line-height: 1.65;
+    margin: 0;
+  }
+}
+
+.kmp-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: .35;
+
+  &--1 {
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, #86efac, transparent);
+    top: -150px; right: -100px;
+    animation: orb-float 8s ease-in-out infinite alternate;
+  }
+  &--2 {
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, #bfdbfe, transparent);
+    bottom: -100px; left: -80px;
+    animation: orb-float 10s ease-in-out infinite alternate-reverse;
+  }
+}
+@keyframes orb-float {
+  0% { transform: translate(0,0); }
+  100% { transform: translate(30px,20px); }
+}
+
+/* ── Main content wrapper ─────────────────────────────────── */
+.kmp-main {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+/* ── Upload card ──────────────────────────────────────────── */
+.kmp-upload-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 28px 24px;
+  box-shadow: var(--shadow-lg);
+}
+
+/* ── Drop zone ────────────────────────────────────────────── */
+.kmp-dropzone {
+  border: 2px dashed var(--border);
+  border-radius: 16px;
+  background: var(--bg);
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: border-color .2s, background .2s;
+  margin-bottom: 20px;
+  overflow: hidden;
+
+  &--active {
+    border-color: var(--g);
+    background: var(--gl);
+  }
+
+  &--filled {
+    border-style: solid;
+    border-color: var(--gm);
+    min-height: unset;
+    height: 220px;
+  }
+
+  &__inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 24px;
+    text-align: center;
+  }
+
+  &__icon {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--gl), var(--gm));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gd);
+    margin-bottom: 4px;
+  }
+
+  &__label {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    margin: 0;
+  }
+
+  &__sep {
+    font-size: 12px;
+    color: #94a3b8;
+    margin: 0;
+  }
+
+  &__hint {
+    font-size: 11px;
+    color: #94a3b8;
+    margin: 0;
+  }
+}
+
+/* ── Preview ──────────────────────────────────────────────── */
+.kmp-preview {
+  position: relative;
+  width: 100%;
+  height: 100%;
+
+  &__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 14px;
+  }
+
+  &__change {
+    position: absolute;
+    top: 8px; right: 8px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(0,0,0,.5);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 5px 10px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    backdrop-filter: blur(4px);
+    transition: background .2s;
+    &:hover { background: rgba(0,0,0,.75); }
+  }
+}
+
+.kmp-file-input { display: none; }
+
+/* ── Tips row ─────────────────────────────────────────────── */
+.kmp-tips {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.kmp-tip {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 11.5px;
+  color: var(--muted);
+  line-height: 1.4;
+  padding: 10px;
+  background: var(--bg);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+
+  ng-icon { color: var(--g); flex-shrink: 0; margin-top: 1px; }
+
+  span { display: block; }
+
+  em {
+    font-style: normal;
+    color: #94a3b8;
+    font-size: 10px;
+    direction: rtl;
+    display: block;
+    margin-top: 2px;
+  }
+}
+
+/* ── Alert ────────────────────────────────────────────────── */
+.kmp-alert {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fef2f2;
+  border: 1px solid #fca5a5;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #dc2626;
+  margin-bottom: 16px;
+}
+
+/* ── Buttons ──────────────────────────────────────────────── */
+.kmp-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: none;
+  border-radius: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all .2s;
+  font-weight: 700;
+
+  &--analyze {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, var(--g), #15803d);
+    color: #fff;
+    font-size: 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 6px 20px rgba(22,163,74,.25);
+
+    small {
+      font-size: 12px;
+      opacity: .8;
+      font-weight: 600;
+      direction: rtl;
+    }
+
+    &:hover:not(:disabled) {
+      background: linear-gradient(135deg, #15803d, var(--gd));
+      transform: translateY(-2px);
+      box-shadow: 0 10px 28px rgba(22,163,74,.35);
+    }
+    &:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+  }
+
+  &--upload {
+    padding: 9px 20px;
+    background: var(--g);
+    color: #fff;
+    font-size: 13px;
+    cursor: pointer;
+    &:hover { background: var(--gd); transform: translateY(-1px); }
+  }
+
+  &--primary {
+    padding: 12px 24px;
+    background: var(--g);
+    color: #fff;
+    font-size: 14px;
+    &:hover { background: var(--gd); transform: translateY(-1px); }
+  }
+
+  &--ghost {
+    padding: 11px 22px;
+    background: transparent;
+    border: 1.5px solid var(--border);
+    color: var(--muted);
+    font-size: 14px;
+    &:hover { border-color: var(--g); color: var(--g); background: var(--gl); }
+  }
+
+  &--white {
+    padding: 12px 20px;
+    background: #fff;
+    color: var(--gd);
+    font-size: 14px;
+    font-weight: 800;
+    box-shadow: 0 4px 14px rgba(0,0,0,.1);
+    &:hover { background: var(--gl); transform: translateY(-1px); }
+  }
+}
+
+/* ── Footnote ─────────────────────────────────────────────── */
+.kmp-footnote {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  font-size: 12px;
+  color: #94a3b8;
+  margin: 0;
+  text-align: center;
+  flex-wrap: wrap;
+
+  a { color: var(--g); text-decoration: none; font-weight: 600;
+    &:hover { text-decoration: underline; }
+  }
+  ng-icon { opacity: .6; }
+}
+
+/* ── State cards ──────────────────────────────────────────── */
+.kmp-state-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 48px 28px;
+  box-shadow: var(--shadow-lg);
+
+  &--centered {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 12px;
+  }
+}
+
+.kmp-pulse {
+  width: 88px; height: 88px;
+  border-radius: 50%;
+  background: var(--gl);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: pulse-ring 2s ease-in-out infinite;
+
+  &__inner {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--gl), var(--gm));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gd);
+  }
+}
+@keyframes pulse-ring {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(22,163,74,.3); }
+  50% { box-shadow: 0 0 0 16px rgba(22,163,74,0); }
+}
+
+.kmp-limited-icon {
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gold);
+}
+
+.kmp-state-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text);
+  margin: 0;
+}
+.kmp-state-sub {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.6;
+  max-width: 340px;
+  margin: 0;
+}
+.kmp-state-ar {
+  font-size: 14px;
+  color: #94a3b8;
+  direction: rtl;
+  margin: 0;
+}
+.kmp-state-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+  margin-top: 8px;
+}
+
+/* ── Result layout ────────────────────────────────────────── */
+.kmp-result {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.kmp-result-hero {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 24px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 24px;
+  box-shadow: var(--shadow-lg);
+  align-items: start;
+}
+
+.kmp-result-photo {
+  border-radius: 14px;
+  overflow: hidden;
+  height: 200px;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.kmp-result-identity {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 4px;
+}
+
+.kmp-result-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--gl);
+  color: var(--gd);
+  border: 1px solid var(--gm);
+  padding: 3px 10px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  width: fit-content;
+}
+
+.kmp-result-name {
+  font-size: 24px;
+  font-weight: 900;
+  color: var(--text);
+  margin: 0;
+  line-height: 1.2;
+}
+.kmp-result-name-ar {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--gd);
+  direction: rtl;
+  margin: 0;
+}
+.kmp-result-lat {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  color: var(--muted);
+  margin: 0;
+  em { font-style: italic; font-weight: 600; color: var(--text); }
+  ng-icon { color: #94a3b8; }
+}
+
+/* ── Sections ─────────────────────────────────────────────── */
+.kmp-section {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 20px 22px;
+  box-shadow: var(--shadow);
+
+  &--agri {
+    background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+    border-color: var(--gm);
+  }
+
+  &__title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    margin: 0 0 14px;
+    ng-icon { color: var(--g); }
+  }
+}
+
+.kmp-desc-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.kmp-desc-block {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+
+  &--ar {
+    text-align: right;
+    background: #fffbf0;
+    border-color: #fef3c7;
+  }
+
+  p {
+    font-size: 13.5px;
+    color: var(--muted);
+    line-height: 1.7;
+    margin: 8px 0 0;
+  }
+}
+.kmp-lang-tag {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+/* ── Care tips list ───────────────────────────────────────── */
+.kmp-tips-list {
+  list-style: none;
+  margin: 0; padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  li {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 13.5px;
+    color: var(--text);
+    line-height: 1.5;
+  }
+}
+.kmp-tip-icon {
+  flex-shrink: 0;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: var(--gl);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gd);
+  margin-top: 1px;
+}
+
+.kmp-agri-text {
+  font-size: 13.5px;
+  color: var(--gd);
+  line-height: 1.7;
+  margin: 0;
+}
+
+/* ── Result actions ───────────────────────────────────────── */
+.kmp-result-actions { display: flex; justify-content: center; }
+
+/* ── Conversion CTA block ─────────────────────────────────── */
+.kmp-cta-block {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 20px;
+  align-items: center;
+  background: linear-gradient(135deg, #14532d, #166534);
+  border-radius: 20px;
+  padding: 28px;
+  color: #fff;
+
+  &__icon {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #86efac;
+    flex-shrink: 0;
+  }
+
+  &__body {
+    h3 {
+      font-size: 17px;
+      font-weight: 800;
+      margin: 0 0 6px;
+      color: #fff;
+    }
+    p {
+      font-size: 13px;
+      color: #a7f3d0;
+      line-height: 1.6;
+      margin: 0 0 12px;
+    }
+  }
+
+  &__btns {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+    flex-shrink: 0;
+  }
+}
+
+.kmp-cta-feats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+
+  span {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(255,255,255,.1);
+    border: 1px solid rgba(255,255,255,.12);
+    padding: 3px 8px;
+    border-radius: 100px;
+    font-size: 11px;
+    color: #d1fae5;
+    font-weight: 500;
+  }
+}
+
+.kmp-cta-login {
+  font-size: 12px;
+  color: #86efac;
+  text-decoration: none;
+  text-align: center;
+  font-weight: 600;
+  &:hover { color: #fff; }
+}
+
+/* ══════════════════════════════════════════════════════════
+   RESPONSIVE BREAKPOINTS
+   ══════════════════════════════════════════════════════════ */
+
+/* ── Tablet (768px–1024px) ────────────────────────────────── */
+@media (max-width: 1024px) {
+  .kmp-main { max-width: 100%; }
+
+  .kmp-result-hero {
+    grid-template-columns: 200px 1fr;
+    gap: 16px;
+    padding: 20px;
+  }
+  .kmp-result-photo { height: 170px; }
+  .kmp-result-name { font-size: 20px; }
+
+  .kmp-cta-block {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    text-align: center;
+    &__icon { margin: 0 auto; }
+    &__btns { flex-direction: row; flex-wrap: wrap; justify-content: center; }
+  }
+  .kmp-cta-feats { justify-content: center; }
+}
+
+/* ── Mobile (≤ 600px) ──────────────────────────────────────── */
+@media (max-width: 600px) {
+  /* Obsolete navbar CSS removed */
+
+  .kmp-hero {
+    padding: 32px 16px 24px;
+    &__badge { font-size: 10px; }
+    &__title { font-size: clamp(24px, 7vw, 32px); }
+    &__title-ar { font-size: 18px; }
+    &__desc { font-size: 13.5px; }
+  }
+
+  .kmp-main { padding: 0 12px; }
+
+  .kmp-upload-card { padding: 20px 16px; border-radius: 20px; }
+
+  .kmp-dropzone--filled { height: 180px; }
+
+  .kmp-tips { grid-template-columns: 1fr; gap: 6px; }
+  .kmp-tip { flex-direction: row; }
+
+  .kmp-btn--analyze { font-size: 15px; padding: 14px; }
+
+  .kmp-result-hero {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .kmp-result-photo { height: 200px; }
+
+  .kmp-desc-grid { grid-template-columns: 1fr; }
+
+  .kmp-cta-block {
+    padding: 20px 16px;
+    gap: 14px;
+    &__body h3 { font-size: 15px; }
+    &__body p { font-size: 12px; }
+  }
+}
+
+/* ── Larger screens (1400px+) ─────────────────────────────── */
+@media (min-width: 1400px) {
+  .kmp-main { max-width: 780px; }
+  .kmp-hero { padding: 64px 24px 48px; }
+  .kmp-hero__title { font-size: 52px; }
+}

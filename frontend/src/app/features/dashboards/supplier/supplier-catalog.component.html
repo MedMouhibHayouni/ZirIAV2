@@ -1,0 +1,222 @@
+<div class="sup-page">
+
+  <!-- Header -->
+  <div class="sup-page-header">
+    <div>
+      <h2 class="sup-page-title">Catalogue Produits</h2>
+      <p class="sup-page-sub">{{ products().length }} produits dans votre boutique</p>
+    </div>
+    <button class="sup-btn sup-btn--primary" (click)="openCreate()">
+      <ng-icon name="lucidePlus"></ng-icon> Nouveau produit
+    </button>
+  </div>
+
+  <!-- Filters -->
+  <div class="cat-filters">
+    <div class="search-wrap">
+      <ng-icon name="lucideSearch"></ng-icon>
+      <input type="text" class="cat-search" placeholder="Rechercher un produit..." [(ngModel)]="searchQuery">
+    </div>
+    <div class="filter-pills">
+      @for (cat of categories; track cat) {
+        <button class="filter-pill" [class.active]="activeFilter === cat" (click)="activeFilter = cat">
+          {{ cat === 'ALL' ? 'Tous' : catLabel(cat) }}
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- Loading -->
+  @if (isLoading()) {
+    <div class="sup-loading"><ng-icon name="lucideLoader" class="spin"></ng-icon> Chargement...</div>
+  } @else if (filtered.length === 0) {
+    <div class="sup-empty-full">
+      <ng-icon name="lucidePackage"></ng-icon>
+      <p>Aucun produit trouvé</p>
+    </div>
+  } @else {
+
+    <!-- Product Grid -->
+    <div class="product-grid">
+      @for (p of filtered; track p.id) {
+        <div class="product-card" [class.inactive]="!p.is_active">
+
+          <!-- Photo -->
+          <div class="product-photo">
+            @if (p.photo_url) {
+              <img [src]="p.photo_url" [alt]="p.name" loading="lazy">
+            } @else {
+              <div class="product-photo-placeholder">
+                <ng-icon name="lucidePackage"></ng-icon>
+              </div>
+            }
+            <!-- Category badge -->
+            <span class="product-cat-badge" [style.background]="catColor(p.category)">
+              {{ catLabel(p.category) }}
+            </span>
+            <!-- Active toggle -->
+            <button class="product-toggle" (click)="toggle(p)" [title]="p.is_active ? 'Désactiver' : 'Activer'">
+              <ng-icon [name]="p.is_active ? 'lucideCheckCircle' : 'lucideXCircle'"
+                       [style.color]="p.is_active ? '#16a34a' : '#94a3b8'"></ng-icon>
+            </button>
+          </div>
+
+          <!-- Info -->
+          <div class="product-info">
+            <h3 class="product-name">{{ p.name }}</h3>
+            @if (p.description) {
+              <p class="product-desc">{{ p.description | slice:0:90 }}{{ p.description.length > 90 ? '…' : '' }}</p>
+            }
+
+            <!-- Price -->
+            <div class="product-price-row">
+              <span class="product-price">{{ p.price_tnd | number:'1.2-2' }} TND</span>
+              <span class="product-unit">/ {{ p.unit }}</span>
+            </div>
+
+            <!-- Stock bar -->
+            <div class="stock-section">
+              <div class="stock-labels">
+                <span>Stock</span>
+                <span [class.text-red]="p.stock_qty <= p.min_stock_alert_qty"
+                      [class.text-emerald]="p.stock_qty > p.min_stock_alert_qty">
+                  {{ p.stock_qty }} {{ p.unit }}
+                </span>
+              </div>
+              <div class="stock-bar">
+                <div class="stock-fill"
+                     [style.width.%]="stockPercent(p)"
+                     [class.fill-red]="p.stock_qty <= p.min_stock_alert_qty"
+                     [class.fill-amber]="p.stock_qty <= p.min_stock_alert_qty * 2 && p.stock_qty > p.min_stock_alert_qty"
+                     [class.fill-emerald]="p.stock_qty > p.min_stock_alert_qty * 2">
+                </div>
+              </div>
+              @if (p.stock_qty <= p.min_stock_alert_qty) {
+                <div class="stock-alert">
+                  <ng-icon name="lucideAlertTriangle"></ng-icon> Seuil d'alerte atteint
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="product-actions">
+            <button class="sup-btn sup-btn--ghost" (click)="openEdit(p)">
+              <ng-icon name="lucidePencil"></ng-icon> Modifier
+            </button>
+            <button class="sup-btn sup-btn--danger-ghost" (click)="remove(p)">
+              <ng-icon name="lucideTrash2"></ng-icon>
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>
+
+<!-- ── Modal ── -->
+@if (showModal) {
+  <div class="modal-backdrop" (click)="closeModal()"></div>
+  <div class="modal-panel">
+    <div class="modal-header">
+      <div class="modal-title">
+        <ng-icon [name]="isEditMode ? 'lucidePencil' : 'lucidePlus'"></ng-icon>
+        {{ isEditMode ? 'Modifier le produit' : 'Nouveau produit' }}
+      </div>
+      <button class="modal-close" (click)="closeModal()">
+        <ng-icon name="lucideXCircle"></ng-icon>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="form-grid">
+
+        <!-- Name -->
+        <div class="form-group form-group--full">
+          <label class="form-label">Nom du produit *</label>
+          <input class="form-input" [(ngModel)]="form.name" placeholder="Ex: Engrais NPK 15-15-15">
+        </div>
+
+        <!-- Category + Unit -->
+        <div class="form-group">
+          <label class="form-label">Catégorie *</label>
+          <select class="form-input" [(ngModel)]="form.category">
+            <option value="FERTILIZER">Engrais</option>
+            <option value="SEED">Semences</option>
+            <option value="TOOL">Matériel & Équipement</option>
+            <option value="PESTICIDE">Insecticide</option>
+            <option value="FUNGICIDE">Fongicide</option>
+            <option value="HERBICIDE">Herbicide</option>
+            <option value="OTHER">Autre</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Unité *</label>
+          <select class="form-input" [(ngModel)]="form.unit">
+            @for (u of units; track u) {
+              <option [value]="u">{{ u }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Price + Stock -->
+        <div class="form-group">
+          <label class="form-label">Prix (TND / unité) *</label>
+          <input class="form-input" type="number" [(ngModel)]="form.price_tnd" min="0" step="0.001">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Quantité en stock *</label>
+          <input class="form-input" type="number" [(ngModel)]="form.stock_qty" min="0">
+        </div>
+
+        <!-- Min stock alert -->
+        <div class="form-group">
+          <label class="form-label">Seuil alerte stock</label>
+          <input class="form-input" type="number" [(ngModel)]="form.min_stock_alert_qty" min="0">
+        </div>
+
+        <!-- Governorate -->
+        <div class="form-group">
+          <label class="form-label">Gouvernorat cible</label>
+          <select class="form-input" [(ngModel)]="form.governorate_target">
+            <option value="">— Tout le pays —</option>
+            @for (g of governorates; track g) {
+              <option [value]="g">{{ g }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Photo URL -->
+        <div class="form-group form-group--full">
+          <label class="form-label">
+            <ng-icon name="lucideImage"></ng-icon> URL de la photo
+          </label>
+          <input class="form-input" [(ngModel)]="form.photo_url" placeholder="https://...jpg ou laisser vide">
+          @if (form.photo_url) {
+            <div class="photo-preview">
+              <img [src]="form.photo_url" alt="Aperçu" onerror="this.style.display='none'">
+            </div>
+          }
+        </div>
+
+        <!-- Description -->
+        <div class="form-group form-group--full">
+          <label class="form-label">Description</label>
+          <textarea class="form-input form-textarea" [(ngModel)]="form.description"
+                    placeholder="Décrivez le produit, ses usages, ses caractéristiques..."></textarea>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="sup-btn sup-btn--ghost" (click)="closeModal()">Annuler</button>
+      <button class="sup-btn sup-btn--primary" (click)="submit()"
+              [disabled]="isSubmitting() || !form.name || form.price_tnd <= 0">
+        @if (isSubmitting()) { <ng-icon name="lucideLoader" class="spin"></ng-icon> }
+        @else { <ng-icon name="lucideCheckCircle"></ng-icon> }
+        {{ isEditMode ? 'Enregistrer' : 'Ajouter au catalogue' }}
+      </button>
+    </div>
+  </div>
+}

@@ -1,0 +1,94 @@
+<div class="driver-available zir-animate-in">
+  
+  <header class="page-header">
+    <div class="header-content">
+      <div class="title-area">
+        <h1>
+          <ng-icon name="lucideTruck" style="color:var(--zir-emerald);"></ng-icon>
+          Missions Disponibles
+        </h1>
+        <p>Sélectionnez une mission de transport et commencez votre trajet.</p>
+      </div>
+      
+      <div class="stats-mini">
+        <div class="stat-item">
+          <span class="label">Disponibles</span>
+          <span class="value">{{ missions().length }}</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  @if (isLoading()) {
+    <div class="loading-state">
+      <div class="zir-spinner"></div>
+      <p>Chargement des missions de fret...</p>
+    </div>
+  } @else {
+    <div class="missions-grid">
+      @for (m of missions(); track m.id) {
+        <div class="zir-card mission-card">
+          <div class="card-header">
+            <div class="route-info">
+              <div class="city-box">
+                <span class="city">{{ m.origin_address }}</span>
+                <span class="type">Départ</span>
+              </div>
+              <ng-icon name="lucideArrowRight" class="route-arrow"></ng-icon>
+              <div class="city-box">
+                <span class="city">{{ m.destination_address }}</span>
+                <span class="type">Arrivée</span>
+              </div>
+            </div>
+            <div class="price-tag">
+              <span class="amount">{{ m.proposed_price_tnd }}</span>
+              <span class="currency">TND</span>
+            </div>
+          </div>
+
+          <div class="card-body">
+            <div class="meta-grid">
+              <div class="meta-item">
+                <ng-icon name="lucidePackage"></ng-icon>
+                <div class="info">
+                  <label>Cargaison</label>
+                  <span>{{ m.cargo_type }}</span>
+                </div>
+              </div>
+              <div class="meta-item">
+                <ng-icon name="lucideInfo"></ng-icon>
+                <div class="info">
+                  <label>Poids</label>
+                  <span>{{ m.weight_tonnes }} Tonnes</span>
+                </div>
+              </div>
+              <div class="meta-item">
+                <ng-icon name="lucideClock"></ng-icon>
+                <div class="info">
+                  <label>Publié le</label>
+                  <span>{{ m.created_at | date:'dd MMM HH:mm' }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-footer">
+            <button class="zir-btn zir-btn--primary" (click)="accept(m)">
+              Accepter la Mission
+              <ng-icon name="lucideCheckCircle"></ng-icon>
+            </button>
+          </div>
+        </div>
+      } @empty {
+        <div class="empty-state">
+          <div class="empty-icon">
+            <ng-icon name="lucideTruck"></ng-icon>
+          </div>
+          <h3>Aucune mission pour le moment</h3>
+          <p>Revenez plus tard pour de nouvelles opportunités de transport.</p>
+        </div>
+      }
+    </div>
+  }
+
+</div>

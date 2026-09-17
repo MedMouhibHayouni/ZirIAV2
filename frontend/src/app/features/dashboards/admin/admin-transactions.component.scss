@@ -1,0 +1,64 @@
+.admin-page { padding: 24px; max-width: 1400px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
+.page-header { display: flex; justify-content: space-between; align-items: flex-start;
+  h2 { font-size: 26px; font-weight: 800; margin: 0 0 6px; display: flex; align-items: center; gap: 10px; color: var(--text-primary); ng-icon { color: var(--zir-emerald); } } p { color: var(--text-muted); margin: 0; } }
+
+.summary-kpi-bar {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px;
+}
+
+.kpi-block {
+  display: flex; align-items: center; gap: 14px;
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px;
+  padding: 18px 20px; transition: all 0.25s;
+  &:hover { transform: translateY(-2px); box-shadow: var(--shadow-sm); }
+
+  ng-icon { font-size: 24px; flex-shrink: 0; }
+  div { display: flex; flex-direction: column; gap: 2px; }
+  .kpi-val { font-size: 22px; font-weight: 900; color: var(--text-primary); line-height: 1;
+    small { font-size: 12px; font-weight: 600; opacity: 0.6; } }
+  .kpi-lbl { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; }
+
+  &.accent-emerald { border-left: 3px solid #10b981; ng-icon { color: #10b981; } }
+  &.accent-violet { border-left: 3px solid #8b5cf6; ng-icon { color: #8b5cf6; } }
+  &.accent-amber { border-left: 3px solid #f59e0b; ng-icon { color: #f59e0b; } }
+  &.accent-blue { border-left: 3px solid #3b82f6; ng-icon { color: #3b82f6; } }
+}
+
+.filter-bar { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; padding: 16px;
+  select.zir-input, input.zir-input { flex: 1; min-width: 140px; } }
+
+.preset-btns { display: flex; gap: 6px; }
+.preset-btn {
+  padding: 8px 14px; border: 1px solid var(--border); background: transparent;
+  border-radius: 10px; font-size: 12px; font-weight: 700; color: var(--text-secondary);
+  cursor: pointer; transition: all 0.2s;
+  &:hover { background: var(--surface-hover); }
+  &.active { background: var(--zir-emerald); color: white; border-color: var(--zir-emerald); }
+}
+
+.table-wrapper { overflow-x: auto; }
+
+.role-badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700;
+  &.badge-green { background: rgba(16,185,129,0.1); color: #10b981; }
+  &.badge-blue { background: rgba(59,130,246,0.1); color: #3b82f6; }
+  &.badge-amber { background: rgba(245,158,11,0.1); color: #f59e0b; }
+  &.badge-purple { background: rgba(139,92,246,0.1); color: #8b5cf6; }
+  &.badge-gray { background: var(--surface-hover); color: var(--text-muted); } }
+
+.verified-badge { font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 20px;
+  &.ok { background: rgba(16,185,129,0.1); color: #10b981; } }
+
+.text-right { text-align: right; }
+.text-muted { color: var(--text-muted); }
+.text-sm { font-size: 12px; }
+.font-bold { font-weight: 700; }
+.text-success { color: #10b981; }
+
+.pagination { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border);
+  .page-info { font-size: 14px; color: var(--text-muted); font-weight: 500; }
+  .page-btns { display: flex; gap: 8px; } }
+
+.btn-xs { padding: 6px !important; ng-icon { font-size: 14px !important; } }
+.loading-state, .empty-row { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 40px; color: var(--text-muted); text-align: center; }
+.spin { animation: spin 0.9s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }

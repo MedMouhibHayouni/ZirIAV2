@@ -1,0 +1,29 @@
+.directory-container {
+  min-height: 100vh;
+  background-color: var(--bg-primary);
+}
+
+.directory-header {
+  background: linear-gradient(180deg, var(--zir-emerald-dim) 0%, var(--bg-primary) 100%);
+  padding: 4rem 1.5rem 2rem;
+  border-bottom: 1px solid var(--border);
+
+  .header-content {
+    margin: 0 auto;
+    max-width: 80rem;
+  }
+}
+
+.supplier-card {
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: all var(--t-base);
+  
+  &:hover {
+    border-color: var(--border-accent);
+    background: var(--bg-card-hover);
+    box-shadow: var(--shadow-md), var(--shadow-glow);
+  }
+}

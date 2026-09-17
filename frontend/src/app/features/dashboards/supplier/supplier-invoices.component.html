@@ -1,0 +1,274 @@
+<div class="p-6">
+  <div class="flex justify-between items-center mb-8">
+    <h1 class="text-2xl font-bold text-white">Facturation ERP</h1>
+    <button (click)="showDrawer = true" class="btn-theme-primary px-4 py-2 rounded-lg font-medium flex items-center gap-2">
+      <ng-icon name="lucidePlus"></ng-icon> Nouvelle Facture
+    </button>
+  </div>
+
+  <div *ngIf="loading" class="flex justify-center py-20">
+    <div class="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-[var(--zir-emerald)]"></div>
+  </div>
+
+  <ng-container *ngIf="!loading">
+    <!-- KPI Row -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div class="zir-card p-6">
+        <div class="text-gray-400 text-sm mb-1">Total Facturé (Mois)</div>
+        <div class="text-3xl font-bold text-white">{{stats?.total_invoiced_tnd | number:'1.3-3'}} TND</div>
+      </div>
+      <div class="zir-card p-6">
+        <div class="text-gray-400 text-sm mb-1">En Attente de Paiement</div>
+        <div class="text-3xl font-bold text-yellow-500">{{stats?.total_pending_tnd | number:'1.3-3'}} TND</div>
+      </div>
+      <div class="zir-card p-6">
+        <div class="text-gray-400 text-sm mb-1">Total Encaissé</div>
+        <div class="text-3xl font-bold text-[var(--zir-emerald)]">{{stats?.total_paid_tnd | number:'1.3-3'}} TND</div>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="zir-card overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm text-gray-300">
+          <thead class="bg-gray-800/50 text-gray-400 uppercase text-xs">
+            <tr>
+              <th class="px-6 py-4 font-medium">N° Facture</th>
+              <th class="px-6 py-4 font-medium">Client</th>
+              <th class="px-6 py-4 font-medium">Date Création</th>
+              <th class="px-6 py-4 font-medium">Montant TTC</th>
+              <th class="px-6 py-4 font-medium">Statut</th>
+              <th class="px-6 py-4 font-medium text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-[var(--border-accent)]">
+            <tr *ngIf="invoices.length === 0">
+              <td colspan="6" class="px-6 py-8 text-center text-gray-500">Aucune facture générée.</td>
+            </tr>
+            <tr *ngFor="let inv of invoices" class="hover:bg-gray-800/30 transition-colors group">
+              <td class="px-6 py-4 font-medium text-white">{{inv.invoice_number}}</td>
+              <td class="px-6 py-4">{{inv.buyer_name}}</td>
+              <td class="px-6 py-4">{{inv.created_at | date:'dd/MM/yyyy'}}</td>
+              <td class="px-6 py-4 font-bold">{{inv.total_tnd | number:'1.3-3'}} TND</td>
+              <td class="px-6 py-4">
+                <span [class]="getStatusClass(inv.status)" class="px-2.5 py-1 text-xs font-medium rounded border">
+                  {{inv.status}}
+                </span>
+              </td>
+              <td class="px-6 py-4 text-right">
+                <div class="flex items-center justify-end gap-2">
+                  <button *ngIf="inv.status !== 'PAID'" (click)="markAsPaid(inv.id)" title="Marquer Payée" class="p-2 text-green-400 hover:bg-green-900/30 rounded-lg transition-colors">
+                    <ng-icon name="lucideCheckCircle2"></ng-icon>
+                  </button>
+                  <button (click)="viewPdf(inv)" title="Voir PDF" class="p-2 text-blue-400 hover:bg-blue-900/30 rounded-lg transition-colors">
+                    <ng-icon name="lucideFileText"></ng-icon>
+                  </button>
+                  <button *ngIf="inv.status === 'DRAFT'" (click)="deleteInvoice(inv.id)" title="Supprimer" class="p-2 text-red-400 hover:bg-red-900/30 rounded-lg transition-colors">
+                    <ng-icon name="lucideTrash2"></ng-icon>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </ng-container>
+</div>
+
+<!-- Creation Drawer -->
+<div *ngIf="showDrawer" class="fixed inset-0 z-50 flex justify-end">
+  <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" (click)="showDrawer = false"></div>
+  <div class="w-full md:w-[600px] bg-[var(--bg-main)] h-full relative z-10 shadow-2xl border-l border-[var(--border-accent)] flex flex-col transform transition-transform">
+    <div class="p-6 border-b border-[var(--border-accent)] flex justify-between items-center bg-gray-900/50">
+      <h2 class="text-xl font-bold text-white">Nouvelle Facture</h2>
+      <button (click)="showDrawer = false" class="text-gray-400 hover:text-white"><ng-icon name="lucideX" class="text-2xl"></ng-icon></button>
+    </div>
+    
+    <div class="p-6 overflow-y-auto flex-1 custom-scrollbar space-y-6">
+      <!-- Client -->
+      <div class="zir-card p-4">
+        <h3 class="text-white font-medium mb-4">Informations Client</h3>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-gray-400 text-sm mb-1">Nom du client *</label>
+            <input type="text" [(ngModel)]="newInvoice.buyer_name" class="zir-input w-full text-sm">
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-gray-400 text-sm mb-1">Téléphone</label>
+              <input type="text" [(ngModel)]="newInvoice.buyer_phone" class="zir-input w-full text-sm">
+            </div>
+            <div>
+              <label class="block text-gray-400 text-sm mb-1">Échéance</label>
+              <input type="date" [(ngModel)]="newInvoice.due_date" class="zir-input w-full text-sm">
+            </div>
+          </div>
+          <div>
+            <label class="block text-gray-400 text-sm mb-1">Adresse</label>
+            <textarea [(ngModel)]="newInvoice.buyer_address" class="zir-input w-full text-sm h-16 resize-none"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Articles -->
+      <div class="zir-card p-4">
+        <h3 class="text-white font-medium mb-4">Articles</h3>
+        
+        <div class="space-y-2 mb-4">
+          <div *ngFor="let item of newInvoice.items_json; let i = index" class="flex items-center gap-2 bg-gray-800 p-2 rounded-lg text-sm border border-[var(--border-accent)]">
+            <div class="flex-1 text-gray-300 truncate">{{item.description}}</div>
+            <div class="text-gray-400 w-12 text-center">{{item.quantity}}</div>
+            <div class="text-gray-400 w-20 text-right">{{item.unit_price}}</div>
+            <div class="text-white font-bold w-24 text-right">{{item.total}} TND</div>
+            <button (click)="removeItem(i)" class="text-red-400 hover:text-red-300 p-1"><ng-icon name="lucideX"></ng-icon></button>
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-2 bg-gray-900/50 p-3 rounded-lg border border-[var(--border-accent)]">
+          <input type="text" [(ngModel)]="newItem.description" placeholder="Description article" class="zir-input text-sm">
+          <div class="flex gap-2">
+            <input type="number" [(ngModel)]="newItem.quantity" placeholder="Qté" class="zir-input text-sm w-20">
+            <input type="number" [(ngModel)]="newItem.unit_price" placeholder="Prix Unitaire" class="zir-input text-sm flex-1">
+            <button (click)="addItem()" class="bg-[var(--zir-emerald)] text-black px-4 rounded-lg font-medium hover:opacity-90">Ajouter</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Totals & Notes -->
+      <div class="zir-card p-4 space-y-4">
+        <div class="flex justify-between items-center text-sm text-gray-400">
+          <span>Sous-total HT</span>
+          <span>{{calculateNewSubtotal() | number:'1.3-3'}} TND</span>
+        </div>
+        <div class="flex justify-between items-center text-sm">
+          <span class="text-gray-400">TVA (%)</span>
+          <input type="number" [(ngModel)]="newInvoice.tax_rate" class="zir-input w-20 h-8 text-right text-sm py-0">
+        </div>
+        <div class="flex justify-between items-center text-lg font-bold text-white pt-4 border-t border-[var(--border-accent)]">
+          <span>Total TTC</span>
+          <span class="text-[var(--zir-emerald)]">{{ calculateNewSubtotal() * (1 + newInvoice.tax_rate/100) | number:'1.3-3' }} TND</span>
+        </div>
+        <div class="pt-4">
+          <label class="block text-gray-400 text-sm mb-1">Notes (visibles sur facture)</label>
+          <textarea [(ngModel)]="newInvoice.notes" class="zir-input w-full text-sm h-16 resize-none"></textarea>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="p-6 border-t border-[var(--border-accent)] bg-gray-900/50 flex gap-4">
+      <button (click)="showDrawer = false" class="flex-1 py-3 text-gray-400 hover:text-white font-medium border border-[var(--border-accent)] rounded-lg">Annuler</button>
+      <button (click)="createInvoice()" [disabled]="creating || !newInvoice.buyer_name || newInvoice.items_json.length===0" class="flex-1 btn-theme-primary py-3 rounded-lg font-bold disabled:opacity-50">
+        {{ creating ? 'Génération...' : 'Créer Facture' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- HTML PDF Preview Modal -->
+<div *ngIf="showPdfModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+  <div class="bg-white text-black w-[800px] h-[90vh] rounded-lg relative flex flex-col shadow-2xl overflow-hidden">
+    <!-- Modal Header (Not printed) -->
+    <div class="bg-gray-100 p-4 border-b border-gray-300 flex justify-between items-center print:hidden">
+      <h3 class="font-bold text-gray-800">Aperçu Facture {{selectedInvoice?.invoice_number}}</h3>
+      <div class="flex gap-2">
+        <button onclick="window.print()" class="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700 flex items-center gap-2 text-sm font-medium">
+          <ng-icon name="lucideDownload"></ng-icon> Imprimer / PDF
+        </button>
+        <button (click)="showPdfModal = false; selectedInvoice = null" class="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400 text-sm font-medium">
+          Fermer
+        </button>
+      </div>
+    </div>
+    
+    <!-- Printable A4 Area -->
+    <div class="flex-1 overflow-y-auto bg-gray-50 p-8 print:p-0 print:bg-white print:overflow-visible">
+      <div class="max-w-[210mm] min-h-[297mm] mx-auto bg-white shadow-lg print:shadow-none p-12 relative" id="printable-invoice">
+        
+        <!-- Document Header -->
+        <div class="flex justify-between items-start mb-12">
+          <div>
+            <h1 class="text-4xl font-bold text-gray-900 mb-2">FACTURE</h1>
+            <p class="text-gray-500 font-medium tracking-wider">{{selectedInvoice?.invoice_number}}</p>
+          </div>
+          <div class="text-right">
+            <h2 class="text-2xl font-bold text-[var(--zir-emerald)]">{{selectedInvoice?.supplier?.business_name || selectedInvoice?.supplier?.name}}</h2>
+            <p class="text-gray-600 mt-1">{{selectedInvoice?.supplier?.governorate}}</p>
+            <p class="text-gray-600">{{selectedInvoice?.supplier?.phone}}</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-12 mb-12">
+          <!-- Billed To -->
+          <div>
+            <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Facturé à</h3>
+            <p class="font-bold text-gray-900 text-lg">{{selectedInvoice?.buyer_name}}</p>
+            <p class="text-gray-600">{{selectedInvoice?.buyer_address}}</p>
+            <p class="text-gray-600">{{selectedInvoice?.buyer_phone}}</p>
+          </div>
+          <!-- Details -->
+          <div class="text-right">
+            <div class="mb-4">
+              <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Date d'émission</h3>
+              <p class="text-gray-900 font-medium">{{selectedInvoice?.created_at | date:'dd/MM/yyyy'}}</p>
+            </div>
+            <div *ngIf="selectedInvoice?.due_date">
+              <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Date d'échéance</h3>
+              <p class="text-gray-900 font-medium">{{selectedInvoice?.due_date | date:'dd/MM/yyyy'}}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Items Table -->
+        <table class="w-full mb-12">
+          <thead>
+            <tr class="border-b-2 border-gray-900 text-left">
+              <th class="py-3 text-sm font-bold text-gray-900">Description</th>
+              <th class="py-3 text-sm font-bold text-gray-900 text-center w-24">Qté</th>
+              <th class="py-3 text-sm font-bold text-gray-900 text-right w-32">Prix Unitaire</th>
+              <th class="py-3 text-sm font-bold text-gray-900 text-right w-32">Total</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200">
+            <tr *ngFor="let item of selectedInvoice?.items_json">
+              <td class="py-4 text-gray-800">{{item.description}}</td>
+              <td class="py-4 text-center text-gray-800">{{item.quantity}}</td>
+              <td class="py-4 text-right text-gray-800">{{item.unit_price | number:'1.3-3'}}</td>
+              <td class="py-4 text-right font-medium text-gray-900">{{item.total | number:'1.3-3'}} TND</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Totals -->
+        <div class="flex justify-end mb-12">
+          <div class="w-72">
+            <div class="flex justify-between py-2 text-gray-600">
+              <span>Sous-total HT</span>
+              <span>{{selectedInvoice?.subtotal_tnd | number:'1.3-3'}} TND</span>
+            </div>
+            <div class="flex justify-between py-2 text-gray-600 border-b border-gray-200">
+              <span>TVA ({{selectedInvoice?.tax_rate}}%)</span>
+              <span>{{selectedInvoice?.tax_amount_tnd | number:'1.3-3'}} TND</span>
+            </div>
+            <div class="flex justify-between py-4 text-lg font-bold text-gray-900">
+              <span>Total TTC</span>
+              <span class="text-[var(--zir-emerald)]">{{selectedInvoice?.total_tnd | number:'1.3-3'}} TND</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer Notes -->
+        <div *ngIf="selectedInvoice?.notes" class="text-sm text-gray-500 bg-gray-50 p-4 rounded-lg">
+          <strong class="text-gray-700 block mb-1">Notes:</strong>
+          {{selectedInvoice.notes}}
+        </div>
+
+        <!-- Watermark / Footer -->
+        <div class="absolute bottom-12 left-0 w-full text-center text-gray-400 text-xs font-medium tracking-widest uppercase">
+          Généré par l'ERP ZirIA AgriTech
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

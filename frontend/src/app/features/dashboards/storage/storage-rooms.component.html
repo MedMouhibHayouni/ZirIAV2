@@ -1,0 +1,204 @@
+<div class="rooms-page">
+
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Mes Salles & Design</h1>
+      <p class="page-sub">Gérez vos salles, tarifs flexibles, et équipements</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn-refresh" (click)="loadRooms(facilityId())">
+        <ng-icon name="lucideRefreshCw" size="14" /> Actualiser
+      </button>
+      <button class="btn-add" (click)="showAddModal.set(true)">
+        <ng-icon name="lucidePlus" size="16" /> Ajouter une Salle
+      </button>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="loading-block"><div class="spinner"></div><p>Chargement des salles...</p></div>
+  }
+
+  @if (!loading()) {
+    @if (rooms().length === 0) {
+      <div class="empty-state">
+        <ng-icon name="lucideBuilding2" size="48" class="empty-icon" />
+        <h3>Aucune salle configurée</h3>
+        <p>Cliquez sur "Ajouter une Salle" pour commencer</p>
+      </div>
+    } @else {
+      <div class="rooms-grid">
+        @for (room of rooms(); track room.id) {
+          <div class="room-card" [style.border-left-color]="room.color_hex" [class.inactive]="!room.is_active">
+            <div class="room-card-header">
+              <div class="color-strip" [style.background]="room.color_hex"></div>
+              <div class="room-header-info">
+                <h3 class="room-name">{{ room.name }}</h3>
+                <span class="room-type">{{ room.room_type }}</span>
+              </div>
+              <span class="room-status-pill" [class.active]="room.is_active" [class.inactive]="!room.is_active">
+                {{ room.is_active ? 'Active' : 'Maintenance' }}
+              </span>
+            </div>
+
+            <!-- Capacity & Fill -->
+            <div class="room-stats">
+              <div class="stat-row">
+                <span class="stat-label">Capacité Totale</span>
+                <span class="stat-val">{{ room.total_capacity | number:'1.0-0' }} {{ getUnitLabel(room.pricing_unit) }}</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">Occupé</span>
+                <span class="stat-val accent">{{ room.occupied_capacity | number:'1.0-1' }} {{ getUnitLabel(room.pricing_unit) }}</span>
+              </div>
+              <div class="fill-mini">
+                <div class="fill-mini-bar">
+                  <div class="fill-mini-progress" [style.width.%]="getRoomFillPercent(room)" [style.background]="room.color_hex"></div>
+                </div>
+                <span class="fill-pct">{{ getRoomFillPercent(room) }}%</span>
+              </div>
+            </div>
+
+            <!-- Pricing -->
+            <div class="pricing-section">
+              <div class="pricing-label">Tarif</div>
+              <div class="pricing-value">
+                @if (room.pricing_unit === 'FORFAIT') {
+                  <span>Forfait — {{ room.unit_price | number:'1.0-3' }} TND/période</span>
+                } @else {
+                  <span>{{ room.unit_price | number:'1.0-3' }} TND / {{ getUnitLabel(room.pricing_unit) }} / jour</span>
+                }
+              </div>
+            </div>
+
+            <!-- STEG -->
+            <div class="steg-row">
+              <ng-icon name="lucideZap" size="14" class="steg-icon" />
+              <span class="steg-text">{{ room.compressor_power_kw }} kW → {{ room.monthly_elec_cost_tnd | number:'1.0-0' }} TND/mois STEG</span>
+              <span class="net-profit" [class.profit]="room.net_profit_tnd > 0" [class.loss]="room.net_profit_tnd < 0">
+                Net: {{ room.net_profit_tnd | number:'1.0-0' }} TND
+              </span>
+            </div>
+
+            <!-- Badges -->
+            @if (room.equipment_badges?.length > 0) {
+              <div class="badges-row">
+                @for (badge of room.equipment_badges; track badge) {
+                  <span class="badge">{{ badge }}</span>
+                }
+              </div>
+            }
+
+            <!-- Actions -->
+            <div class="card-actions">
+              <button class="btn-toggle" (click)="toggleRoomAvailability(room)">
+                <ng-icon [name]="room.is_active ? 'lucideSettings' : 'lucideCheck'" size="14" />
+                {{ room.is_active ? 'Passer en Maintenance' : 'Remettre en Service' }}
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  }
+
+  <!-- Add Room Modal -->
+  @if (showAddModal()) {
+    <div class="modal-overlay" (click)="showAddModal.set(false); resetNewRoom()">
+      <div class="modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>Nouvelle Salle</h3>
+          <button class="modal-close" (click)="showAddModal.set(false); resetNewRoom()">
+            <ng-icon name="lucideX" size="16" />
+          </button>
+        </div>
+        <div class="modal-body">
+
+          <div class="form-grid">
+            <div class="form-group full-width">
+              <label>Nom de la Salle *</label>
+              <input type="text" [ngModel]="newRoom().name" (ngModelChange)="updateNewRoom('name', $event)" placeholder="Ex: Chambre Positive Alpha" class="form-input" />
+            </div>
+
+            <div class="form-group full-width">
+              <label>Type de Salle</label>
+              <select [ngModel]="newRoom().room_type" (ngModelChange)="updateNewRoom('room_type', $event)" class="form-input">
+                @for (type of ROOM_TYPES; track type) {
+                  <option [value]="type">{{ type }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Unité de Tarification *</label>
+              <select [ngModel]="newRoom().pricing_unit" (ngModelChange)="updateNewRoom('pricing_unit', $event); updateNewRoom('capacity_m3', newRoom().total_capacity)" class="form-input">
+                @for (unit of PRICING_UNITS; track unit.value) {
+                  <option [value]="unit.value">{{ unit.label }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Capacité Totale ({{ getUnitLabel(newRoom().pricing_unit) }}) *</label>
+              <input type="number" [ngModel]="newRoom().total_capacity" (ngModelChange)="updateNewRoom('total_capacity', $event); updateNewRoom('capacity_m3', $event)" min="1" class="form-input" />
+            </div>
+
+            <div class="form-group">
+              <label>Prix Unitaire (TND / {{ getUnitLabel(newRoom().pricing_unit) }} / jour)</label>
+              <input type="number" [ngModel]="newRoom().unit_price" (ngModelChange)="updateNewRoom('unit_price', $event)" step="0.001" min="0" class="form-input" />
+            </div>
+
+            <div class="form-group">
+              <label>Puissance Compresseur (kW)</label>
+              <input type="number" [ngModel]="newRoom().compressor_power_kw" (ngModelChange)="updateNewRoom('compressor_power_kw', $event)" step="0.5" min="0" class="form-input" />
+            </div>
+          </div>
+
+          <!-- Color Picker -->
+          <div class="form-group">
+            <label>Couleur de la Salle</label>
+            <div class="color-picker">
+              @for (color of COLORS; track color.hex) {
+                <button class="color-btn" [style.background]="color.hex" [class.selected]="newRoom().color_hex === color.hex" [title]="color.label" (click)="updateNewRoom('color_hex', color.hex)">
+                  @if (newRoom().color_hex === color.hex) {
+                    <ng-icon name="lucideCheck" size="14" />
+                  }
+                </button>
+              }
+            </div>
+          </div>
+
+          <!-- Equipment Badges -->
+          <div class="form-group">
+            <label>Équipements de la Salle</label>
+            <div class="badges-selector">
+              @for (badge of ALL_BADGES; track badge) {
+                <button class="badge-toggle" [class.selected]="newRoom().equipment_badges.includes(badge)" (click)="toggleNewRoomBadge(badge)">
+                  {{ badge }}
+                </button>
+              }
+            </div>
+          </div>
+
+          <!-- Onboarding: Initial Occupant -->
+          <div class="form-group onboarding-section">
+            <label class="section-sep">Occupant Initial (Onboarding)</label>
+            <p class="hint">Si la salle est déjà partiellement occupée, déclarez l'occupant ici.</p>
+            <input type="text" [ngModel]="newRoom().initial_occupant_label" (ngModelChange)="updateNewRoom('initial_occupant_label', $event)" placeholder="Nom du client (ex: Société Pommes Sbeitla)" class="form-input" />
+            <div class="form-grid2">
+              <input type="tel" [ngModel]="newRoom().client_phone" (ngModelChange)="updateNewRoom('client_phone', $event)" placeholder="Téléphone (+216...)" class="form-input" />
+              <input type="number" [ngModel]="newRoom().initial_occupied_capacity" (ngModelChange)="updateNewRoom('initial_occupied_capacity', $event)" [placeholder]="'Qté occupée (' + getUnitLabel(newRoom().pricing_unit) + ')'" min="0" class="form-input" />
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn-cancel" (click)="showAddModal.set(false); resetNewRoom()">Annuler</button>
+          <button class="btn-confirm" (click)="saveRoom()" [disabled]="saving() || !newRoom().name.trim()">
+            {{ saving() ? 'Enregistrement...' : 'Créer la Salle' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

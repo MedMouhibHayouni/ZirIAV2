@@ -1,0 +1,116 @@
+<div class="sup-page">
+  <div class="sup-page-header">
+    <div>
+      <h2 class="sup-page-title">Gestion des Commandes</h2>
+      <p class="sup-page-sub">{{ orders().length }} commandes au total</p>
+    </div>
+  </div>
+
+  @if (isLoading()) {
+    <div class="sup-loading"><ng-icon name="lucideLoader" class="spin"></ng-icon> Chargement...</div>
+  } @else {
+    <div class="kanban-board">
+      @for (col of cols; track col) {
+        <div class="kanban-col">
+          <!-- Column header -->
+          <div class="kanban-col-header" [style.border-color]="colMeta[col].color">
+            <div class="kanban-col-title" [style.color]="colMeta[col].color">
+              {{ colMeta[col].label }}
+            </div>
+            <div class="kanban-col-badges">
+              <span class="kanban-count">{{ ordersFor(col).length }}</span>
+              @if (totalFor(col) > 0) {
+                <span class="kanban-total">{{ totalFor(col) | number:'1.0-0' }} TND</span>
+              }
+            </div>
+          </div>
+
+          <!-- Cards -->
+          <div class="kanban-cards">
+            @if (ordersFor(col).length === 0) {
+              <div class="kanban-empty">Aucune commande</div>
+            }
+            @for (order of ordersFor(col); track order.id) {
+              <div class="kanban-card" [class.processing]="processingId() === order.id">
+
+                <!-- Buyer -->
+                <div class="kcard-buyer">
+                  <div class="kcard-avatar">{{ order.buyer.name.charAt(0).toUpperCase() }}</div>
+                  <div>
+                    <div class="kcard-buyer-name">{{ order.buyer.name }}</div>
+                    <div class="kcard-date">{{ order.ordered_at | date:'dd/MM/yyyy' }}</div>
+                  </div>
+                </div>
+
+                <!-- Product -->
+                <div class="kcard-product">
+                  <ng-icon name="lucidePackage"></ng-icon>
+                  <span>{{ order.product.name }}</span>
+                </div>
+
+                <!-- Qty + Total -->
+                <div class="kcard-meta">
+                  <div class="kcard-qty">{{ order.quantity_ordered }} ×</div>
+                  <div class="kcard-total">{{ order.total_tnd | number:'1.2-2' }} TND</div>
+                </div>
+
+                @if (order.delivery_address) {
+                  <div class="kcard-address">
+                    <ng-icon name="lucideTruck"></ng-icon>
+                    {{ order.delivery_address | slice:0:50 }}
+                  </div>
+                }
+
+                @if (order.notes) {
+                  <div class="kcard-notes">{{ order.notes | slice:0:80 }}</div>
+                }
+
+                <!-- Actions -->
+                <div class="kcard-actions mt-3 flex-between">
+                  @if (colMeta[col].next) {
+                    <button class="sup-btn sup-btn--advance" (click)="advance(order)"
+                            [disabled]="processingId() === order.id">
+                      @if (processingId() === order.id) {
+                        <ng-icon name="lucideLoader" class="spin"></ng-icon>
+                      } @else {
+                        <ng-icon name="lucideArrowRight"></ng-icon>
+                      }
+                      {{ colMeta[colMeta[col].next!].label }}
+                    </button>
+                  } @else {
+                    <div class="kcard-done text-sm flex items-center gap-1 text-green font-bold">
+                      <ng-icon name="lucideCheckCircle"></ng-icon> Terminée
+                    </div>
+                  }
+                  
+                  <!-- Invoice Icon Button -->
+                  <div class="invoice-action ml-auto">
+                    @if (order.invoice_id) {
+                      <button class="icon-btn text-blue p-2 bg-blue-50 rounded-md hover:bg-blue-100 transition-colors tooltip"
+                              (click)="viewInvoice(order.invoice_id)"
+                              title="Voir la facture">
+                        <ng-icon name="lucideFileText"></ng-icon>
+                      </button>
+                    } @else {
+                      <button class="icon-btn text-amber p-2 bg-amber-50 rounded-md hover:bg-amber-100 transition-colors tooltip"
+                              (click)="generateInvoice(order)"
+                              [disabled]="processingId() === order.id"
+                              title="Générer la facture">
+                        @if (processingId() === order.id) {
+                          <ng-icon name="lucideLoader" class="spin"></ng-icon>
+                        } @else {
+                          <ng-icon name="lucideFileText"></ng-icon>
+                        }
+                      </button>
+                    }
+                  </div>
+                </div>
+
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

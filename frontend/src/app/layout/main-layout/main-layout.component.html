@@ -1,0 +1,25 @@
+<div class="app-shell" [class.app-shell--nav-open]="navOpen()">
+
+  <!-- Mobile overlay backdrop -->
+  <div class="app-shell__overlay" (click)="closeNav()"></div>
+
+  <!-- Sticky Sidebar -->
+  <app-sidebar
+    [navOpen]="navOpen()"
+    (closeRequest)="closeNav()">
+  </app-sidebar>
+
+  <!-- Main Content Column -->
+  <div class="app-shell__main">
+    <app-topbar
+      [navOpen]="navOpen()"
+      (hamburgerClick)="toggleNav()">
+    </app-topbar>
+
+    <!-- Scrollable Dashboard Area / Full-Bleed Area -->
+    <main class="app-shell__content" [class.app-shell__content--full-bleed]="fullBleed()">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+  <app-toast></app-toast>
+</div>

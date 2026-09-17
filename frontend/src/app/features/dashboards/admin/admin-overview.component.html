@@ -1,0 +1,274 @@
+<div class="admin-overview">
+
+  <!-- ═══ HEADER ═══ -->
+  <div class="overview-header">
+    <div class="header-left">
+      <div class="header-badge">
+        <span class="badge-dot"></span>
+        ADMIN CONTROL CENTER
+      </div>
+      <h1>Supervision ZirIA</h1>
+      <p class="header-sub">Mission Control — Données en temps réel</p>
+    </div>
+    <div class="header-right">
+      <div class="live-chip">
+        <span class="pulse-ring"></span>
+        <span class="pulse-dot"></span>
+        LIVE · {{ lastUpdated() | date:'HH:mm:ss' }}
+      </div>
+      @if (health()) {
+        <div class="health-pills">
+          <div class="health-pill" [class.ok]="health()!.db_status === 'OK'" [class.err]="health()!.db_status !== 'OK'">
+            <ng-icon name="lucideDatabase"></ng-icon>
+            DB {{ health()!.db_status }}
+          </div>
+          <div class="health-pill ok">
+            <ng-icon name="lucideWifi"></ng-icon>
+            {{ health()!.websocket_connections }} WS
+          </div>
+          <div class="health-pill ok">
+            <ng-icon name="lucideServer"></ng-icon>
+            {{ formatUptime(health()!.uptime_seconds) }}
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+
+  @if (isLoading()) {
+    <div class="loading-hero">
+      <ng-icon name="lucideLoader" class="spin"></ng-icon>
+      <span>Initialisation du tableau de bord...</span>
+    </div>
+  } @else {
+
+    <!-- ═══ KPI STRIP ═══ -->
+    <div class="kpi-strip">
+      <div class="kpi-card accent-emerald">
+        <div class="kpi-icon-wrap">
+          <ng-icon name="lucideUsers"></ng-icon>
+        </div>
+        <div class="kpi-data">
+          <span class="kpi-label">Utilisateurs Totaux</span>
+          <span class="kpi-value">{{ formatNumber(totalUsers) }}</span>
+          <span class="kpi-trend trend-up">
+            <ng-icon name="lucideArrowUpRight"></ng-icon>
+            +{{ kpis()?.new_users_this_week || 0 }} cette semaine
+          </span>
+        </div>
+      </div>
+
+      <div class="kpi-card accent-blue">
+        <div class="kpi-icon-wrap">
+          <ng-icon name="lucideBanknote"></ng-icon>
+        </div>
+        <div class="kpi-data">
+          <span class="kpi-label">Commission Aujourd'hui</span>
+          <span class="kpi-value">{{ formatNumber(kpis()?.commission_today_tnd || 0) }} <small>TND</small></span>
+          <span class="kpi-trend">{{ kpis()?.transactions_today || 0 }} transactions</span>
+        </div>
+      </div>
+
+      <div class="kpi-card accent-violet">
+        <div class="kpi-icon-wrap">
+          <ng-icon name="lucideCrown"></ng-icon>
+        </div>
+        <div class="kpi-data">
+          <span class="kpi-label">Revenu Abonnements</span>
+          <span class="kpi-value">{{ formatNumber(kpis()?.active_subscription_revenue_tnd || 0) }} <small>TND</small></span>
+          <span class="kpi-trend">{{ totalSubs }} abonnés actifs</span>
+        </div>
+      </div>
+
+      <div class="kpi-card accent-amber">
+        <div class="kpi-icon-wrap">
+          <ng-icon name="lucideShoppingBag"></ng-icon>
+        </div>
+        <div class="kpi-data">
+          <span class="kpi-label">Annonces Actives</span>
+          <span class="kpi-value">{{ formatNumber(kpis()?.active_listings || 0) }}</span>
+          <span class="kpi-trend">Marketplace B2B</span>
+        </div>
+      </div>
+
+      <div class="kpi-card accent-rose">
+        <div class="kpi-icon-wrap">
+          <ng-icon name="lucideAlertTriangle"></ng-icon>
+        </div>
+        <div class="kpi-data">
+          <span class="kpi-label">En Attente Vérif.</span>
+          <span class="kpi-value">{{ kpis()?.pending_validations || 0 }}</span>
+          <span class="kpi-trend">Comptes non vérifiés</span>
+        </div>
+      </div>
+
+      <div class="kpi-card accent-teal">
+        <div class="kpi-icon-wrap">
+          <ng-icon name="lucideActivity"></ng-icon>
+        </div>
+        <div class="kpi-data">
+          <span class="kpi-label">Diagnostics / Semaine</span>
+          <span class="kpi-value">{{ kpis()?.disease_detections_this_week || 0 }}</span>
+          <span class="kpi-trend">Détections IA terrain</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ MAIN GRID ═══ -->
+    <div class="main-grid">
+
+      <!-- Left Column -->
+      <div class="col-left">
+
+        <!-- Users by Role Bar Chart -->
+        <div class="zir-card">
+          <div class="card-head">
+            <h3><ng-icon name="lucideTrendingUp"></ng-icon> Répartition par Rôle</h3>
+            <span class="card-badge">{{ totalUsers }} total</span>
+          </div>
+          <div class="role-bars">
+            @for (entry of roleEntries; track entry.role) {
+              <div class="role-row">
+                <div class="role-meta">
+                  <span class="role-emoji">{{ entry.emoji }}</span>
+                  <span class="role-name">{{ entry.label }}</span>
+                </div>
+                <div class="bar-track">
+                  <div class="bar-fill" [style.width.%]="(entry.count / maxBarValue * 100) || 0"></div>
+                </div>
+                <span class="role-count">{{ entry.count }}</span>
+              </div>
+            } @empty {
+              <div class="empty-state">Aucune donnée disponible.</div>
+            }
+          </div>
+        </div>
+
+        <!-- Revenue Timeline -->
+        @if (btsReport() && revenueMonths.length > 0) {
+          <div class="zir-card">
+            <div class="card-head">
+              <h3><ng-icon name="lucideBarChart2"></ng-icon> Commissions (6 mois)</h3>
+              <span class="trend-chip" [class.up]="(btsReport()?.growth_rate_pct || 0) >= 0" [class.down]="(btsReport()?.growth_rate_pct || 0) < 0">
+                <ng-icon [name]="(btsReport()?.growth_rate_pct || 0) >= 0 ? 'lucideTrendingUp' : 'lucideTrendingDown'"></ng-icon>
+                {{ btsReport()?.growth_rate_pct | number:'1.1-1' }}%
+              </span>
+            </div>
+            <div class="bar-chart">
+              @for (m of revenueMonths; track m.month) {
+                <div class="bar-col">
+                  <div class="bar-tip">{{ m.commission_tnd | number:'1.0-0' }}</div>
+                  <div class="bar-body" [style.height.%]="m.pct || 2"></div>
+                  <span class="bar-label">{{ m.label }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+      </div>
+
+      <!-- Right Column -->
+      <div class="col-right">
+
+        <!-- Subscription Distribution -->
+        <div class="zir-card">
+          <div class="card-head">
+            <h3><ng-icon name="lucideCrown"></ng-icon> Plans d'Abonnement</h3>
+          </div>
+          <div class="plan-rings">
+            @for (entry of planEntries; track entry.plan) {
+              <div class="plan-ring-row">
+                <div class="plan-dot" [style.background]="getPlanColor(entry.plan)"></div>
+                <div class="plan-info">
+                  <span class="plan-name">{{ getPlanLabel(entry.plan) }}</span>
+                  <div class="plan-track">
+                    <div class="plan-fill" [style.width.%]="getPlanPercent(entry.count)" [style.background]="getPlanColor(entry.plan)"></div>
+                  </div>
+                </div>
+                <div class="plan-stats">
+                  <span class="plan-count">{{ entry.count }}</span>
+                  <span class="plan-pct">{{ getPlanPercent(entry.count) }}%</span>
+                </div>
+              </div>
+            } @empty {
+              <div class="empty-state">Aucun abonnement actif.</div>
+            }
+          </div>
+        </div>
+
+        <!-- Verification Queue -->
+        <div class="zir-card">
+          <div class="card-head">
+            <h3><ng-icon name="lucideShieldCheck"></ng-icon> File de Vérification</h3>
+            @if (unverifiedUsers().length > 0) {
+              <span class="card-badge urgent">{{ unverifiedUsers().length }} en attente</span>
+            }
+          </div>
+          @if (unverifiedUsers().length === 0) {
+            <div class="empty-verify">
+              <ng-icon name="lucideCheckCircle"></ng-icon>
+              <span>Aucun compte en attente — ✅</span>
+            </div>
+          } @else {
+            <div class="verify-list">
+              @for (user of unverifiedUsers(); track user.id) {
+                <div class="verify-item">
+                  <div class="user-av">{{ user.name.charAt(0).toUpperCase() }}</div>
+                  <div class="user-data">
+                    <span class="user-nm">{{ user.name }}</span>
+                    <span class="user-role-gov">{{ getRoleLabel(user.role) }} · {{ user.governorate || '—' }}</span>
+                    <span class="user-email">{{ user.email }}</span>
+                  </div>
+                  <div class="verify-btns">
+                    <button class="btn-approve" [disabled]="user.verifying" (click)="verifyUser(user)" title="Approuver">
+                      <ng-icon [name]="user.verifying ? 'lucideLoader' : 'lucideCheckCircle'" [class.spin]="user.verifying"></ng-icon>
+                    </button>
+                    <button class="btn-reject" [disabled]="user.verifying" (click)="rejectUser(user)" title="Rejeter">
+                      <ng-icon name="lucideXCircle"></ng-icon>
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- System Health Detail -->
+        @if (health()) {
+          <div class="zir-card">
+            <div class="card-head">
+              <h3><ng-icon name="lucideServer"></ng-icon> Santé Système</h3>
+              <span class="card-badge" [class.ok-badge]="health()!.db_status === 'OK'" [class.err-badge]="health()!.db_status !== 'OK'">
+                {{ health()!.db_status === 'OK' ? 'Opérationnel' : 'Dégradé' }}
+              </span>
+            </div>
+            <div class="health-grid">
+              <div class="health-metric">
+                <ng-icon name="lucideDatabase"></ng-icon>
+                <span class="metric-val">{{ health()!.db_status }}</span>
+                <span class="metric-label">Base de données</span>
+              </div>
+              <div class="health-metric">
+                <ng-icon name="lucideWifi"></ng-icon>
+                <span class="metric-val">{{ health()!.websocket_connections }}</span>
+                <span class="metric-label">Connexions WS</span>
+              </div>
+              <div class="health-metric">
+                <ng-icon name="lucideUsers"></ng-icon>
+                <span class="metric-val">{{ health()!.total_users }}</span>
+                <span class="metric-label">Utilisateurs</span>
+              </div>
+              <div class="health-metric">
+                <ng-icon name="lucideZap"></ng-icon>
+                <span class="metric-val">{{ health()!.memory_usage_mb }} MB</span>
+                <span class="metric-label">RAM utilisée</span>
+              </div>
+            </div>
+          </div>
+        }
+
+      </div>
+    </div>
+  }
+</div>

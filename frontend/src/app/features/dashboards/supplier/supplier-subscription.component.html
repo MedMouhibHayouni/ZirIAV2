@@ -1,0 +1,143 @@
+<div class="subs-container fade-in">
+  
+  <!-- Premium Header -->
+  <div class="subs-header">
+    <span class="premium-badge"><ng-icon name="lucideShieldCheck"></ng-icon> ZirIA B2B Premium</span>
+    <h1 class="subs-title">Abonnements Fournisseur</h1>
+    <p class="subs-subtitle">Passez d'une simple vitrine en ligne à un ERP complet pour piloter toute votre activité commerciale en Tunisie.</p>
+  </div>
+
+  <!-- Loading State -->
+  @if (loading) {
+    <div class="subs-loading">
+      <div class="spinner-ring"></div>
+      <p>Chargement des offres d'abonnement...</p>
+    </div>
+  }
+
+  <!-- Pricing Grid -->
+  @if (!loading) {
+    <div class="pricing-grid">
+      @for (plan of plans; track plan.id) {
+        @let isRecommended = plan.plan_code === 'ERP_STARTER';
+        @let isActive = activeSubscription?.plan_code === plan.plan_code;
+
+        <div class="pricing-card" 
+             [class.recommended]="isRecommended" 
+             [class.active-plan]="isActive">
+          
+          @if (isRecommended) {
+            <div class="recommended-badge">RECOMMANDÉ</div>
+          }
+
+          <!-- Card Header Info -->
+          <div class="pricing-header">
+            <h3 class="plan-name">{{ plan.name_fr }}</h3>
+            <p class="plan-desc">{{ plan.description_fr }}</p>
+            
+            <div class="price-container">
+              <span class="price-val">{{ plan.price_tnd_monthly }}</span>
+              <span class="price-unit">TND <small>/ mois</small></span>
+            </div>
+          </div>
+
+          <!-- Card Action Button -->
+          <div class="pricing-action">
+            @if (isActive) {
+              <button class="btn-active-plan" disabled>
+                <ng-icon name="lucideCheckCircle2"></ng-icon> Votre formule actuelle
+              </button>
+            } @else {
+              <button 
+                (click)="openConfirmModal(plan)"
+                [class]="isRecommended ? 'btn-select-recommended' : 'btn-select-standard'">
+                Choisir cette offre
+              </button>
+            }
+          </div>
+
+          <!-- Plan Features list -->
+          <div class="pricing-features">
+            <div class="features-label">Fonctionnalités incluses :</div>
+            <ul class="features-list">
+              <li [class.enabled]="hasFeature(plan, 'vitrine_page')" [class.disabled]="!hasFeature(plan, 'vitrine_page')">
+                <ng-icon [name]="hasFeature(plan, 'vitrine_page') ? 'lucideCheckCircle2' : 'lucideXCircle'"></ng-icon>
+                <span>Page vitrine publique</span>
+              </li>
+              <li [class.enabled]="hasFeature(plan, 'custom_theme_color')" [class.disabled]="!hasFeature(plan, 'custom_theme_color')">
+                <ng-icon [name]="hasFeature(plan, 'custom_theme_color') ? 'lucideCheckCircle2' : 'lucideXCircle'"></ng-icon>
+                <span>Thème & couleurs personnalisés</span>
+              </li>
+              <li [class.enabled]="hasFeature(plan, 'reviews')" [class.disabled]="!hasFeature(plan, 'reviews')">
+                <ng-icon [name]="hasFeature(plan, 'reviews') ? 'lucideCheckCircle2' : 'lucideXCircle'"></ng-icon>
+                <span>Avis & évaluations clients</span>
+              </li>
+              <li [class.enabled]="hasFeature(plan, 'order_management')" [class.disabled]="!hasFeature(plan, 'order_management')">
+                <ng-icon [name]="hasFeature(plan, 'order_management') ? 'lucideCheckCircle2' : 'lucideXCircle'"></ng-icon>
+                <span>Prise de commandes B2B</span>
+              </li>
+              <li [class.enabled]="hasFeature(plan, 'pdf_invoice')" [class.disabled]="!hasFeature(plan, 'pdf_invoice')">
+                <ng-icon [name]="hasFeature(plan, 'pdf_invoice') ? 'lucideCheckCircle2' : 'lucideXCircle'"></ng-icon>
+                <span>Facturation PDF automatisée</span>
+              </li>
+              <li [class.enabled]="hasFeature(plan, 'client_crm')" [class.disabled]="!hasFeature(plan, 'client_crm')">
+                <ng-icon [name]="hasFeature(plan, 'client_crm') ? 'lucideCheckCircle2' : 'lucideXCircle'"></ng-icon>
+                <span>CRM & interactions clients</span>
+              </li>
+              <li [class.enabled]="hasFeature(plan, 'advanced_analytics')" [class.disabled]="!hasFeature(plan, 'advanced_analytics')">
+                <ng-icon [name]="hasFeature(plan, 'advanced_analytics') ? 'lucideCheckCircle2' : 'lucideXCircle'"></ng-icon>
+                <span>Analytiques de vente avancées</span>
+              </li>
+            </ul>
+          </div>
+
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Danger Zone Panel -->
+  @if (activeSubscription && activeSubscription.id) {
+    <div class="danger-zone-card">
+      <div class="danger-icon-wrap">
+        <ng-icon name="lucideAlertTriangle"></ng-icon>
+      </div>
+      <div class="danger-text">
+        <h3>Annulation de l'abonnement</h3>
+        <p>L'annulation immédiate de votre abonnement rétrogradera vos privilèges d'accès et suspendra vos modules ERP actifs (Factures, CRM, Suivi de stocks).</p>
+      </div>
+      <div class="danger-action">
+        <button (click)="cancelSubscription()" [disabled]="actionLoading" class="btn-cancel">
+          {{ actionLoading ? 'Traitement...' : 'Résilier ma formule' }}
+        </button>
+      </div>
+    </div>
+  }
+
+</div>
+
+<!-- Confirm Subscription Modal -->
+@if (showConfirmModal) {
+  <div class="confirm-container" (click)="closeModal()">
+    <div class="confirm-backdrop"></div>
+    <div class="confirm-modal" (click)="$event.stopPropagation()">
+      <div class="modal-glowing-ring">
+        <ng-icon name="lucideZap"></ng-icon>
+      </div>
+      
+      <h3 class="confirm-modal-title">Valider la mise à niveau</h3>
+      <p class="confirm-modal-desc">
+        Vous allez basculer vers la formule <strong class="plan-highlight">{{ selectedPlan?.name_fr }}</strong>. 
+        Votre compte sera facturé à hauteur de <strong class="price-highlight">{{ selectedPlan?.price_tnd_monthly }} TND / mois</strong>.
+      </p>
+
+      <div class="confirm-actions">
+        <button (click)="closeModal()" class="btn-cancel-modal">Retour</button>
+        <button (click)="confirmSubscription()" [disabled]="actionLoading" class="btn-confirm-modal">
+          {{ actionLoading ? 'Traitement...' : 'Confirmer la souscription' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+

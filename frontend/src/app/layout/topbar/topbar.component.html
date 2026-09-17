@@ -1,0 +1,123 @@
+<header class="zir-topbar">
+
+  <!-- Left: Hamburger (mobile/tablet) + Platform label -->
+  <div class="zir-topbar__left">
+
+    <!-- Hamburger button — hidden on desktop -->
+    <button
+      class="zir-topbar__hamburger"
+      [class.zir-topbar__hamburger--open]="navOpen"
+      (click)="hamburgerClick.emit()"
+      aria-label="Toggle navigation">
+      <span class="bar bar-1"></span>
+      <span class="bar bar-2"></span>
+      <span class="bar bar-3"></span>
+    </button>
+
+    <div class="zir-topbar__platform">
+      <!-- Mobile: show compact logo icon -->
+      <img src="assets/ziria-icon.png" alt="ZirIA" class="zir-topbar__logo-icon" />
+      <span class="zir-topbar__platform-label">
+        Zir<span class="zir-topbar__brand-ia">IA</span>
+        <span class="zir-topbar__platform-sub"> Sentinel</span>
+      </span>
+      <div class="ws-dot" [class.ws-dot--connected]="wsConnected()" [class.ws-dot--disconnected]="!wsConnected()"
+           [attr.data-tooltip]="wsConnected() ? 'Connecté en temps réel' : 'Déconnecté — reconnexion…'"></div>
+    </div>
+  </div>
+
+  <!-- Right: Actions -->
+  <div class="zir-topbar__actions">
+
+    <!-- Language — hidden on xs -->
+    <button class="zir-topbar__btn zir-topbar__btn--lang" (click)="lang.toggleLanguage()" data-tooltip="Changer la langue">
+      <ng-icon name="lucideLanguages" class="zir-topbar__btn-icon"></ng-icon>
+      <span class="zir-topbar__btn-label">{{ lang.currentLang() | uppercase }}</span>
+    </button>
+
+    <!-- Theme Toggle -->
+    <button
+      class="zir-topbar__btn zir-topbar__btn--icon"
+      (click)="theme.toggleTheme()"
+      [attr.data-tooltip]="theme.isDark() ? 'Passer en mode clair' : 'Passer en mode sombre'">
+      <ng-icon [name]="theme.isDark() ? 'lucideSun' : 'lucideMoon'" class="zir-topbar__btn-icon"></ng-icon>
+    </button>
+
+    <!-- Subscription CTA (Mobile/Tablet) -->
+    @if (subscriptionCta().show) {
+      <a class="zir-topbar__cta-btn hidden-desktop" 
+         [routerLink]="[subscriptionCta().route]" 
+         [queryParams]="subscriptionCta().queryParams">
+        <ng-icon [name]="subscriptionCta().icon" class="cta-icon"></ng-icon>
+        <span class="cta-label">{{ subscriptionCta().btnText }}</span>
+      </a>
+    }
+
+    <!-- Notifications -->
+    <app-notification-center></app-notification-center>
+
+    <!-- Divider -->
+    <div class="zir-topbar__divider"></div>
+
+    <!-- Profile Dropdown -->
+    <div class="zir-topbar__profile zir-topbar__profile--clickable" (click)="toggleProfileDropdown($event)">
+
+      <!-- Avatar: PFP image or Initials fallback -->
+      <div class="zir-topbar__avatar-wrap">
+        <img *ngIf="userPictureUrl()" [src]="userPictureUrl()" alt="Photo de profil" class="zir-topbar__avatar-img">
+        <div *ngIf="!userPictureUrl()" class="zir-topbar__avatar">{{ getInitials() }}</div>
+      </div>
+
+      <div class="zir-topbar__profile-info">
+        <div class="zir-topbar__profile-name">{{ userName }}</div>
+        <div class="zir-topbar__profile-role">{{ userRole }}</div>
+      </div>
+
+      <ng-icon name="lucideChevronDown"
+        class="zir-topbar__chevron"
+        [class.zir-topbar__chevron--open]="profileDropdownOpen()">
+      </ng-icon>
+
+      <!-- Dropdown Menu -->
+      <div *ngIf="profileDropdownOpen()"
+        class="zir-profile-dropdown"
+        (click)="$event.stopPropagation()">
+
+        <!-- Dropdown Header -->
+        <div class="zir-profile-dropdown__header">
+          <div class="zir-profile-dropdown__avatar-lg">
+            <img *ngIf="userPictureUrl()" [src]="userPictureUrl()" alt="Avatar" class="w-full h-full object-cover">
+            <span *ngIf="!userPictureUrl()">{{ getInitials() }}</span>
+          </div>
+          <div>
+            <div class="zir-profile-dropdown__name">{{ userName }}</div>
+            <div class="zir-profile-dropdown__role">{{ userRole }}</div>
+          </div>
+        </div>
+
+        <div class="zir-profile-dropdown__divider"></div>
+
+        <!-- Profile Settings Link -->
+        <button class="zir-profile-dropdown__item" (click)="goToProfile()">
+          <ng-icon name="lucideSettings" class="zir-profile-dropdown__item-icon"></ng-icon>
+          <div>
+            <div class="zir-profile-dropdown__item-title">Paramètres du profil</div>
+            <div class="zir-profile-dropdown__item-sub">إعدادات الحساب</div>
+          </div>
+        </button>
+
+        <div class="zir-profile-dropdown__divider"></div>
+
+        <!-- Logout -->
+        <button class="zir-profile-dropdown__item zir-profile-dropdown__item--danger" (click)="doLogout()">
+          <ng-icon name="lucideLogOut" class="zir-profile-dropdown__item-icon"></ng-icon>
+          <div>
+            <div class="zir-profile-dropdown__item-title">Déconnexion</div>
+            <div class="zir-profile-dropdown__item-sub">تسجيل الخروج</div>
+          </div>
+        </button>
+      </div>
+    </div>
+
+  </div>
+</header>

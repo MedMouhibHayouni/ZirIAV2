@@ -1,0 +1,121 @@
+<div class="b2b-page">
+  <div class="page-header">
+    <div>
+      <h2><ng-icon name="lucidePackage"></ng-icon> Sourcing Agricole B2B</h2>
+      <p>{{ listings().length }} offres disponibles · Mise à jour automatique dès que vous filtrez</p>
+    </div>
+  </div>
+
+  <!-- Filter bar -->
+  <div class="filter-bar zir-card">
+    <ng-icon name="lucideFilter"></ng-icon>
+    <select class="zir-input" [(ngModel)]="filterCrop" (change)="onFilterChange()">
+      <option value="">Toutes les cultures</option>
+      @for (c of crops; track c) { <option [value]="c">{{ c }}</option> }
+    </select>
+    <select class="zir-input" [(ngModel)]="filterGovernorate" (change)="onFilterChange()">
+      <option value="">Tous les gouvernorats</option>
+      @for (g of governorates; track g) { <option [value]="g">{{ g }}</option> }
+    </select>
+    <div class="filter-group">
+      <label class="filter-label">Qté min (T)</label>
+      <input type="number" class="zir-input filter-num" [(ngModel)]="filterMinQty" (input)="onFilterChange()" placeholder="0">
+    </div>
+    <div class="filter-group">
+      <label class="filter-label">Prix max (TND/kg)</label>
+      <input type="number" class="zir-input filter-num" [(ngModel)]="filterMaxPrice" step="0.1" (input)="onFilterChange()" placeholder="∞">
+    </div>
+  </div>
+
+  @if (isLoading()) {
+    <div class="loading-state"><ng-icon name="lucideLoader" class="spin"></ng-icon> Recherche en cours...</div>
+  } @else if (listings().length === 0) {
+    <div class="empty-state">
+      <ng-icon name="lucidePackage" style="font-size:48px"></ng-icon>
+      <p>Aucune offre trouvée pour ces critères.</p>
+    </div>
+  } @else {
+    <div class="listings-grid">
+      @for (listing of listings(); track listing.id) {
+        <div class="listing-card">
+          <div class="listing-header">
+            <span class="crop-badge">{{ listing.crop_type }}</span>
+            @if (listing.gdd_days_remaining != null) {
+              <span class="gdd-badge"><ng-icon name="lucideTrendingUp"></ng-icon> Dispo dans {{ listing.gdd_days_remaining }}j</span>
+            }
+          </div>
+
+          <div class="listing-body">
+            @if (listing.seller_name) {
+              <div class="seller-row">
+                <div class="seller-avatar">{{ listing.seller_name.charAt(0) }}</div>
+                <span>{{ listing.seller_name }}</span>
+                @if (listing.seller_rating) {
+                  <div class="stars">
+                    @for (filled of getRatingStars(listing.seller_rating); track $index) {
+                      <ng-icon [name]="filled ? 'lucideStar' : 'lucideStar'" [style.color]="filled ? '#f59e0b' : '#cbd5e1'"></ng-icon>
+                    }
+                  </div>
+                }
+              </div>
+            }
+            <div class="listing-stats">
+              <div class="stat"><span><ng-icon name="lucideWeight"></ng-icon> Quantité</span><strong>{{ listing.quantity_tonnes }} T</strong></div>
+              <div class="stat"><span><ng-icon name="lucideBanknote"></ng-icon> Prix</span><strong>{{ listing.price_per_kg | number:'1.2-2' }} TND/kg</strong></div>
+              <div class="stat"><span><ng-icon name="lucideMapPin"></ng-icon> Lieu</span><strong>{{ listing.governorate }}</strong></div>
+            </div>
+          </div>
+
+          <button class="zir-btn zir-btn--primary interest-btn" (click)="openInterestModal(listing)">
+            <ng-icon name="lucideSend"></ng-icon> Exprimer mon intérêt
+          </button>
+        </div>
+      }
+    </div>
+  }
+</div>
+
+<!-- Interest Modal / Drawer -->
+@if (showInterestModal && interest.listing) {
+  <div class="zir-modal">
+    <div class="zir-modal__backdrop" (click)="showInterestModal = false"></div>
+    <div class="zir-modal__content">
+      <div class="zir-modal__header">
+        <h3><ng-icon name="lucideHandshake"></ng-icon> Exprimer mon intérêt — {{ interest.listing.crop_type }}</h3>
+        <button class="close-btn" (click)="showInterestModal = false"><ng-icon name="lucideXCircle"></ng-icon></button>
+      </div>
+      <div class="zir-modal__body">
+        <div class="interest-context">
+          <div class="ctx-pill">Vendeur: {{ interest.listing.seller_name || 'Agriculteur' }}</div>
+          <div class="ctx-pill">Disponible: {{ interest.listing.quantity_tonnes }}T</div>
+          <div class="ctx-pill">Prix public: {{ interest.listing.price_per_kg }} TND/kg</div>
+        </div>
+        <div class="form-group">
+          <label>Prix proposé (TND/kg)</label>
+          <input type="number" class="zir-input" [(ngModel)]="interest.proposed_price_per_kg" step="0.1" min="0">
+          <span class="form-hint">Prix marché actuel: {{ interest.listing.price_per_kg }} TND/kg</span>
+        </div>
+        <div class="form-group">
+          <label>Quantité souhaitée (Tonnes)</label>
+          <input type="number" class="zir-input" [(ngModel)]="interest.quantity_tonnes" step="0.5" [max]="interest.listing.quantity_tonnes" min="0.1">
+          <span class="form-hint">Maximum disponible: {{ interest.listing.quantity_tonnes }}T</span>
+        </div>
+        <div class="form-group">
+          <label>Date de livraison souhaitée</label>
+          <input type="date" class="zir-input" [(ngModel)]="interest.delivery_deadline">
+        </div>
+        <div class="form-group">
+          <label>Message au vendeur</label>
+          <textarea class="zir-input" [(ngModel)]="interest.message" rows="3" placeholder="Précisez vos besoins, conditions de transport..."></textarea>
+        </div>
+      </div>
+      <div class="zir-modal__footer">
+        <button class="zir-btn zir-btn--ghost" (click)="showInterestModal = false">Annuler</button>
+        <button class="zir-btn zir-btn--primary" (click)="submitInterest()" [disabled]="isSubmitting() || !interest.proposed_price_per_kg || !interest.quantity_tonnes">
+          <ng-icon [name]="isSubmitting() ? 'lucideLoader' : 'lucideSend'" [class.spin]="isSubmitting()"></ng-icon>
+          {{ isSubmitting() ? 'Envoi...' : 'Envoyer la demande' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

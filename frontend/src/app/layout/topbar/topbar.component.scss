@@ -1,0 +1,497 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+.zir-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  height: var(--topbar-h, 62px);
+  background: var(--bg-topbar);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 4px 20px var(--zir-gold-dim);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  flex-shrink: 0;
+  gap: 12px;
+
+  &__left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+
+  &__platform {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+
+  &__platform-label {
+    font-size: 17px;
+    font-weight: 900;
+    color: var(--text-primary);
+    letter-spacing: -0.04em;
+    white-space: nowrap;
+    font-family: 'Inter', sans-serif;
+  }
+
+  &__brand-ia {
+    color: var(--zir-emerald);
+    font-weight: 900;
+  }
+
+  &__platform-sub {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  &__logo-icon {
+    width: 36px;
+    height: 36px;
+    object-fit: contain;
+    flex-shrink: 0;
+    // Hidden on desktop — sidebar already shows the full logo
+    display: none;
+    @media (max-width: 1023px) {
+      display: block;
+    }
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+
+  &__btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 10px;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: background-color var(--t-fast), color var(--t-fast);
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+
+    &:hover {
+      background: var(--bg-card-hover);
+      color: var(--text-primary);
+    }
+
+    &--icon {
+      padding: 8px;
+    }
+
+    &-icon {
+      font-size: 17px;
+    }
+
+    &-label {
+      font-size: 12px;
+      letter-spacing: 0.04em;
+    }
+  }
+
+  &__divider {
+    display: none;
+    @media (min-width: 768px) {
+      display: block;
+      width: 1px;
+      height: 28px;
+      background: var(--border);
+      margin: 0 8px;
+      flex-shrink: 0;
+    }
+  }
+
+  &__profile {
+    display: none;
+    @media (min-width: 768px) {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: background var(--t-fast);
+      margin-left: 4px;
+
+      &:hover {
+        background: var(--bg-card-hover);
+      }
+    }
+  }
+
+  &__avatar {
+    width: 34px;
+    height: 34px;
+    background: linear-gradient(135deg, var(--zir-green-deep), var(--zir-emerald));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 800;
+    color: #fff;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(34, 197, 94, 0.3);
+  }
+
+  &__profile-info {
+    display: none;
+
+    @media (min-width: 768px) {
+      display: block;
+    }
+  }
+
+  &__profile-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+  }
+
+  &__profile-role {
+    font-size: 10.5px;
+    font-weight: 600;
+    color: var(--zir-emerald);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+  }
+
+  // ─── Hamburger ─────────────────────────────────────────────────────────────
+  &__hamburger {
+    display: none;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 36px;
+    height: 36px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    padding: 10px 9px;
+    flex-shrink: 0;
+    transition: background var(--t-fast), border-color var(--t-fast);
+    position: relative;
+
+    &:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--border-accent);
+    }
+
+    .bar {
+      display: block;
+      width: 100%;
+      height: 2px;
+      background: var(--text-secondary);
+      border-radius: 2px;
+      transform-origin: center;
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+                  opacity 0.2s ease,
+                  background var(--t-fast);
+    }
+
+    // Animate bars → X when open
+    &--open {
+      background: var(--zir-emerald-dim);
+      border-color: var(--border-accent);
+
+      .bar-1 {
+        transform: translateY(5px) rotate(45deg);
+        background: var(--zir-emerald);
+      }
+      .bar-2 {
+        opacity: 0;
+        transform: scaleX(0);
+      }
+      .bar-3 {
+        transform: translateY(-5px) rotate(-45deg);
+        background: var(--zir-emerald);
+      }
+    }
+  }
+
+  // Language button
+  &__btn--lang {
+    .zir-topbar__btn-label { display: inline; }
+  }
+}
+
+// ─── WS Dot ──────────────────────────────────────────────────────────────────
+.ws-dot {
+  width: 7px;
+  height: 7px;
+}
+
+// ─── Tablet (768–1023px): show hamburger ─────────────────────────────────────
+@media (max-width: 1023px) {
+  .zir-topbar {
+    padding: 0 16px;
+
+    &__hamburger {
+      display: flex;
+    }
+  }
+}
+
+// ─── Mobile (< 480px): hide platform label & lang label ──────────────────────
+@media (max-width: 479px) {
+  .zir-topbar {
+    padding: 0 12px;
+    gap: 6px;
+
+    &__platform-label {
+      // Show brand name on mobile, but hide the " Sentinel" sub-label
+      font-size: 14px;
+    }
+
+    &__platform-sub {
+      display: none;
+    }
+
+    &__btn--lang {
+      display: none;
+    }
+
+    &__divider {
+      display: none;
+    }
+
+    &__profile {
+      display: none;
+    }
+  }
+}
+
+/* ==========================================================================
+   PREMIUM CTA (TOPBAR)
+   ========================================================================== */
+.zir-topbar__cta-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: linear-gradient(135deg, var(--zir-emerald) 0%, var(--zir-green-deep) 100%);
+  color: #ffffff;
+  border-radius: 12px;
+  text-decoration: none;
+  font-weight: 800;
+  font-size: 13px;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+  transition: transform 0.2s, box-shadow 0.2s;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  flex-shrink: 0;
+
+  .cta-icon {
+    font-size: 14px;
+  }
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35);
+  }
+
+  &.hidden-desktop {
+    @media (min-width: 1025px) {
+      display: none;
+    }
+  }
+
+  @media (max-width: 479px) {
+    padding: 6px 10px;
+    gap: 4px;
+    .cta-label {
+      font-size: 12px;
+    }
+  }
+
+  @media (max-width: 379px) {
+    padding: 8px;
+    border-radius: 50%;
+    .cta-label {
+      display: none;
+    }
+  }
+}
+
+/* --- TOOLTIP POSITIONING OVERRIDE (BELOW ELEMENTS) --- */
+/* Topbar is sticky at the top, so tooltips must pop below to prevent clipping and overflow offscreen */
+[data-tooltip] {
+  &::after {
+    bottom: auto !important;
+    top: calc(100% + 8px) !important;
+  }
+}
+
+/* ─── Profile Dropdown Extras ──────────────────────────────────────────────── */
+.zir-topbar {
+
+  &__profile--clickable {
+    position: relative;
+    user-select: none;
+  }
+
+  &__avatar-wrap {
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid rgba(16, 185, 129, 0.35);
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+  }
+
+  &__avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+  }
+
+  &__chevron {
+    font-size: 14px;
+    color: var(--text-muted);
+    transition: transform 0.25s ease;
+    flex-shrink: 0;
+    display: none;
+    @media (min-width: 768px) { display: block; }
+
+    &--open {
+      transform: rotate(180deg);
+    }
+  }
+}
+
+/* ─── Profile Dropdown Panel ─────────────────────────────────────────────── */
+.zir-profile-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  min-width: 260px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.18), 0 0 0 1px rgba(255,255,255,0.06) inset;
+  backdrop-filter: blur(24px);
+  overflow: hidden;
+  z-index: 200;
+  animation: dropdown-fade 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 16px 12px;
+  }
+
+  &__avatar-lg {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--zir-green-deep), var(--zir-emerald));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 800;
+    color: #fff;
+    flex-shrink: 0;
+    overflow: hidden;
+    border: 2px solid rgba(16, 185, 129, 0.3);
+  }
+
+  &__name {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.2;
+  }
+
+  &__role {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--zir-emerald);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  &__divider {
+    height: 1px;
+    background: var(--border);
+    margin: 0;
+  }
+
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 12px 16px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    text-align: left;
+
+    &:hover {
+      background: var(--bg-card-hover);
+    }
+
+    &-icon {
+      font-size: 16px;
+      color: var(--text-secondary);
+      flex-shrink: 0;
+    }
+
+    &-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      line-height: 1.2;
+    }
+
+    &-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      direction: rtl;
+      text-align: right;
+    }
+
+    &--danger {
+      .zir-profile-dropdown__item-icon,
+      .zir-profile-dropdown__item-title {
+        color: #f87171;
+      }
+      &:hover {
+        background: rgba(248, 113, 113, 0.05);
+      }
+    }
+  }
+}
+
+@keyframes dropdown-fade {
+  from { opacity: 0; transform: translateY(-8px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)  scale(1); }
+}

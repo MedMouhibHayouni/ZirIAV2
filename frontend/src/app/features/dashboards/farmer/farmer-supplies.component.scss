@@ -1,0 +1,608 @@
+/* farmer-supplies.component.scss — Premium Glassmorphic Design System (Theme-Aware) */
+
+.farmer-supplies {
+  padding: 28px;
+  max-width: 1400px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+/* ==========================================================================
+   CART STEPPER (BOUTIQUE & DRAWER)
+   ========================================================================== */
+.cart-stepper {
+  display: flex;
+  align-items: center;
+  background: var(--bg-input);
+  border-radius: 99px;
+  border: 1px solid var(--border);
+  padding: 4px;
+  height: 42px;
+  transition: border-color 0.25s, box-shadow 0.25s;
+
+  &:hover {
+    border-color: var(--border-accent);
+  }
+
+  &.active {
+    background: var(--zir-emerald-dim);
+    border-color: var(--zir-emerald);
+    box-shadow: 0 0 12px var(--zir-emerald-glow);
+  }
+
+  .stepper-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: none;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    font-size: 16px;
+    font-weight: 800;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, transform 0.1s;
+
+    &:hover {
+      background: var(--zir-emerald-dim);
+      color: var(--zir-emerald);
+    }
+    
+    &:active {
+      transform: scale(0.9);
+    }
+  }
+
+  .stepper-val {
+    min-width: 36px;
+    text-align: center;
+    font-weight: 900;
+    font-size: 15px;
+    color: var(--text-primary);
+  }
+}
+
+.small-stepper {
+  height: 34px;
+  padding: 2px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  
+  .stepper-btn {
+    width: 30px;
+    height: 30px;
+    font-size: 14px;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+  }
+  .stepper-val {
+    min-width: 30px;
+    font-size: 13px;
+    color: var(--text-primary);
+  }
+}
+
+/* ==========================================================================
+   FLOATING CART BUTTON (FAB)
+   ========================================================================== */
+.floating-cart-btn {
+  position: fixed;
+  bottom: 36px;
+  right: 36px;
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--zir-emerald) 0%, #059669 100%);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 12px 35px rgba(16, 185, 129, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  cursor: pointer;
+  z-index: 999;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s;
+
+  &:hover {
+    transform: scale(1.1) translateY(-4px);
+    box-shadow: 0 20px 45px rgba(16, 185, 129, 0.6);
+    
+    .btn-glow-ring {
+      animation: pulseRing 1.5s cubic-bezier(0.24, 0, 0.38, 1) infinite;
+    }
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  .btn-glow-ring {
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    border: 2px solid var(--zir-emerald);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .badge {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    background: #f43f5e;
+    color: white;
+    font-size: 12px;
+    font-weight: 900;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--bg-primary);
+    box-shadow: 0 4px 10px rgba(244, 63, 94, 0.4);
+    animation: bounceBadge 0.4s ease-out;
+  }
+}
+
+/* ==========================================================================
+   CART OVERLAY & SLIDE DRAWER
+   ========================================================================== */
+.cart-drawer-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--bg-overlay);
+  backdrop-filter: blur(12px);
+  z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+
+  &.open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+.cart-drawer {
+  position: fixed;
+  top: 0;
+  right: -480px;
+  width: 480px;
+  max-width: 100vw;
+  height: 100vh;
+  background: var(--bg-overlay);
+  backdrop-filter: blur(24px);
+  border-left: 1px solid var(--border);
+  box-shadow: -15px 0 50px var(--shadow-lg);
+  z-index: 1001;
+  display: flex;
+  flex-direction: column;
+  transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+
+  &.open {
+    right: 0;
+  }
+
+  /* Header */
+  .drawer-header {
+    padding: 24px 30px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--bg-card);
+
+    h3 {
+      margin: 0 0 2px 0;
+      font-size: 22px;
+      font-weight: 900;
+      color: var(--text-primary);
+      letter-spacing: -0.5px;
+    }
+    
+    .drawer-subtitle {
+      margin: 0;
+      font-size: 13px;
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+
+    .close-btn {
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      font-size: 18px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+
+      &:hover {
+        background: rgba(244, 63, 94, 0.15);
+        color: #f43f5e;
+        border-color: rgba(244, 63, 94, 0.2);
+        transform: rotate(90deg);
+      }
+    }
+  }
+
+  /* Body Scroll Area */
+  .drawer-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px 30px;
+
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 99px;
+      &:hover { background: var(--border-accent); }
+    }
+
+    /* Empty Cart State */
+    .empty-cart {
+      height: 70%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      color: var(--text-secondary);
+      padding: 0 20px;
+
+      .empty-cart-circle {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: var(--bg-card);
+        border: 2px dashed var(--border-accent);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 24px;
+        animation: rotateDashed 20s linear infinite;
+
+        ng-icon {
+          font-size: 38px;
+          color: var(--zir-emerald);
+          animation: floatCart 3s ease-in-out infinite;
+        }
+      }
+
+      h4 {
+        font-size: 18px;
+        font-weight: 800;
+        color: var(--text-primary);
+        margin: 0 0 8px 0;
+      }
+
+      p {
+        font-size: 13px;
+        line-height: 1.6;
+        color: var(--text-secondary);
+        margin: 0 0 20px 0;
+      }
+    }
+
+    /* Supplier Groups */
+    .cart-groups {
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    .supplier-cart-group {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+
+      /* Supplier Section Header */
+      .supplier-group-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 14px;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+
+        .supplier-logo-container {
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          overflow: hidden;
+          background: var(--bg-primary);
+          border: 1px solid var(--border);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+
+          .supplier-logo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+          }
+
+          .supplier-logo-placeholder {
+            font-size: 13px;
+            font-weight: 800;
+            color: var(--zir-emerald);
+            text-transform: uppercase;
+          }
+        }
+
+        .supplier-info-meta {
+          display: flex;
+          flex-direction: column;
+
+          .supplier-label {
+            font-size: 10px;
+            font-weight: 800;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+          }
+
+          .supplier-name-link {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: color 0.2s;
+
+            &:hover {
+              color: var(--zir-emerald);
+              text-decoration: underline;
+            }
+          }
+        }
+      }
+
+      /* Stack of Items in Group */
+      .group-items {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+    }
+
+    /* Single Cart Item */
+    .cart-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      transition: border-color 0.25s, background-color 0.25s, transform 0.25s;
+
+      &:hover {
+        border-color: var(--border-accent);
+        background: var(--bg-card-hover);
+        transform: translateY(-2px);
+      }
+
+      .item-img {
+        width: 68px;
+        height: 68px;
+        border-radius: 12px;
+        background: var(--bg-primary);
+        border: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        flex-shrink: 0;
+
+        img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+
+        ng-icon {
+          font-size: 26px;
+          color: var(--text-muted);
+        }
+      }
+
+      .item-info {
+        flex: 1;
+        min-width: 0;
+
+        h4 {
+          margin: 0 0 4px 0;
+          font-size: 14px;
+          font-weight: 800;
+          color: var(--text-primary);
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .item-price {
+          font-size: 12px;
+          font-weight: 700;
+          color: var(--text-secondary);
+          margin-bottom: 10px;
+        }
+
+        .item-controls {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+
+          .delete-item-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            transition: all 0.2s;
+
+            &:hover {
+              background: rgba(244, 63, 94, 0.1);
+              color: #f43f5e;
+            }
+          }
+        }
+      }
+
+      .item-total-price {
+        font-size: 15px;
+        font-weight: 900;
+        color: var(--zir-emerald);
+        text-align: right;
+        flex-shrink: 0;
+
+        .currency {
+          font-size: 10px;
+          font-weight: 700;
+          color: var(--text-secondary);
+        }
+      }
+    }
+  }
+
+  /* Footer Section */
+  .drawer-footer {
+    padding: 24px 30px 36px 30px;
+    border-top: 1px solid var(--border);
+    background: var(--bg-card);
+
+    .price-breakdown {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 24px;
+
+      .breakdown-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        
+        span {
+          font-size: 13px;
+          font-weight: 700;
+          color: var(--text-secondary);
+        }
+        
+        span:last-child {
+          color: var(--text-primary);
+          font-weight: 800;
+        }
+      }
+
+      .total-row {
+        margin-top: 6px;
+        padding-top: 14px;
+        border-top: 1px dashed var(--border);
+
+        span {
+          font-size: 14px;
+          font-weight: 800;
+          color: var(--text-primary);
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+
+        strong {
+          font-size: 24px;
+          font-weight: 900;
+          color: var(--zir-emerald);
+          text-shadow: 0 0 15px var(--zir-emerald-glow);
+        }
+      }
+    }
+
+    .checkout-btn {
+      width: 100%;
+      height: 56px;
+      font-size: 15px;
+      font-weight: 900;
+      border-radius: 16px;
+      background: linear-gradient(135deg, var(--zir-emerald) 0%, #059669 100%);
+      box-shadow: 0 8px 25px rgba(16, 185, 129, 0.35);
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      cursor: pointer;
+      color: white;
+      transition: transform 0.2s, box-shadow 0.2s;
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 30px rgba(16, 185, 129, 0.5);
+      }
+
+      &:active {
+        transform: translateY(0);
+      }
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none !important;
+        box-shadow: none !important;
+      }
+    }
+  }
+}
+
+/* ==========================================================================
+   ANIMATIONS & KEYFRAMES
+   ========================================================================== */
+@keyframes bounceBadge {
+  0% { transform: scale(0.3); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+@keyframes floatCart {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes rotateDashed {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulseRing {
+  0% { transform: scale(0.95); opacity: 1; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+
+/* Custom shadow highlight utility */
+.shadow-accent {
+  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.3) !important;
+}
+
+.hover-border-accent {
+  &:hover {
+    border-color: var(--zir-emerald) !important;
+  }
+}

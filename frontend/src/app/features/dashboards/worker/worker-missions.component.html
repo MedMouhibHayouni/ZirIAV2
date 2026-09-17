@@ -1,0 +1,239 @@
+<div class="worker-missions zir-animate-in">
+
+  <header class="page-header">
+    <h1>
+      <ng-icon name="lucideBriefcase" style="color:var(--zir-emerald);"></ng-icon>
+      Mon Activité & Missions
+    </h1>
+    <p>Suivez l'état de vos candidatures en temps réel et préparez vos interventions sur le terrain.</p>
+  </header>
+
+  <!-- Navigation par Onglets Premium -->
+  <div class="missions-tabs-nav">
+    <button class="tab-btn" [class.active]="activeTab() === 'active'" (click)="setTab('active')">
+      <ng-icon name="lucideCompass"></ng-icon>
+      Candidatures Actives
+      @if (activeMissions().length) {
+        <span class="badge active-badge">{{ activeMissions().length }}</span>
+      }
+    </button>
+    
+    <button class="tab-btn" [class.active]="activeTab() === 'history'" (click)="setTab('history')">
+      <ng-icon name="lucideHistory"></ng-icon>
+      Historique
+      @if (historyMissions().length) {
+        <span class="badge history-badge">{{ historyMissions().length }}</span>
+      }
+    </button>
+  </div>
+
+  @if (isLoading()) {
+    <div class="loading-state-card">
+      <div class="zir-spinner"></div>
+      <p>Chargement de vos candidatures...</p>
+    </div>
+  } @else {
+    
+    <!-- ─── ACTIVETAB: ACTIVE / PENDING ─── -->
+    @if (activeTab() === 'active') {
+      <div class="missions-grid">
+        @for (app of activeMissions(); track app.id) {
+          <div class="mission-large-card" [class.accepted]="app.status === 'ACCEPTED'" [class.pending]="app.status === 'PENDING'">
+            
+            <!-- Badge de statut dynamique -->
+            <div class="card-status-bar" [class.accepted]="app.status === 'ACCEPTED'">
+              <span class="status-indicator-dot"></span>
+              <span class="status-text">{{ getStatusLabel(app.status) }}</span>
+            </div>
+
+            <div class="card-body">
+              <div class="job-primary-details">
+                <div class="date-badge">
+                  <ng-icon name="lucideCalendar"></ng-icon>
+                  Débute le : {{ app.jobOffer.start_date | date:'dd MMM yyyy' }}
+                </div>
+                
+                <h2>{{ app.jobOffer.task_type }}</h2>
+                <p class="employer-name">Proposé par : <strong>{{ app.jobOffer.employer?.name || 'Agriculteur Partenaire' }}</strong></p>
+              </div>
+
+              <!-- KPIs de la mission -->
+              <div class="job-kpis-grid">
+                <div class="kpi-card">
+                  <span class="kpi-label">Tarif journalier</span>
+                  <span class="kpi-val">{{ app.jobOffer.daily_pay_tnd }} <span class="unit">TND/j</span></span>
+                </div>
+                <div class="kpi-card">
+                  <span class="kpi-label">Durée estimée</span>
+                  <span class="kpi-val">{{ app.jobOffer.duration_days }} <span class="unit">jours</span></span>
+                </div>
+                <div class="kpi-card highlight">
+                  <span class="kpi-label">Gain total estimé</span>
+                  <span class="kpi-val">{{ app.jobOffer.daily_pay_tnd * app.jobOffer.duration_days }} <span class="unit">TND</span></span>
+                </div>
+              </div>
+
+              <!-- Localisation -->
+              <div class="location-row">
+                <ng-icon name="lucideMapPin" class="pin-icon"></ng-icon>
+                <span>Gouvernorat de {{ app.jobOffer.governorate }}</span>
+              </div>
+
+              <!-- Description de l'offre -->
+              @if (app.jobOffer.description) {
+                <div class="description-block">
+                  <h4>Description du besoin :</h4>
+                  <p>{{ app.jobOffer.description }}</p>
+                </div>
+              }
+
+              <!-- Visual Workflow progress bar -->
+              <div class="workflow-stepper">
+                <div class="step" class="step completed">
+                  <div class="step-circle"><ng-icon name="lucideCheckCircle"></ng-icon></div>
+                  <span class="step-label">Candidature soumise</span>
+                </div>
+                
+                <div class="step" [class.completed]="app.status === 'ACCEPTED'" [class.active]="app.status === 'PENDING'">
+                  <div class="step-circle">
+                    @if (app.status === 'ACCEPTED') {
+                      <ng-icon name="lucideCheckCircle"></ng-icon>
+                    } @else {
+                      <ng-icon name="lucideClock"></ng-icon>
+                    }
+                  </div>
+                  <span class="step-label">Sélection par l'agriculteur</span>
+                </div>
+
+                <div class="step" [class.completed]="app.status === 'ACCEPTED'" [class.disabled]="app.status === 'PENDING'">
+                  <div class="step-circle">
+                    @if (app.status === 'ACCEPTED') {
+                      <ng-icon name="lucideSparkles"></ng-icon>
+                    } @else {
+                      <ng-icon name="lucideBriefcase"></ng-icon>
+                    }
+                  </div>
+                  <span class="step-label">Mission active</span>
+                </div>
+              </div>
+
+              <!-- Actions -->
+              <div class="card-footer-actions">
+                @if (app.status === 'ACCEPTED') {
+                  <!-- Show parcel GPS info if available -->
+                  @if (app.mission_context_snapshot?.center_gps; as gps) {
+                    <div class="gps-info-row">
+                      <ng-icon name="lucideNavigation"></ng-icon>
+                      <span>{{ app.mission_context_snapshot?.parcel_name || 'Parcelle' }} &mdash; {{ gps.lat | number:'1.4-4' }}, {{ gps.lng | number:'1.4-4' }}</span>
+                    </div>
+                  }
+
+                  <button class="action-btn call" (click)="callEmployer(app)">
+                    <ng-icon name="lucidePhone"></ng-icon>
+                    Appeler l'Employeur
+                  </button>
+
+                  @if (hasGps(app)) {
+                    <button class="action-btn route" [disabled]="isNavigating()" (click)="openNav(app)">
+                      @if (isNavigating()) {
+                        <ng-icon name="lucideClock" class="spin-slow"></ng-icon>
+                        Localisation...
+                      } @else {
+                        <ng-icon name="lucideNavigation"></ng-icon>
+                        Itin&eacute;raire GPS Parcelle
+                      }
+                    </button>
+                  } @else {
+                    <button class="action-btn route disabled" disabled title="Coordonn&eacute;es GPS non disponibles">
+                      <ng-icon name="lucideMapPin"></ng-icon>
+                      GPS non disponible
+                    </button>
+                  }
+
+                  @if (navError()) {
+                    <div class="nav-error-row">
+                      <ng-icon name="lucideAlertCircle"></ng-icon>
+                      {{ navError() }}
+                    </div>
+                  }
+                } @else {
+                  <div class="pending-info-alert">
+                    <ng-icon name="lucideInfo"></ng-icon>
+                    <span>L'agriculteur &eacute;tudie votre candidature. Vous recevrez une alerte en temps r&eacute;el d&egrave;s sa validation !</span>
+                  </div>
+                }
+              </div>
+
+            </div>
+
+          </div>
+        } @empty {
+          <div class="empty-state-card text-center zir-animate-scale">
+            <div class="empty-illustration">
+              <ng-icon name="lucideCompass" class="huge-icon"></ng-icon>
+            </div>
+            <h3>Aucune candidature en cours</h3>
+            <p>Découvrez les parcelles à proximité et postulez dès maintenant à des opportunités dans votre zone.</p>
+            <a href="/dashboard/worker/jobs" class="zir-btn zir-btn--primary mt-4">
+              Explorer les Offres d'Emploi
+            </a>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- ─── ACTIVETAB: HISTORY ─── -->
+    @if (activeTab() === 'history') {
+      <div class="history-list">
+        @for (app of historyMissions(); track app.id) {
+          <div class="history-item-card" [class.completed]="app.status === 'COMPLETED'" [class.rejected]="app.status === 'REJECTED'">
+            
+            <div class="item-main-info">
+              <div class="item-top-row">
+                <h3>{{ app.jobOffer.task_type }}</h3>
+                <span class="history-date">{{ app.applied_at | date:'dd MMM yyyy' }}</span>
+              </div>
+              
+              <p class="employer-details">
+                Employeur : <strong>{{ app.jobOffer.employer?.name || 'Agriculteur' }}</strong> • {{ app.jobOffer.governorate }}
+              </p>
+
+              <div class="financials-summary">
+                <span>Durée : {{ app.jobOffer.duration_days }} jours</span>
+                <span class="separator">•</span>
+                <span>Tarif : {{ app.jobOffer.daily_pay_tnd }} TND/jour</span>
+                <span class="separator">•</span>
+                <span class="total-earned">Total gagné : <strong>{{ app.jobOffer.daily_pay_tnd * app.jobOffer.duration_days }} TND</strong></span>
+              </div>
+            </div>
+
+            <div class="item-status-wrapper">
+              @if (app.status === 'COMPLETED') {
+                <div class="status-pill completed">
+                  <ng-icon name="lucideCheckSquare"></ng-icon>
+                  Mission Complétée
+                </div>
+              } @else {
+                <div class="status-pill rejected">
+                  <ng-icon name="lucideAlertCircle"></ng-icon>
+                  Non Retenue
+                </div>
+              }
+            </div>
+
+          </div>
+        } @empty {
+          <div class="empty-state-card text-center">
+            <div class="empty-illustration">
+              <ng-icon name="lucideHistory" class="huge-icon"></ng-icon>
+            </div>
+            <h3>Historique vide</h3>
+            <p>Vous n'avez pas encore finalisé ou accumulé de missions passées.</p>
+          </div>
+        }
+      </div>
+    }
+
+  }
+
+</div>

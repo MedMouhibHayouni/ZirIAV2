@@ -1,0 +1,66 @@
+{
+  "detection_id": "6f10f5ec-bfaa-46ee-a7b7-5207c9bd48e5",
+  "vision": {
+    "disease": "Pathologie à haut risque détectée — confirmation obligatoire auprès d’un expert phytopathologiste.",
+    "confidence": 0.9951,
+    "requires_expert_validation": true
+  },
+  "weather": {
+    "temperature_c": 20,
+    "humidity_pct": 89,
+    "wind_speed_kmh": 3.9,
+    "precipitation_mm": 0,
+    "probability_of_precipitation": 5
+  },
+  "decision": {
+    "urgency": "CRITICAL",
+    "is_weather_aggravated": true,
+    "recommendation_fr": "La confirmation par un expert est cruciale. Agissez rapidement par la taille et un traitement cuprique si le diagnostic est confirmé. Surveillez attentivement l'évolution de la maladie et les nouvelles pousses.",
+    "recommendation_darija": "لازم تتصل بخبير أمراض النبات من CRDA باش يأكد التشخيص. تصرف بسرعة بالتقليم والعلاج بالنحاس كان تأكد المرض. راقب الشجرة مليح وشوف الأوراق الجديدة.",
+    "actions": [
+      "Contactez impérativement un expert phytopathologiste du CRDA pour une confirmation rapide du diagnostic et des conseils spécifiques.",
+      "Procédez à une taille d'aération pour améliorer la circulation de l'air à l'intérieur de l'arbre et éliminer les branches et feuilles fortement infectées.",
+      "Envisagez un traitement fongicide à base de cuivre (ex: bouillie bordelaise) après la récolte et/ou avant la floraison, en respectant scrupuleusement les doses et les périodes d'application recommandées."
+    ],
+    "explanation_fr": "La pathologie détectée est très probablement l'Oeil de paon, une maladie fongique causée par le champignon Spilocaea oleagina. Elle se manifeste par des taches circulaires caractéristiques sur les feuilles, qui jaunissent et tombent prématurément, affaiblissant l'arbre et réduisant la production d'olives. Les conditions actuelles de forte humidité et de température modérée sont très favorables à son développement.",
+    "explanation_darija": "المرض اللي شفناه على الزيتونة نتاعك هو غالباً 'عين الطاووس'، وهو مرض فطري يسببه فطر إسمو Spilocaea oleagina. يظهر على شكل بقع دائرية مميزة على الأوراق، اللي تولي صفراء وتطيح قبل وقتها، وهذا يضعف الشجرة وينقص من إنتاج الزيتون. الظروف الحالية من رطوبة عالية ودرجة حرارة معتدلة تساعد برشا على انتشار المرض هذا.",
+    "recommended_products": [
+      {
+        "id": "b427a9d2-95c2-4d2a-a9fa-5a084b4e1fc3",
+        "name": "Engrais NPK 15-15-15 Premium",
+        "dosage": "Selon notice technique",
+        "application_method": "Pulvérisation foliaire",
+        "price_tnd": 89.5,
+        "photo_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTFmg0K0KHCsxw5qtWS-mxh86FszR3tfX0nLw&s",
+        "in_boutique": true
+      },
+      {
+        "id": "9216f3a5-ea31-443b-8078-a17b749d642f",
+        "name": "Bio-Stimulant Elite Grow",
+        "dosage": "Selon notice technique",
+        "application_method": "Pulvérisation foliaire",
+        "price_tnd": 120,
+        "photo_url": "https://i.ebayimg.com/00/s/MTYwMFgxNjAw/z/oR8AAOSwGxBnyNHD/$_57.JPG?set_id=880000500F",
+        "in_boutique": true
+      },
+      {
+        "id": "1840cd26-0011-4f20-8d55-8f78fe158ceb",
+        "name": "Compost Organique Actif Bio",
+        "dosage": "Selon notice technique",
+        "application_method": "Pulvérisation foliaire",
+        "price_tnd": 25,
+        "photo_url": "https://images.unsplash.com/photo-1599819811279-d5ad9cccf838?w=800",
+        "in_boutique": true
+      }
+    ]
+  },
+  "logistics_alert": {
+    "at_risk_count": 0,
+    "alerted_owners": [],
+    "trigger_reasons": []
+  },
+  "source": "local_model",
+  "disease_name_ar": "عين الطاووس",
+  "disease_name_lat": "Spilocaea oleagina",
+  "name_fr": "Olivier — Maladie foliaire (Oeil de paon / Acariose)"
+}

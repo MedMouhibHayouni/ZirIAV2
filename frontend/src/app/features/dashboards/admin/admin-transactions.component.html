@@ -1,0 +1,113 @@
+<div class="admin-page">
+  <div class="page-header">
+    <div>
+      <h2><ng-icon name="lucideBanknote"></ng-icon> Transactions Financières</h2>
+      <p>{{ total() }} transactions dans la plateforme</p>
+    </div>
+    <button class="zir-btn zir-btn--ghost" (click)="exportCsv()" [disabled]="isExporting()">
+      <ng-icon [name]="isExporting() ? 'lucideLoader' : 'lucideDownload'" [class.spin]="isExporting()"></ng-icon>
+      Exporter CSV
+    </button>
+  </div>
+
+  <!-- Summary KPI Bar -->
+  @if (summary(); as s) {
+    <div class="summary-kpi-bar">
+      <div class="kpi-block accent-emerald">
+        <ng-icon name="lucideDollarSign"></ng-icon>
+        <div>
+          <span class="kpi-val">{{ formatNumber(s.total_tnd) }} <small>TND</small></span>
+          <span class="kpi-lbl">Volume Total</span>
+        </div>
+      </div>
+      <div class="kpi-block accent-violet">
+        <ng-icon name="lucideBarChart2"></ng-icon>
+        <div>
+          <span class="kpi-val">{{ formatNumber(s.total_commission) }} <small>TND</small></span>
+          <span class="kpi-lbl">Commission Plateforme</span>
+        </div>
+      </div>
+      <div class="kpi-block accent-amber">
+        <ng-icon name="lucideActivity"></ng-icon>
+        <div>
+          <span class="kpi-val">{{ s.tx_count }}</span>
+          <span class="kpi-lbl">Transactions</span>
+        </div>
+      </div>
+      <div class="kpi-block accent-blue">
+        <ng-icon name="lucideTrendingUp"></ng-icon>
+        <div>
+          <span class="kpi-val">{{ formatNumber(s.avg_tnd) }} <small>TND</small></span>
+          <span class="kpi-lbl">Moyenne par transaction</span>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Filters -->
+  <div class="filter-bar zir-card">
+    <div class="preset-btns">
+      <button class="preset-btn" [class.active]="fromDate && !toDate" (click)="setPreset('today')">Aujourd'hui</button>
+      <button class="preset-btn" (click)="setPreset('week')">7 jours</button>
+      <button class="preset-btn" (click)="setPreset('month')">30 jours</button>
+      <button class="preset-btn" (click)="setPreset('30d')">30 derniers</button>
+    </div>
+    <select class="zir-input" [(ngModel)]="typeFilter" (change)="applyFilters()">
+      <option value="">Tous les types</option>
+      @for (t of txTypes; track t) { <option [value]="t">{{ getTypeLabel(t) }}</option> }
+    </select>
+    <input type="date" class="zir-input" [(ngModel)]="fromDate" (change)="applyFilters()" title="Date de début">
+    <input type="date" class="zir-input" [(ngModel)]="toDate" (change)="applyFilters()" title="Date de fin">
+  </div>
+
+  <div class="zir-card">
+    @if (isLoading()) {
+      <div class="loading-state"><ng-icon name="lucideLoader" class="spin"></ng-icon> Chargement...</div>
+    } @else {
+      <div class="table-wrapper">
+        <table class="zir-table">
+          <thead>
+            <tr>
+              <th>Type</th>
+              <th>Date</th>
+              <th class="text-right">Montant TND</th>
+              <th class="text-right">Commission TND</th>
+              <th>Acheteur</th>
+              <th>Vendeur</th>
+              <th>Gouvernorat</th>
+              <th>Statut</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (tx of transactions(); track tx.id) {
+              <tr>
+                <td><span class="role-badge" [ngClass]="getTypeBadge(tx.type)">{{ getTypeLabel(tx.type) }}</span></td>
+                <td class="text-muted text-sm">{{ tx.date | date:'dd/MM/yyyy HH:mm' }}</td>
+                <td class="text-right font-bold">{{ tx.gross_tnd | number:'1.2-2' }}</td>
+                <td class="text-right text-success font-bold">{{ tx.commission_tnd | number:'1.2-2' }}</td>
+                <td class="text-muted">{{ tx.payer_name }}</td>
+                <td class="text-muted">{{ tx.payee_name }}</td>
+                <td class="text-muted text-sm">{{ tx.governorate }}</td>
+                <td><span class="verified-badge ok">{{ tx.status }}</span></td>
+              </tr>
+            } @empty {
+              <tr><td colspan="8" class="empty-row">Aucune transaction trouvée.</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pagination">
+        <span class="page-info">Page {{ page }} / {{ totalPages }} · {{ total() }} résultats</span>
+        <div class="page-btns">
+          <button class="zir-btn zir-btn--ghost btn-xs" (click)="prevPage()" [disabled]="page === 1">
+            <ng-icon name="lucideChevronLeft"></ng-icon>
+          </button>
+          <button class="zir-btn zir-btn--ghost btn-xs" (click)="nextPage()" [disabled]="page >= totalPages">
+            <ng-icon name="lucideChevronRight"></ng-icon>
+          </button>
+        </div>
+      </div>
+    }
+  </div>
+</div>

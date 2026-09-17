@@ -1,0 +1,540 @@
+:host {
+  display: block;
+  height: 100%;
+  flex-shrink: 0;
+}
+
+// ─── Core Sidebar ────────────────────────────────────────────────────────────
+.zir-sidebar {
+  width: var(--sidebar-w, 260px);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 16px;
+  background: var(--bg-sidebar);
+  border-right: 1px solid var(--border);
+  overflow: hidden;
+  position: sticky;
+  top: 0;
+  transition: width 0.3s cubic-bezier(0.2, 0, 0, 1),
+              transform 0.3s cubic-bezier(0.2, 0, 0, 1);
+  box-sizing: border-box;
+
+  // Mobile close button — hidden on desktop
+  &__close-btn {
+    display: none;
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: var(--bg-card-hover);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: background-color var(--t-fast), color var(--t-fast);
+    z-index: 2;
+
+    &:hover {
+      background: var(--bg-card);
+      color: var(--text-primary);
+    }
+  }
+
+  // Brand
+  &__brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 4px 20px;
+    flex-shrink: 0;
+  }
+
+  &__logo {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    flex-shrink: 0;
+    width: 100%;
+  }
+
+  &__logo-img {
+    height: 48px;
+    width: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 12px var(--zir-gold-dim)) drop-shadow(0 0 8px rgba(212, 175, 55, 0.15));
+  }
+
+  // User badge
+  &__user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: var(--zir-emerald-dim);
+    border: 1px solid var(--border-accent);
+    border-radius: var(--radius-sm);
+    margin-bottom: 4px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  &__user-avatar {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, var(--zir-green-deep), var(--zir-emerald));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+  }
+
+  &__user-info {
+    overflow: hidden;
+    flex: 1;
+    min-width: 0;
+    transition: opacity 0.2s;
+  }
+
+  &__user-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.3;
+  }
+
+  &__user-role {
+    font-size: 10.5px;
+    font-weight: 600;
+    color: var(--zir-emerald);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  // Divider
+  &__divider {
+    height: 1px;
+    background: var(--border);
+    margin: 12px 0;
+  }
+
+  // Nav
+  &__nav {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    &::-webkit-scrollbar { display: none; }
+  }
+
+  &__empty {
+    padding: 12px;
+    color: var(--text-muted);
+    font-size: 12.5px;
+    font-style: italic;
+    text-align: center;
+  }
+
+  &__spacer { 
+    min-height: 10px;
+    pointer-events: none;
+  }
+
+  &__footer {
+    padding-top: 4px;
+    flex-shrink: 0;
+  }
+}
+
+// ─── Nav Items ───────────────────────────────────────────────────────────────
+.zir-nav-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color var(--t-fast), color var(--t-fast), border-color var(--t-fast);
+  text-decoration: none;
+  border: 1px solid transparent;
+  background: none;
+  font-family: 'Inter', sans-serif;
+  letter-spacing: -0.01em;
+
+  &:hover {
+    background: var(--bg-card-hover);
+    color: var(--text-primary);
+    border-color: var(--border);
+  }
+
+  &.active {
+    background: var(--expert-accent-bg, var(--zir-emerald-dim));
+    color: var(--expert-accent, var(--zir-emerald));
+    border-color: color-mix(in srgb, var(--expert-accent, var(--zir-emerald)) 30%, transparent);
+    box-shadow: inset 2px 0 0 var(--expert-accent, var(--zir-gold)), 0 2px 8px color-mix(in srgb, var(--expert-accent, var(--zir-gold)) 20%, transparent);
+    font-weight: 700;
+  }
+
+  &--logout {
+    color: var(--error);
+    width: 100%;
+    text-align: left;
+
+    &:hover {
+      background: var(--error-bg);
+      border-color: rgba(239, 68, 68, 0.2);
+      color: var(--error);
+    }
+  }
+
+  &__icon {
+    font-size: 18px;
+    flex-shrink: 0;
+    transition: transform var(--t-fast);
+  }
+
+  &__label {
+    font-size: 13.5px;
+    line-height: 1;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    transition: opacity 0.2s;
+  }
+
+  &__badge {
+    background: var(--error);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 800;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-full);
+    flex-shrink: 0;
+
+    &.pulse {
+      animation: pulseBadge 2s infinite;
+    }
+
+    &.read {
+      background: var(--zir-emerald-alpha-10);
+      color: var(--zir-emerald);
+    }
+  }
+}
+
+@keyframes pulseBadge {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+  70% { transform: scale(1.1); box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+// ─── Tablet (768–1023px): Icon-only collapsed rail ───────────────────────────
+@media (max-width: 1023px) and (min-width: 768px) {
+  :host {
+    width: var(--sidebar-rail, 64px);
+  }
+
+  .zir-sidebar {
+    width: var(--sidebar-rail, 64px);
+    padding: 20px 10px;
+    overflow: visible;
+
+    &__brand-text,
+    &__user-info {
+      opacity: 0;
+      width: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    &__user {
+      justify-content: center;
+      padding: 10px 8px;
+    }
+  }
+
+  .zir-nav-item {
+    padding: 11px;
+    justify-content: center;
+
+    &__label, &__badge { display: none; }
+    &__icon { font-size: 20px; }
+  }
+}
+
+// ─── Mobile (< 768px): Full-screen slide-in drawer ───────────────────────────
+@media (max-width: 767px) {
+  :host {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: var(--sidebar-w, 260px) !important;
+    z-index: 100;
+    // CRITICAL: host is fixed and covers the screen edge;
+    // must not block touches when sidebar is off-screen
+    pointer-events: none;
+  }
+
+  .zir-sidebar {
+    width: var(--sidebar-w, 260px) !important;
+    transform: translateX(-100%);
+    transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 8px 0 40px rgba(0, 0, 0, 0.5);
+    pointer-events: none;
+    will-change: transform;
+
+    &--open {
+      transform: translateX(0);
+      pointer-events: all; // visible = fully interactive
+    }
+
+    &__close-btn {
+      display: flex;
+    }
+  }
+}
+
+/* ==========================================================================
+   PREMIUM CTA (SIDEBAR)
+   ========================================================================== */
+.zir-sidebar__premium-cta {
+  flex-shrink: 0;
+  margin: 16px;
+  padding: 20px 16px;
+  background: linear-gradient(145deg, #0f172a 0%, #1e293b 100%);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: -50px;
+    right: -50px;
+    width: 100px;
+    height: 100px;
+    background: var(--zir-emerald);
+    filter: blur(50px);
+    opacity: 0.15;
+    pointer-events: none;
+  }
+
+  .cta-icon-wrapper {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--zir-emerald);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+  }
+
+  .cta-title {
+    font-size: 15px;
+    font-weight: 800;
+    color: #ffffff;
+    margin-bottom: 4px;
+  }
+
+  .cta-subtitle {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.6);
+    margin-bottom: 16px;
+    line-height: 1.4;
+  }
+
+  .cta-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 10px;
+    background: var(--zir-emerald);
+    color: #ffffff;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 800;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+
+    &:hover {
+      background: var(--zir-emerald-deep);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35);
+    }
+  }
+
+  &.hidden-mobile {
+    @media (max-width: 1024px) {
+      display: none;
+    }
+  }
+
+  // Farmer themed CTA (uses --cta-accent from subscriptionCta.ctaColor)
+  &.cta--farmer {
+    &::before {
+      background: var(--cta-accent, var(--zir-emerald));
+    }
+
+    .cta-icon-wrapper {
+      background: color-mix(in srgb, var(--cta-accent, var(--zir-emerald)) 15%, transparent);
+      border-color: color-mix(in srgb, var(--cta-accent, var(--zir-emerald)) 20%, transparent);
+      color: var(--cta-accent, var(--zir-emerald));
+    }
+
+    .cta-button {
+      background: var(--cta-accent, var(--zir-emerald));
+      box-shadow: 0 4px 12px color-mix(in srgb, var(--cta-accent, var(--zir-emerald)) 30%, transparent);
+
+      &:hover {
+        filter: brightness(1.08);
+        box-shadow: 0 6px 16px color-mix(in srgb, var(--cta-accent, var(--zir-emerald)) 40%, transparent);
+      }
+    }
+  }
+}
+
+// ─── Activity-type accent classes on <aside> ─────────────────────────────────
+:host .zir-sidebar.sidebar--farmer-crop {
+  --farmer-accent: #22c55e;
+  --farmer-accent-bg: rgba(34, 197, 94, 0.08);
+}
+:host .zir-sidebar.sidebar--farmer-livestock {
+  --farmer-accent: #fb923c;
+  --farmer-accent-bg: rgba(251, 146, 60, 0.08);
+}
+:host .zir-sidebar.sidebar--farmer-mixed {
+  --farmer-accent: #a78bfa;
+  --farmer-accent-bg: rgba(167, 139, 250, 0.08);
+}
+
+// Override nav item active state with farmer accent
+:host(.sidebar--farmer-crop) .zir-nav-item.active,
+:host .zir-sidebar.sidebar--farmer-crop .zir-nav-item.active {
+  background: rgba(34, 197, 94, 0.1);
+  color: #22c55e;
+  border-color: rgba(34, 197, 94, 0.3);
+  box-shadow: inset 2px 0 0 #22c55e;
+}
+:host .zir-sidebar.sidebar--farmer-livestock .zir-nav-item.active {
+  background: rgba(251, 146, 60, 0.1);
+  color: #fb923c;
+  border-color: rgba(251, 146, 60, 0.3);
+  box-shadow: inset 2px 0 0 #fb923c;
+}
+:host .zir-sidebar.sidebar--farmer-mixed .zir-nav-item.active {
+  background: rgba(167, 139, 250, 0.1);
+  color: #a78bfa;
+  border-color: rgba(167, 139, 250, 0.3);
+  box-shadow: inset 2px 0 0 #a78bfa;
+}
+
+// ─── Plan pill ────────────────────────────────────────────────────────────────
+.zir-sidebar__plan-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 9.5px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 20px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-top: 3px;
+
+  &.pill--free {
+    background: var(--bg-card-hover);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+  }
+  &.pill--starter {
+    background: rgba(251, 191, 36, 0.15);
+    color: #d97706;
+    border: 1px solid rgba(251, 191, 36, 0.3);
+  }
+  &.pill--pro {
+    background: rgba(167, 139, 250, 0.15);
+    color: #7c3aed;
+    border: 1px solid rgba(167, 139, 250, 0.3);
+  }
+}
+
+// ─── Footer row (theme toggle + logout) ──────────────────────────────────────
+.zir-sidebar__footer-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+// ─── Dark/Light mode toggle button ───────────────────────────────────────────
+.zir-theme-toggle {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-card-hover);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background-color var(--t-fast), color var(--t-fast), transform var(--t-fast);
+
+  &:hover {
+    background: var(--zir-emerald-dim);
+    color: var(--zir-emerald);
+    transform: rotate(15deg);
+  }
+}
+
+// Light-mode overrides
+[data-theme='light'] {
+  .zir-sidebar {
+    --farmer-accent: var(--farmer-accent, #22c55e);
+  }
+
+  .zir-sidebar__premium-cta {
+    background: linear-gradient(145deg, #f8fafc 0%, #f1f5f9 100%);
+    border-color: rgba(0, 0, 0, 0.08);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+
+    .cta-title { color: var(--text-primary); }
+    .cta-subtitle { color: var(--text-secondary); }
+    .cta-button { color: #fff; }
+  }
+}
