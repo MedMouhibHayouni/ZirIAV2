@@ -89,6 +89,7 @@ export class ParcelMapComponent implements OnInit, AfterViewInit, OnDestroy {
   drawMode = signal<DrawMode>('idle');
   layerMode = signal<LayerMode>('street');
   sidebarCollapsed = signal(false);
+  mobileExpanded = signal(false);
   activeTab = signal<PanelTab>('zones');
   
   // Coop President view
@@ -572,6 +573,10 @@ export class ParcelMapComponent implements OnInit, AfterViewInit, OnDestroy {
       poly.setStyle({ weight: 2, fillOpacity: 0.3 });
     }
     this.cdr.markForCheck();
+  }
+
+  toggleMobileDrawer() {
+    this.mobileExpanded.update(v => !v);
   }
 
   toggleLayer() {

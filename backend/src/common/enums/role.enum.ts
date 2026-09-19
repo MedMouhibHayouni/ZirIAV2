@@ -36,4 +36,6 @@ export enum Role {
   EQUIP_OWNER = 'EQUIP_OWNER',
   /** Expert agronome CRDA validant les diagnostics IA douteux */
   EXPERT = 'EXPERT',
+  /** Institution publique / organisme de tutelle (APIA, CRDA) */
+  INSTITUTION = 'INSTITUTION',
 }

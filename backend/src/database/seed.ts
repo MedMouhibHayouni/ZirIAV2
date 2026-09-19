@@ -1,6 +1,8 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from '../app.module';
 import { DataSource } from 'typeorm';
+import { seedInstitutions } from './seed-institutions';
+import { seedCrdaData } from './seed-crda';
 import { User } from '../users/entities/user.entity';
 import { Parcel } from '../parcels/entities/parcel.entity';
 import { CropZone } from '../parcels/entities/crop-zone.entity';
@@ -87,6 +89,29 @@ function daysFromNow(n: number): Date {
 
 function randomItem<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function normalizeSeedImage(url?: string | null): string {
+  if (!url) return '';
+  const value = url.trim();
+  if (!value) return '';
+
+  if (/youtube\.com|youtu\.be|\.mp4(\?|$)|\.mp3(\?|$)|cloudinary\.com\/video|sample\.mp4/i.test(value)) {
+    return value;
+  }
+
+  if (/\.(jpe?g|png|webp|gif|avif|bmp|svg)(\?.*)?$/i.test(value)) {
+    return value.includes('?') ? `${value}&w=800` : `${value}?w=800`;
+  }
+
+  if (/(images\.unsplash\.com|images\.pexels\.com|images\.amazonaws\.com|cdn\.)/i.test(value)) {
+    if (/w=\d+/i.test(value) || /width=\d+/i.test(value)) {
+      return value.replace(/([?&])(w|width)=\d+/i, '$1w=800');
+    }
+    return value.includes('?') ? `${value}&w=800` : `${value}?w=800`;
+  }
+
+  return value;
 }
 
 function inferListingCategory(title: string): ListingCategory {
@@ -1510,8 +1535,8 @@ async function bootstrap() {
         : listIt.desc,
       category: inferListingCategory(listIt.title),
       crop_type: listIt.title,
-      media_items: listIt.imgs.map((url, idx) => ({ type: 'photo', url, position: idx })),
-      primary_media_url: listIt.imgs[0] || null,
+      media_items: listIt.imgs.map((url, idx) => ({ type: 'photo', url: normalizeSeedImage(url), position: idx })),
+      primary_media_url: normalizeSeedImage(listIt.imgs[0]) || null,
       listing_quality_score: 75,
       quantity_value: listIt.qty,
       quantity_unit: listIt.unit,
@@ -1544,65 +1569,65 @@ async function bootstrap() {
     // Fertilizers (12)
     { name: 'Engrais NPK 15-15-15 Premium', cat: 'FERTILIZER', price: 89.5, unit: 'sac 50kg', img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTFmg0K0KHCsxw5qtWS-mxh86FszR3tfX0nLw&s' },
     { name: 'Bio-Stimulant Elite Grow', cat: 'FERTILIZER', price: 120.0, unit: 'litre', img: 'https://i.ebayimg.com/00/s/MTYwMFgxNjAw/z/oR8AAOSwGxBnyNHD/$_57.JPG?set_id=880000500F' },
-    { name: 'Compost Organique Actif Bio', cat: 'FERTILIZER', price: 25.0, unit: 'sac 40kg', img: 'https://images.unsplash.com/photo-1599819811279-d5ad9cccf838?w=800' },
+    { name: 'Compost Organique Actif Bio', cat: 'FERTILIZER', price: 25.0, unit: 'sac 40kg', img: 'https://jnina.tn/686-large_default/compost-organique.jpg' },
     { name: 'Engrais Liquide Azoté ZirPlus', cat: 'FERTILIZER', price: 68.0, unit: 'bidon 10L', img: 'https://images.unsplash.com/photo-1605000797499-95a51c5269ae?w=800' },
-    { name: 'Engrais NPK 20-20-20 Soluble', cat: 'FERTILIZER', price: 95.0, unit: 'sac 25kg', img: 'https://images.unsplash.com/photo-1592417817098-8f3d6eb19675?w=800' },
+    { name: 'Engrais NPK 20-20-20 Soluble', cat: 'FERTILIZER', price: 95.0, unit: 'sac 25kg', img: 'https://polyfert.tn/wp-content/uploads/2024/08/WhatsApp-Image-2025-02-21-at-8.57.28-AM.jpeg' },
     { name: 'Superphosphate Triple 45%', cat: 'FERTILIZER', price: 74.0, unit: 'sac 50kg', img: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=800' },
     { name: 'Nitrate d\'Ammoniaque 33.5%', cat: 'FERTILIZER', price: 82.0, unit: 'sac 50kg', img: 'https://images.unsplash.com/photo-1595974482597-4b8da8879bc5?w=800' },
-    { name: 'Potasse Soluble Haute Pureté', cat: 'FERTILIZER', price: 110.0, unit: 'sac 25kg', img: 'https://images.unsplash.com/photo-1570042225831-d9bfe7e557eb?w=800' },
+    { name: 'Potasse Soluble Haute Pureté', cat: 'FERTILIZER', price: 110.0, unit: 'sac 25kg', img: 'https://polyfert.tn/wp-content/uploads/2025/02/SOP-0-0-50.jpeg' },
     { name: 'Bio-stimulant Algues Marines', cat: 'FERTILIZER', price: 42.0, unit: 'litre', img: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=800' },
     { name: 'Oligo-éléments Chélatés Mix', cat: 'FERTILIZER', price: 38.5, unit: 'sachet 1kg', img: 'https://images.unsplash.com/photo-1605000797499-95a51c5269ae?w=800' },
-    { name: 'Sulfate de Magnésium Soluble', cat: 'FERTILIZER', price: 49.0, unit: 'sac 25kg', img: 'https://images.unsplash.com/photo-1592417817098-8f3d6eb19675?w=800' },
-    { name: 'Humus Actif Régénérateur', cat: 'FERTILIZER', price: 30.0, unit: 'sac 25kg', img: 'https://images.unsplash.com/photo-1599819811279-d5ad9cccf838?w=800' },
+    { name: 'Sulfate de Magnésium Soluble', cat: 'FERTILIZER', price: 49.0, unit: 'sac 25kg', img: 'https://www.chemcentral.fr/media/catalog/product/cache/6e5d0c4fb2187d3e8e80f3e178b7b540/s/u/sulfate_de_magnesium_fcc.png' },
+    { name: 'Humus Actif Régénérateur', cat: 'FERTILIZER', price: 30.0, unit: 'sac 25kg', img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTF7TW-8QvORcwqcHXdVtOZc3mXwX5pbrB2Q6RLiMne6A&s' },
 
     // Seeds (12)
     { name: 'Semences Tomate Rio Grande F1', cat: 'SEED', price: 95.0, unit: 'sachet 10g', img: 'https://www.potagerornemental.com/wp-content/uploads/2025/12/IMG_8309-002.jpg' },
     { name: 'Semences Blé Dur Or de Tunisie', cat: 'SEED', price: 2.100, unit: 'kg', img: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?q=80&w=800' },
-    { name: 'Semences Piment Fort Kairouan', cat: 'SEED', price: 15.5, unit: 'sachet 20g', img: 'https://images.unsplash.com/photo-1592417817098-8f3d6eb19675?w=800' },
+    { name: 'Semences Piment Fort Kairouan', cat: 'SEED', price: 15.5, unit: 'sachet 20g', img: 'https://www.epices-fuchs.fr/cdn/shop/files/piment-fort-flocons-sachet-recharge-fuchs-35g.jpg?v=1779701826&width=2000' },
     { name: 'Semences Courgette d\'Alger', cat: 'SEED', price: 18.0, unit: 'sachet 50g', img: 'https://images.unsplash.com/photo-1605000797499-95a51c5269ae?w=800' },
     { name: 'Semences Pastèque Giza Elite', cat: 'SEED', price: 35.0, unit: 'sachet 100g', img: 'https://images.unsplash.com/photo-1595974482597-4b8da8879bc5?w=800' },
-    { name: 'Semences Melon Ananas Tunisien', cat: 'SEED', price: 28.0, unit: 'sachet 50g', img: 'https://images.unsplash.com/photo-1570042225831-d9bfe7e557eb?w=800' },
+    { name: 'Semences Melon Ananas Tunisien', cat: 'SEED', price: 28.0, unit: 'sachet 50g', img: 'https://brico-direct.tn/23554/graines-semis-melon-ananas-d-amerique-.jpg' },
     { name: 'Semences Oignon Rouge de Béja', cat: 'SEED', price: 24.5, unit: 'sachet 100g', img: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=800' },
     { name: 'Semences Laitue Romaine Verte', cat: 'SEED', price: 12.0, unit: 'sachet 50g', img: 'https://images.unsplash.com/photo-1605000797499-95a51c5269ae?w=800' },
-    { name: 'Semences Fenouil Doux de Béja', cat: 'SEED', price: 19.0, unit: 'sachet 50g', img: 'https://images.unsplash.com/photo-1592417817098-8f3d6eb19675?w=800' },
-    { name: 'Semences Carotte Nantaise Pro', cat: 'SEED', price: 22.0, unit: 'sachet 100g', img: 'https://images.unsplash.com/photo-1599819811279-d5ad9cccf838?w=800' },
+    { name: 'Semences Fenouil Doux de Béja', cat: 'SEED', price: 19.0, unit: 'sachet 50g', img: 'https://www.leanature.com/media/catalog/product/1/0/10208-fenouil-bio-jardin_bio-face-hd.png?optimize=medium&fit=bounds&height=&width=&format=jpeg' },
+    { name: 'Semences Carotte Nantaise Pro', cat: 'SEED', price: 22.0, unit: 'sachet 100g', img: 'https://shop.hortinova.ca/cdn/shop/files/04.CRONA.jpg?v=1762978425&width=480' },
     { name: 'Substrat de Semis Terreau Pro', cat: 'SEED', price: 45.0, unit: 'sac 70L', img: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=800' },
     { name: 'Pots biodégradables de repiquage', cat: 'SEED', price: 15.0, unit: 'lot de 100', img: 'https://images.unsplash.com/photo-1595974482597-4b8da8879bc5?w=800' },
 
     // Pesticides (10)
     { name: 'Fongicide Cuivre Excellence', cat: 'PESTICIDE', price: 34.0, unit: 'kg', img: 'https://agriculture.action-pin.com/uploads/images/1761648286_packshot-jpg-fr-3343-heliocuivre-5l---site-web.jpg' },
-    { name: 'Insecticide NeemShield 100% Bio', cat: 'PESTICIDE', price: 49.9, unit: 'litre', img: 'https://images.unsplash.com/photo-1599819811279-d5ad9cccf838?w=800' },
+    { name: 'Insecticide NeemShield 100% Bio', cat: 'PESTICIDE', price: 49.9, unit: 'litre', img: 'https://i0.wp.com/smiley-bee.com/wp-content/uploads/2022/05/Neemshield-1.png?fit=500%2C500&ssl=1?w=800' },
     { name: 'Fongicide Soufre Mouillable Pro', cat: 'PESTICIDE', price: 28.0, unit: 'sachet 1kg', img: 'https://images.unsplash.com/photo-1605000797499-95a51c5269ae?w=800' },
-    { name: 'Traitement Hivernal Huile Blanche', cat: 'PESTICIDE', price: 39.0, unit: 'bidon 5L', img: 'https://images.unsplash.com/photo-1592417817098-8f3d6eb19675?w=800' },
+    { name: 'Traitement Hivernal Huile Blanche', cat: 'PESTICIDE', price: 39.0, unit: 'bidon 5L', img: 'https://www.elkhadra.tn/sites/default/files/2026-01/WhatsApp%20Image%202026-01-08%20at%2012.40.45.jpeg' },
     { name: 'Anti-Limaces Ferramol Écologique', cat: 'PESTICIDE', price: 24.0, unit: 'boîte 1kg', img: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=800' },
     { name: 'Bacillus Thuringiensis Curatif', cat: 'PESTICIDE', price: 58.0, unit: 'sachet 500g', img: 'https://images.unsplash.com/photo-1595974482597-4b8da8879bc5?w=800' },
-    { name: 'Bio-Fongicide Trichoderma Plus', cat: 'PESTICIDE', price: 62.0, unit: 'sachet 1kg', img: 'https://images.unsplash.com/photo-1570042225831-d9bfe7e557eb?w=800' },
+    { name: 'Bio-Fongicide Trichoderma Plus', cat: 'PESTICIDE', price: 62.0, unit: 'sachet 1kg', img: 'https://image.made-in-china.com/2f0j00NJVlAceGnEfU/Harzshield-Trichoderma-Fungicide-for-Plants-Enhanced-Growth-Soil-Protection-Novobac-Manufacturer.jpg' },
     { name: 'Herbicide Sélectif Céréales', cat: 'PESTICIDE', price: 88.0, unit: 'bidon 1L', img: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=800' },
     { name: 'Anti-Pucerons Systémique Fort', cat: 'PESTICIDE', price: 31.5, unit: 'flacon 250ml', img: 'https://images.unsplash.com/photo-1605000797499-95a51c5269ae?w=800' },
-    { name: 'Anti-Cochenille Soluble Premium', cat: 'PESTICIDE', price: 44.0, unit: 'flacon 500ml', img: 'https://images.unsplash.com/photo-1592417817098-8f3d6eb19675?w=800' },
+    { name: 'Anti-Cochenille Soluble Premium', cat: 'PESTICIDE', price: 44.0, unit: 'flacon 500ml', img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR0Fw48jbTVzdid5w4Es2QIhgknCl_LU6yMF31-USTdPrPRpeSiKvmPtK9F&s=10' },
 
     // Tools & Equipment (16)
     { name: 'Pompe Solaire Inox Pro 3HP', cat: 'TOOL', price: 2450.0, unit: 'unité', img: 'https://nakeba.sn/wp-content/uploads/2025/02/IMG-20250224-WA0008.jpg' },
     { name: 'Système Goutte-à-Goutte Intelligent', cat: 'TOOL', price: 15.5, unit: 'mètre', img: 'https://ae01.alicdn.com/kf/S0271f6a94c344848aafe07a43a05e1d5u.jpg' },
     { name: 'Tracteur New Holland T6 (Neuf)', cat: 'TOOL', price: 185000, unit: 'unité', img: 'https://motors.tn/magazine/wp-content/uploads/2023/07/New-Holland-TT55.webp' },
     { name: 'Sécateur Pneumatique Professionnel', cat: 'TOOL', price: 320.0, unit: 'unité', img: 'https://blog.agrieuro.fr/wp-content/uploads/sites/5/2022/03/image_principale.jpg' },
-    { name: 'Atomiseur Tracté 1000 Litres', cat: 'TOOL', price: 8500.0, unit: 'unité', img: 'https://images.unsplash.com/photo-1599819811279-d5ad9cccf838?w=800' },
+    { name: 'Atomiseur Tracté 1000 Litres', cat: 'TOOL', price: 8500.0, unit: 'unité', img: 'https://i0.wp.com/www.pionagri.com/wp-content/uploads/2024/03/ATOMISEUR-1000-.jpg?fit=2000%2C2000&ssl=1' },
     { name: 'Drone Agricole Inspecteur Pro', cat: 'TOOL', price: 14500.0, unit: 'unité', img: 'https://images.unsplash.com/photo-1605000797499-95a51c5269ae?w=800' },
-    { name: 'Station Météo Connectée IoT', cat: 'TOOL', price: 680.0, unit: 'unité', img: 'https://images.unsplash.com/photo-1592417817098-8f3d6eb19675?w=800' },
+    { name: 'Station Météo Connectée IoT', cat: 'TOOL', price: 680.0, unit: 'unité', img: 'https://m.media-amazon.com/images/I/71Kunjk7A3L.jpg' },
     { name: 'Capteur Humidité Sol Smart Zir', cat: 'TOOL', price: 145.0, unit: 'unité', img: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=800' },
     { name: 'Bâche Polyéthylène Serre 200µ', cat: 'TOOL', price: 3.2, unit: 'mètre carré', img: 'https://images.unsplash.com/photo-1595974482597-4b8da8879bc5?w=800' },
-    { name: 'Caisse de Récolte Aérée Verte', cat: 'TOOL', price: 8.5, unit: 'unité', img: 'https://images.unsplash.com/photo-1570042225831-d9bfe7e557eb?w=800' },
+    { name: 'Caisse de Récolte Aérée Verte', cat: 'TOOL', price: 8.5, unit: 'unité', img: 'https://s.alicdn.com/@sc04/kf/H522c5e3ca6cf403f9fd1541dc1e7a0fed/Heavy-Duty-Fruit-Vegetable-Harvest-Storage-Delivery-Stackable-Foldable-Folding-Vented-Mesh-Collapsible-Plastic-Crates.jpg' },
     { name: 'Tuyau PEHD Ø63 PN10 (100m)', cat: 'TOOL', price: 320.0, unit: 'couronne', img: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=800' },
     { name: 'Programmateur Irrigation Hunter', cat: 'TOOL', price: 420.0, unit: 'unité', img: 'https://images.unsplash.com/photo-1605000797499-95a51c5269ae?w=800' },
-    { name: 'Électrovanne Pro RainBird 24V', cat: 'TOOL', price: 65.0, unit: 'unité', img: 'https://images.unsplash.com/photo-1592417817098-8f3d6eb19675?w=800' },
-    { name: 'Filtre à Disques 2" Irrigation', cat: 'TOOL', price: 110.0, unit: 'unité', img: 'https://images.unsplash.com/photo-1599819811279-d5ad9cccf838?w=800' },
+    { name: 'Électrovanne Pro RainBird 24V', cat: 'TOOL', price: 65.0, unit: 'unité', img: 'https://media.adeo.com/mkp/03f1c6d4b635ed8fab0d6f7bbec4730d/media.jpeg?width=650&height=650&format=jpg&quality=80&fit=bounds' },
+    { name: 'Filtre à Disques 2" Irrigation', cat: 'TOOL', price: 110.0, unit: 'unité', img: 'https://m.media-amazon.com/images/I/61LqvTLPSpL._AC_UF1000,1000_QL80_.jpg' },
     { name: 'Cisaille à Haies Professionnelle', cat: 'TOOL', price: 48.0, unit: 'unité', img: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=800' },
     { name: 'Brouette Renforcée Double Roue', cat: 'TOOL', price: 160.0, unit: 'unité', img: 'https://images.unsplash.com/photo-1595974482597-4b8da8879bc5?w=800' }
   ];
 
   for (const lp of LUX_PRODS) {
     const p = await productRepo.save(productRepo.create({
-      name: lp.name, category: lp.cat, price_tnd: lp.price, unit: lp.unit, photo_url: lp.img,
+      name: lp.name, category: lp.cat, price_tnd: lp.price, unit: lp.unit, photo_url: normalizeSeedImage(lp.img),
       description: 'Produit certifié haute performance pour agriculture d\'élite ZirIA.',
       stock_qty: 500, is_active: true, supplier_id: randomItem(suppliersList).id
     }) as any);
@@ -1677,7 +1702,7 @@ async function bootstrap() {
       urgency: i % 4 === 0 ? DetectionUrgency.CRITICAL : DetectionUrgency.MEDIUM,
       lat: (farmer.lat || 35.0), 
       lng: (farmer.lng || 9.0),
-      photo_url: randomItem(LUX_PRODS).img,
+      photo_url: normalizeSeedImage(randomItem(LUX_PRODS).img),
       recommendation_fr: 'Appliquer un traitement fongicide ciblé et surveiller l\'humidité.'
     } as any));
 
@@ -1935,7 +1960,7 @@ async function bootstrap() {
       post_type: 'REEL',
       content_text: 'Démonstration pratique de la taille de rajeunissement d\'un vieil olivier en Tunisie.',
       media_urls: ['https://www.youtube.com/shorts/RY-_8Jl__Cg'],
-      thumbnail_url: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=400',
+      thumbnail_url: normalizeSeedImage('https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=400'),
       caption: 'Taille de l\'olivier ✂️🌳',
       hashtags: ['reel', 'taille', 'olive'],
       language_detected: 'FR',
@@ -1949,7 +1974,7 @@ async function bootstrap() {
       post_type: 'REEL',
       content_text: 'جولة سريعة في الحقل لمتابعة نمو شتلات الطماطم Rio Grande واستعمال الري بالتنقيط الذكي.',
       media_urls: ['https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4'],
-      thumbnail_url: 'https://images.unsplash.com/photo-1592417817098-8f3d6eb19675?w=400',
+      thumbnail_url: normalizeSeedImage('https://images.unsplash.com/photo-1592417817098-8f3d6eb19675?w=400'),
       caption: 'مزرعة الطماطم الذكية 🍅💧',
       hashtags: ['reel', 'tomate', 'agriculture'],
       language_detected: 'AR',
@@ -1963,7 +1988,7 @@ async function bootstrap() {
       post_type: 'REEL',
       content_text: 'لحظة وصول الجرار الجديد وتجربته في حرث الأرض الوعرة في تالة.',
       media_urls: ['https://www.youtube.com/shorts/AQi8BOMYx3c'],
-      thumbnail_url: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=400',
+      thumbnail_url: normalizeSeedImage('https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=400'),
       caption: 'الحرث الميكانيكي 🚜🌾',
       hashtags: ['tractor', 'machinerie', 'thala'],
       language_detected: 'AR',
@@ -2130,7 +2155,7 @@ async function bootstrap() {
       category: 'Agricultural Fair',
       attendee_count: 145,
       interested_count: 240,
-      cover_image: 'https://images.unsplash.com/photo-1595974482597-4b8da8879bc5?w=800'
+      cover_image: normalizeSeedImage('https://images.unsplash.com/photo-1595974482597-4b8da8879bc5?w=800')
     },
     {
       creator_id: admin.id,
@@ -2142,7 +2167,7 @@ async function bootstrap() {
       category: 'Training Workshop',
       attendee_count: 58,
       interested_count: 110,
-      cover_image: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=800'
+      cover_image: normalizeSeedImage('https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=800')
     },
     {
       creator_id: admin.id,
@@ -2154,7 +2179,7 @@ async function bootstrap() {
       category: 'Investment Forum',
       attendee_count: 23,
       interested_count: 75,
-      cover_image: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800'
+      cover_image: normalizeSeedImage('https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800')
     },
     {
       creator_id: admin.id,
@@ -2166,7 +2191,7 @@ async function bootstrap() {
       category: 'Field Day',
       attendee_count: 90,
       interested_count: 180,
-      cover_image: 'https://images.unsplash.com/photo-1592417817098-8f3d6eb19675?w=800'
+      cover_image: normalizeSeedImage('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRfs-cCNl4zh4ocFWbOETtFmIAT0m5y-zbIR7n5wH0Dm1pQuTmzXLc7oFC3&s=10')
     },
     {
       creator_id: admin.id,
@@ -2178,7 +2203,7 @@ async function bootstrap() {
       category: 'Market Day',
       attendee_count: 310,
       interested_count: 520,
-      cover_image: 'https://images.unsplash.com/photo-1595974482597-4b8da8879bc5?w=800'
+      cover_image: normalizeSeedImage('https://images.unsplash.com/photo-1595974482597-4b8da8879bc5?w=800')
     }
   ]));
 
@@ -2543,6 +2568,19 @@ async function bootstrap() {
   console.log('5. Zootechnician:    expert5@ziria.tn (Dr. Sami Hammami, Private)');
   console.log('6. Veterinary Epid:  expert6@ziria.tn (Dr. Olfa Riahi, Private)');
   console.log('=========================================\n');
+
+  console.log('[ZirIA] Seeding Institutions (APIA + CRDA)...');
+  const instResult = await seedInstitutions(dataSource);
+  console.log(`[ZirIA] Seeded ${instResult.officesCreated} offices and ${instResult.membersCreated} members.`);
+  console.log('\n========================================================================================');
+  console.log('                            INSTITUTIONS CREDENTIALS TABLE                               ');
+  console.log('========================================================================================');
+  console.table(instResult.credentialsTable);
+  console.log('========================================================================================\n');
+
+  console.log('[ZirIA] Seeding CRDA data (campaigns, subsidies, service requests)...');
+  await seedCrdaData(dataSource);
+  console.log('[ZirIA] CRDA data seeded.');
 
   await app.close();
   process.exit(0);

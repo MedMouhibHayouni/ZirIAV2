@@ -129,25 +129,4 @@
     </div>
   </div>
 
-  <!-- Upgrade Gating Modal -->
-  @if (showUpgradeModal()) {
-    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-      <div class="zir-card w-full max-w-md p-6 relative text-center border border-yellow-500/30 bg-gray-900 rounded-xl">
-        <div class="w-16 h-16 bg-yellow-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-          <ng-icon name="lucideLock" class="text-3xl text-yellow-500"></ng-icon>
-        </div>
-        <h3 class="text-2xl font-bold text-white mb-2 font-bold">Fonctionnalité Limitée</h3>
-        <p class="text-gray-300 mb-6 text-sm">
-          Le module <strong class="text-[var(--zir-emerald)]">{{ upgradeFeatureName() }}</strong> nécessite un abonnement actif (ERP Starter ou Full ERP).
-        </p>
-        <div class="flex gap-3 justify-center">
-          <button (click)="showUpgradeModal.set(false)" class="px-5 py-2 text-gray-400 hover:text-white font-medium text-sm">Fermer</button>
-          <a routerLink="/dashboard/supplier/subscription" (click)="showUpgradeModal.set(false)" class="bg-[var(--zir-emerald)] text-black px-6 py-2 rounded-lg font-bold text-sm hover:opacity-90">
-            Voir les Plans
-          </a>
-        </div>
-      </div>
-    </div>
-  }
-
 </aside>

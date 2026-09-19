@@ -76,7 +76,8 @@ export class TopbarComponent implements OnInit {
       ADMIN: 'Super Admin', COOP_PRESIDENT: 'Président SMSA',
       FARMER: 'Agriculteur', B2B_BUYER: 'Acheteur B2B',
       EXPERT: 'Expert Agri', EQUIP_OWNER: 'Équipements',
-      WORKER: 'Travailleur', DRIVER: 'Transporteur', LAND_OWNER: 'Propriétaire'
+      WORKER: 'Travailleur', DRIVER: 'Transporteur', LAND_OWNER: 'Propriétaire',
+      INSTITUTION: 'Institution Publique'
     };
     return labels[r] ?? r;
   }
@@ -117,6 +118,9 @@ export class TopbarComponent implements OnInit {
   
   subscriptionCta = computed(() => {
     const role = this.auth.currentUser()?.role;
+    if (role === 'ADMIN' || role === 'INSTITUTION') {
+      return { show: false, btnText: '', icon: '', route: '', queryParams: null };
+    }
     if (role === 'SUPPLIER') {
       const plan = this.supplierPlan();
       if (!plan) {

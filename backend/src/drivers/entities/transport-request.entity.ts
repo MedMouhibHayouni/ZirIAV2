@@ -63,24 +63,24 @@ export class TransportRequest {
   driver_profile_id: string | null;
 
   /** Latitude du point d'enlèvement */
-  @Column({ name: 'origin_lat', type: 'decimal', precision: 10, scale: 7 })
-  origin_lat: number;
+  @Column({ name: 'origin_lat', type: 'decimal', precision: 10, scale: 7, nullable: true })
+  origin_lat: number | null;
 
   /** Longitude du point d'enlèvement */
-  @Column({ name: 'origin_lng', type: 'decimal', precision: 10, scale: 7 })
-  origin_lng: number;
+  @Column({ name: 'origin_lng', type: 'decimal', precision: 10, scale: 7, nullable: true })
+  origin_lng: number | null;
 
   /** Adresse textuelle de l'origine */
   @Column({ name: 'origin_address', type: 'varchar', nullable: true })
   origin_address: string | null;
 
   /** Latitude de la destination */
-  @Column({ name: 'destination_lat', type: 'decimal', precision: 10, scale: 7 })
-  destination_lat: number;
+  @Column({ name: 'destination_lat', type: 'decimal', precision: 10, scale: 7, nullable: true })
+  destination_lat: number | null;
 
   /** Longitude de la destination */
-  @Column({ name: 'destination_lng', type: 'decimal', precision: 10, scale: 7 })
-  destination_lng: number;
+  @Column({ name: 'destination_lng', type: 'decimal', precision: 10, scale: 7, nullable: true })
+  destination_lng: number | null;
 
   /** Adresse textuelle de la destination */
   @Column({ name: 'destination_address', type: 'varchar', nullable: true })

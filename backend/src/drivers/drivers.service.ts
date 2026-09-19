@@ -106,6 +106,7 @@ export class DriversService {
   }
 
   private async notifyNearbyDrivers(request: TransportRequest): Promise<void> {
+    if (request.origin_lat == null || request.origin_lng == null) return;
     const drivers = await this.findDriversNearLocation(
       request.origin_lat,
       request.origin_lng,
@@ -384,6 +385,38 @@ export class DriversService {
     }
     await this.transportRepo.remove(request);
     return { success: true };
+  }
+
+  async updateTransportRequest(requestId: string, userId: string, dto: Partial<TransportRequest>): Promise<TransportRequest> {
+    const request = await this.transportRepo.findOne({ where: { id: requestId } });
+    if (!request) throw new NotFoundException('Demande introuvable');
+    if (request.requester_id !== userId) {
+      throw new ForbiddenException("Vous n'êtes pas autorisé à modifier cette demande");
+    }
+    if (['ACCEPTED', 'IN_TRANSIT', 'DELIVERED'].includes(request.status)) {
+      throw new ForbiddenException('Impossible de modifier une demande déjà acceptée ou en cours');
+    }
+
+    const allowed: Record<string, any> = {};
+    if (dto.cargo_type !== undefined) allowed.cargo_type = dto.cargo_type;
+    if (dto.quantity_kg !== undefined) allowed.quantity_kg = dto.quantity_kg;
+    if (dto.weight_tonnes !== undefined) allowed.weight_tonnes = dto.weight_tonnes;
+    if (dto.required_vehicle_type !== undefined) allowed.required_vehicle_type = dto.required_vehicle_type;
+    if (dto.origin_lat !== undefined) allowed.origin_lat = dto.origin_lat;
+    if (dto.origin_lng !== undefined) allowed.origin_lng = dto.origin_lng;
+    if (dto.origin_address !== undefined) allowed.origin_address = dto.origin_address;
+    if (dto.destination_lat !== undefined) allowed.destination_lat = dto.destination_lat;
+    if (dto.destination_lng !== undefined) allowed.destination_lng = dto.destination_lng;
+    if (dto.destination_address !== undefined) allowed.destination_address = dto.destination_address;
+    if (dto.loading_datetime !== undefined) allowed.loading_datetime = dto.loading_datetime;
+    if (dto.pickup_date !== undefined) allowed.pickup_date = dto.pickup_date;
+    if (dto.is_express !== undefined) allowed.is_express = dto.is_express;
+    if (dto.handling_notes !== undefined) allowed.handling_notes = dto.handling_notes;
+    if (dto.proposed_price_tnd !== undefined) allowed.proposed_price_tnd = dto.proposed_price_tnd;
+    if (dto.notes !== undefined) allowed.notes = dto.notes;
+
+    Object.assign(request, allowed);
+    return this.transportRepo.save(request);
   }
 
 }

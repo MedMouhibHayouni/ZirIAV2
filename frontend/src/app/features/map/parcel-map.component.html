@@ -3,10 +3,11 @@
   <!-- ══════════════════════════════════════════════════════════════════════ -->
   <!-- LEFT SIDEBAR                                                           -->
   <!-- ══════════════════════════════════════════════════════════════════════ -->
-  <aside class="map-sidebar" [class.map-sidebar--collapsed]="sidebarCollapsed()">
+  <aside class="map-sidebar" [class.map-sidebar--collapsed]="sidebarCollapsed()"
+         [class.map-sidebar--expanded]="mobileExpanded()">
 
     <!-- Sidebar Header — premium -->
-    <div class="map-sidebar__head">
+    <div class="map-sidebar__head" (click)="toggleMobileDrawer()">
       <div class="map-sidebar__title" *ngIf="!sidebarCollapsed()">
         <div class="map-sidebar__icon">
           <ng-icon name="lucideMap" [size]="'18'"/>
@@ -16,7 +17,7 @@
           <span class="map-sidebar__title-sub">{{ parcels().length }} terrain{{ parcels().length !== 1 ? 's' : '' }} • {{ totalArea() | number:'1.1-1' }} ha</span>
         </div>
       </div>
-      <button class="map-sidebar__collapse-btn" (click)="sidebarCollapsed.set(!sidebarCollapsed())"
+      <button class="map-sidebar__collapse-btn" (click)="sidebarCollapsed.set(!sidebarCollapsed()); mobileExpanded.set(false); $event.stopPropagation()"
               [attr.data-tooltip]="sidebarCollapsed() ? 'Ouvrir le panneau' : 'Réduire'">
         <ng-icon [name]="sidebarCollapsed() ? 'lucideChevronRight' : 'lucideX'" [size]="'16'"/>
       </button>

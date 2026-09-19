@@ -75,6 +75,7 @@ export class UnauthorizedComponent {
     DRIVER:           '/dashboard/driver',
     WORKER:           '/dashboard/worker',
     LAND_OWNER:       '/dashboard/land_owner',
+    INSTITUTION:      '/dashboard/apia',
   };
 
   goBack(): void {
@@ -83,6 +84,11 @@ export class UnauthorizedComponent {
 
   goHome(): void {
     const role = this.auth.role();
+    if (role === 'INSTITUTION') {
+      const email = (this.auth.currentUser()?.email || '').toLowerCase();
+      this.router.navigateByUrl(email.includes('.crda.') ? '/dashboard/crda/overview' : '/dashboard/apia/overview');
+      return;
+    }
     const home = role ? (this.ROLE_HOME[role] ?? '/') : '/';
     this.router.navigateByUrl(home);
   }

@@ -769,6 +769,7 @@
   overflow: hidden;
   border: 1px solid var(--border);
   background: var(--bg-card);
+  z-index: 0;
 }
 
 .map-el {
@@ -792,7 +793,7 @@
   backdrop-filter: blur(10px);
   border: 1px solid var(--border);
   border-radius: 10px;
-  z-index: 1000;
+  z-index: 50;
 }
 
 .legend-item {
@@ -816,7 +817,7 @@
   left: 16px;
   display: flex;
   gap: 12px;
-  z-index: 1000;
+  z-index: 50;
 }
 
 .mo-item {

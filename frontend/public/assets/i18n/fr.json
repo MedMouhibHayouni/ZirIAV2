@@ -25,7 +25,8 @@
     "COOP_PRESIDENT": "Président SMSA",
     "B2B_BUYER": "Acheteur B2B",
     "EQUIP_OWNER": "Propriétaire Matériel",
-    "FARMER_AMBASSADOR": "Ambassadeur Terrain"
+    "FARMER_AMBASSADOR": "Ambassadeur Terrain",
+    "INSTITUTION": "Représentant Institutionnel (APIA / CRDA)"
   },
   "DASHBOARD": {
     "ADMIN": {

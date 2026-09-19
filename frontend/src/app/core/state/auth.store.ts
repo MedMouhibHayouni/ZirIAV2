@@ -11,6 +11,8 @@ export interface AuthUser {
   profile_picture_url?: string | null;
   language?: string | null;
   expert_type?: string | null;
+  institution_type?: 'APIA' | 'CRDA' | null;
+  institutionMember?: any;
   activity_type?: 'CROP' | 'LIVESTOCK' | 'MIXED' | null;
   equipment_type?: string | null;
   governorate_zones?: string[];
@@ -117,6 +119,8 @@ export class AuthStore {
             profile_picture_url: serverUser.profile_picture_url || null,
             language: serverUser.language || null,
             expert_type: serverUser.expert_type || null,
+            institution_type: serverUser.institution_type || null,
+            institutionMember: serverUser.institutionMember || null,
             activity_type: serverUser.activity_type || null,
             equipment_type: serverUser.equipment_type || null,
             governorate_zones: serverUser.governorate_zones || [],

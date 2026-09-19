@@ -21,6 +21,7 @@ const ROLE_ROUTE_MAP: Record<string, string> = {
   SUPPLIER:         '/dashboard/supplier',
   LAND_OWNER:       '/dashboard/land_owner',
   EXPERT:           '/dashboard/expert',
+  INSTITUTION:      '/dashboard/apia',
 };
 
 @Component({
@@ -81,6 +82,8 @@ export class LoginComponent {
           activity_type: (res.user as any).activity_type || null,
           expert_type: res.user.expert_type || null,
           equipment_type: res.user.equipment_type || null,
+          institution_type: (res.user as any).institution_type || ((res.user.email || this.emailOrPhone || '').toLowerCase().includes('.crda.') ? 'CRDA' : 'APIA'),
+          institutionMember: (res.user as any).institutionMember || null,
         };
         
         this.authStore.setSession(res.access_token, authUser);
@@ -89,6 +92,9 @@ export class LoginComponent {
         let route = ROLE_ROUTE_MAP[res.user.role] ?? '/dashboard/b2b';
         if (res.user.role === 'EQUIP_OWNER' && res.user.equipment_type === 'Frigoriste') {
           route = '/dashboard/storage/overview';
+        } else if (res.user.role === 'INSTITUTION') {
+          const email = (res.user.email || this.emailOrPhone || '').toLowerCase();
+          route = email.includes('.crda.') ? '/dashboard/crda/overview' : '/dashboard/apia/overview';
         }
         this.router.navigate([route]);
       },

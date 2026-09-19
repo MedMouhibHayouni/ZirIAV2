@@ -84,6 +84,7 @@ export const dashboardRedirectGuard: CanActivateFn = () => {
     DRIVER: '/dashboard/driver/profil',
     LAND_OWNER: '/dashboard/land_owner/lands',
     EXPERT: '/dashboard/expert/overview',
+    INSTITUTION: user?.institution_type === 'CRDA' || user?.institutionMember?.institution?.type === 'CRDA' ? '/dashboard/crda/overview' : '/dashboard/apia/overview',
   };
   const target = map[role ?? ''] ?? '/dashboard/b2b/sourcing';
   return router.createUrlTree([target]);

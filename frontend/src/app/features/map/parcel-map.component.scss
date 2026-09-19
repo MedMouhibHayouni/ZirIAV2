@@ -35,7 +35,7 @@ $glass-blur: blur(24px);
   display: flex;
   flex-direction: column;
   transition: width 0.3s cubic-bezier(0.2, 0, 0, 1);
-  z-index: 10;
+  z-index: 50;
   position: relative;
   flex-shrink: 0;
 
@@ -1352,7 +1352,7 @@ $glass-blur: blur(24px);
     border-radius: 24px 24px 0 0;
     flex-direction: column;
     z-index: 20;
-    transition: height 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: height 0.35s cubic-bezier(0.16, 1, 0.3, 1);
     box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.4);
     overflow: hidden;
 
@@ -1372,15 +1372,21 @@ $glass-blur: blur(24px);
       height: 44px;
       padding: 0 16px;
       border-bottom: none;
+      cursor: pointer;
     }
 
     &__kpis {
       grid-template-columns: repeat(4, 1fr);
     }
 
-    // When expanded (use a class to toggle via JS)
+    // When expanded (toggled via mobileExpanded signal)
     &--expanded {
       height: 70vh;
+      overflow-y: auto;
+
+      .map-sidebar__head {
+        border-bottom: 1px solid rgba(255,255,255,0.06);
+      }
     }
 
     &--collapsed {

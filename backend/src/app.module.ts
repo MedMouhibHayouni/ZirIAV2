@@ -2,6 +2,32 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ScheduleModule } from '@nestjs/schedule';
+import { Institution } from './institutions/entities/institution.entity';
+import { InstitutionMember } from './institutions/entities/institution-member.entity';
+import { InstitutionMessagesModule } from './institution-messages/institution-messages.module';
+import { InstitutionMessage } from './institution-messages/entities/institution-message.entity';
+import { InstitutionMessageRead } from './institution-messages/entities/institution-message-read.entity';
+import { ProjectCall } from './institutions/entities/project-call.entity';
+import { InstitutionAppointment } from './institutions/entities/institution-appointment.entity';
+import { InstitutionsModule } from './institutions/institutions.module';
+import { DataSharingConsent } from './privacy/entities/data-sharing-consent.entity';
+import { DataAccessLog } from './privacy/entities/data-access-log.entity';
+import { PrivacyModule } from './privacy/privacy.module';
+import { InstitutionDossier } from './dossiers/entities/dossier.entity';
+import { DossierDocument } from './dossiers/entities/dossier-document.entity';
+import { DossierStatusHistory } from './dossiers/entities/dossier-status-history.entity';
+import { CreditDetails } from './dossiers/entities/credit-details.entity';
+import { CreditDisbursement } from './dossiers/entities/credit-disbursement.entity';
+import { RepaymentInstallment } from './dossiers/entities/repayment-installment.entity';
+import { ProjectMilestone } from './dossiers/entities/project-milestone.entity';
+import { FieldVisit } from './dossiers/entities/field-visit.entity';
+import { DossiersModule } from './dossiers/dossiers.module';
+import { CrdaCampaign } from './crda/entities/crda-campaign.entity';
+import { CrdaCampaignEnrollment } from './crda/entities/crda-campaign-enrollment.entity';
+import { CrdaServiceRequest } from './crda/entities/crda-service-request.entity';
+import { SubsidyProgram } from './crda/entities/subsidy-program.entity';
+import { SubsidyApplication } from './crda/entities/subsidy-application.entity';
+import { CrdaModule } from './crda/crda.module';
 
 // ─── Entités Phase 1 (fondation) ─────────────────────────────────────────────
 import { User } from './users/entities/user.entity';
@@ -338,6 +364,29 @@ import { AppService } from './app.service';
           ZirfeedModerationRestriction,
           ZirfeedNotification,
           ZirfeedStory,
+          Institution,
+          InstitutionMember,
+          DataSharingConsent,
+          DataAccessLog,
+          InstitutionDossier,
+          DossierDocument,
+          DossierStatusHistory,
+          CreditDetails,
+          CreditDisbursement,
+          RepaymentInstallment,
+          ProjectMilestone,
+          FieldVisit,
+          CrdaCampaign,
+          CrdaCampaignEnrollment,
+          CrdaServiceRequest,
+          SubsidyProgram,
+          SubsidyApplication,
+          // Institution Messages
+          InstitutionMessage,
+          InstitutionMessageRead,
+          // Institution Project Calls & Appointments
+          ProjectCall,
+          InstitutionAppointment,
         ],
         synchronize: config.get<string>('NODE_ENV') !== 'production',
         logging: config.get<string>('NODE_ENV') === 'development',
@@ -347,6 +396,8 @@ import { AppService } from './app.service';
     }),
 
     // ─── Phases 1-2-3 : Fondation ────────────────────────────────────────────
+
+    ScheduleModule.forRoot(),
     AuthModule,
     UsersModule,
     CooperativesModule,
@@ -373,6 +424,7 @@ import { AppService } from './app.service';
     ExpertModule,
     InventoryModule,
     MessagesModule,
+    InstitutionMessagesModule,
     MarketPricesModule,
     SubscriptionModule,
     TransactionsModule,
@@ -382,6 +434,10 @@ import { AppService } from './app.service';
     ZirFeedModule,
     ContractsModule,
     StorageModule,
+    InstitutionsModule,
+    PrivacyModule,
+    DossiersModule,
+    CrdaModule,
   ],
   controllers: [AppController],
   providers: [

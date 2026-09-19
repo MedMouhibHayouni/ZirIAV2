@@ -26,6 +26,7 @@ import { AgriJobApiService } from '../../core/services/agrijob-api.service';
 import { ExpertApiService } from '../../core/services/expert-api.service';
 import { FarmerApiService } from '../../core/services/farmer-api.service';
 import { ToastService } from '../../features/dashboards/expert/shared/toast.service';
+import { UpgradeModalService } from '../../shared/services/upgrade-modal.service';
 
 interface NavItem {
   route: string;
@@ -195,6 +196,40 @@ const ROLE_MENUS: Record<string, NavItem[]> = {
   ]
 };
 
+export const APIA_MENU: NavItem[] = [
+  { route: '/dashboard/apia/overview',     icon: 'lucideLayoutDashboard', label: 'Vue d\'ensemble' },
+  { route: '/dashboard/apia/dossiers',     icon: 'lucideBriefcase',       label: 'Dossiers d\'Investissement' },
+  { route: '/dashboard/apia/agriculteurs', icon: 'lucideUsers',           label: 'Recherche Agriculteurs' },
+  { route: '/dashboard/apia/consentements',icon: 'lucideShield',          label: 'Registre Consentements' },
+  { route: '/dashboard/apia/credit',       icon: 'lucideDollarSign',      label: 'Crédit & Financement' },
+  { route: '/dashboard/apia/projets',      icon: 'lucideCheckSquare',     label: 'Suivi des Projets' },
+  { route: '/dashboard/apia/porteurs',     icon: 'lucideUsers',           label: 'Porteurs de Projets' },
+  { route: '/dashboard/apia/opportunites', icon: 'lucideGlobe',           label: 'Opportunités Régionales' },
+  { route: '/dashboard/apia/calendrier',   icon: 'lucideCalendar',        label: 'Calendrier & RDV' },
+  { route: '/dashboard/apia/messages',     icon: 'lucideMessageSquare',   label: 'Messages' },
+  { route: '/dashboard/apia/documents',    icon: 'lucideFileText',        label: 'Documents & Modèles' },
+  { route: '/dashboard/apia/rapports',     icon: 'lucideBarChart2',       label: 'Rapports' },
+  { route: '/dashboard/apia/mon-bureau',   icon: 'lucideSettings',        label: 'Mon Bureau' },
+];
+
+export const CRDA_MENU: NavItem[] = [
+  { route: '/dashboard/crda/overview',     icon: 'lucideLayoutDashboard', label: 'Vue d\'ensemble Régionale' },
+  { route: '/dashboard/crda/dossiers',     icon: 'lucideBriefcase',       label: 'Gestion des Dossiers' },
+  { route: '/dashboard/crda/agriculteurs', icon: 'lucideUsers',           label: 'Recherche Agriculteurs' },
+  { route: '/dashboard/crda/consentements',icon: 'lucideShield',          label: 'Registre Consentements' },
+  { route: '/dashboard/crda/carte',        icon: 'lucideMap',             label: 'Carte du Territoire' },
+  { route: '/dashboard/crda/campagnes',    icon: 'lucideSprout',          label: 'Campagnes Agricoles' },
+  { route: '/dashboard/crda/alertes',      icon: 'lucideShieldAlert',     label: 'Alertes & Interventions' },
+  { route: '/dashboard/crda/demandes',     icon: 'lucideClipboardList',   label: 'Demandes des Agriculteurs' },
+  { route: '/dashboard/crda/subventions',  icon: 'lucidePackage',         label: 'Subventions & Intrants' },
+  { route: '/dashboard/crda/eau',          icon: 'lucideDroplets',        label: 'Ressources en Eau' },
+  { route: '/dashboard/crda/agents',       icon: 'lucideUsers',           label: 'Agents & Experts' },
+  { route: '/dashboard/crda/annonces',     icon: 'lucideRadio',           label: 'Annonces & Vulgarisation' },
+  { route: '/dashboard/crda/messages',     icon: 'lucideMessageSquare',   label: 'Messages' },
+  { route: '/dashboard/crda/rapports',     icon: 'lucideBarChart2',       label: 'Rapports & Statistiques' },
+  { route: '/dashboard/crda/mon-bureau',   icon: 'lucideSettings',        label: 'Mon Bureau' },
+];
+
 @Component({
   selector: 'app-sidebar',
   standalone: true,
@@ -231,10 +266,9 @@ export class SidebarComponent implements OnInit, OnDestroy {
   private http         = inject(HttpClient);
   private router       = inject(Router);
   private cdr          = inject(ChangeDetectorRef);
+  private upgradeModal = inject(UpgradeModalService);
 
   supplierPlan = signal<any>(null);
-  showUpgradeModal = signal(false);
-  upgradeFeatureName = signal('');
   expertUnreadCount = signal(0);
   farmerUnreadCount = signal(0);
 
@@ -370,6 +404,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
       { route: '/dashboard/farmer/marketplace', icon: 'lucideFlame',           label: 'Mes Annonces', requiredPlan: 'FREE' },
       { route: '/marketplace',                  icon: 'lucideGlobe',           label: 'Marché Public 🌍', requiredPlan: 'FREE' },
       { route: '/dashboard/farmer/contrats',    icon: 'lucideFileText',        label: 'Mes Contrats', requiredPlan: 'STARTER' },
+      { route: '/dashboard/farmer/dossiers',    icon: 'lucideBriefcase',       label: 'Mes Dossiers 🏛️', requiredPlan: 'FREE' },
     ];
 
     const CROP_ONLY: NavItem[] = [
@@ -413,7 +448,10 @@ export class SidebarComponent implements OnInit, OnDestroy {
     const role = user?.role ?? '';
     let items: NavItem[];
 
-    if (role === 'EXPERT' && user?.expert_type) {
+    if (role === 'INSTITUTION') {
+      const instType = user?.institutionMember?.institution?.type || user?.institution_type || (user?.email?.toLowerCase().includes('.crda.') ? 'CRDA' : 'APIA');
+      items = instType === 'CRDA' ? CRDA_MENU : APIA_MENU;
+    } else if (role === 'EXPERT' && user?.expert_type) {
       items = EXPERT_TYPE_MENUS[user.expert_type] ?? [];
     } else if (role === 'EQUIP_OWNER' && user?.equipment_type === 'Frigoriste') {
       items = [
@@ -463,13 +501,11 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
   onNavItemClick(item: NavItem) {
     if (item.requiredFeature && !this.hasFeature(item.requiredFeature)) {
-      this.upgradeFeatureName.set(item.label);
-      this.showUpgradeModal.set(true);
+      this.upgradeModal.open(item.label);
       return;
     }
     if (item.requiredPlan && !this.hasPlan(item.requiredPlan)) {
-      this.upgradeFeatureName.set(`${item.label} (Plan ${item.requiredPlan} Requis)`);
-      this.showUpgradeModal.set(true);
+      this.upgradeModal.open(`${item.label} (Plan ${item.requiredPlan} Requis)`);
       return;
     }
     this.router.navigate([item.route]);
@@ -591,8 +627,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
       return { show: false, title: '', subtitle: '', btnText: '', icon: '', route: '', queryParams: null, ctaColor: '' };
     }
 
-    // ─── Admin: no subscription CTA ────────────────────────────────────────────
-    if (role === 'ADMIN') {
+    // ─── Admin / Institution: no subscription CTA ──────────────────────────────
+    if (role === 'ADMIN' || role === 'INSTITUTION') {
       return { show: false, title: '', subtitle: '', btnText: '', icon: '', route: '', queryParams: null, ctaColor: '' };
     }
 

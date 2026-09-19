@@ -14,6 +14,7 @@ const ROLE_ROUTE_MAP: Record<string, string> = {
   SUPPLIER:         '/dashboard/supplier',
   LAND_OWNER:       '/dashboard/land_owner',
   EXPERT:           '/dashboard/expert',
+  INSTITUTION:      '/dashboard/apia',
 };
 
 export interface User {
@@ -25,6 +26,8 @@ export interface User {
   profile_picture_url?: string | null;
   language?: string | null;
   expert_type?: string | null;
+  institution_type?: 'APIA' | 'CRDA' | null;
+  institutionMember?: any;
   activity_type?: 'CROP' | 'LIVESTOCK' | 'MIXED' | null;
   equipment_type?: string | null;
 }
@@ -62,6 +65,9 @@ export class AuthService {
     if (user.role === 'EQUIP_OWNER' && user.equipment_type === 'Frigoriste') {
       return '/dashboard/storage/overview';
     }
+    if (user.role === 'INSTITUTION') {
+      return user.institution_type === 'CRDA' ? '/dashboard/crda' : '/dashboard/apia';
+    }
     return ROLE_ROUTE_MAP[user.role] ?? '/dashboard/b2b';
   });
 
@@ -76,7 +82,9 @@ export class AuthService {
       language: user.language,
       expert_type: user.expert_type,
       activity_type: user.activity_type,
-      equipment_type: user.equipment_type
+      equipment_type: user.equipment_type,
+      institution_type: (user as any).institution_type ?? null,
+      institutionMember: (user as any).institutionMember ?? null,
     } as any);
     this.router.navigate([this.dashboardRoute()]);
   }

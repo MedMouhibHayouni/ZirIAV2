@@ -188,6 +188,9 @@ export const routes: Routes = [
           { path: 'cheptel', loadComponent: () => import('./features/dashboards/farmer/farmer-cheptel.component').then(m => m.FarmerCheptelComponent) },
           { path: 'animal-diagnostic', loadComponent: () => import('./features/dashboards/farmer/farmer-animal-diagnostic.component').then(m => m.FarmerAnimalDiagnosticComponent) },
           { path: 'apiculture', loadComponent: () => import('./features/dashboards/farmer/farmer-apiculture.component').then(m => m.FarmerApicultureComponent) },
+          { path: 'consentements', loadComponent: () => import('./features/dashboards/farmer/consent-center.component').then(m => m.ConsentCenterComponent) },
+          { path: 'charte-donnees', loadComponent: () => import('./features/dashboards/farmer/data-charter.component').then(m => m.DataCharterComponent) },
+          { path: 'dossiers', loadComponent: () => import('./features/dashboards/farmer/farmer-dossiers.component').then(m => m.FarmerDossiersComponent) },
           { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
         ]
       },
@@ -229,6 +232,50 @@ export const routes: Routes = [
           { path: 'reservations', loadComponent: () => import('./features/dashboards/storage/storage-reservations.component').then(m => m.StorageReservationsComponent) },
           { path: 'revenue', loadComponent: () => import('./features/dashboards/storage/storage-revenue.component').then(m => m.StorageRevenueComponent) },
           { path: 'facility', loadComponent: () => import('./features/dashboards/storage/storage-facility.component').then(m => m.StorageFacilityComponent) },
+          { path: '', redirectTo: 'overview', pathMatch: 'full' }
+        ]
+      },
+      {
+        path: 'apia',
+        canActivate: [roleGuard],
+        data: { roles: ['INSTITUTION', 'ADMIN'] },
+        children: [
+          { path: 'overview', loadComponent: () => import('./features/dashboards/apia/apia-dashboard.component').then(m => m.ApiaDashboardComponent) },
+          { path: 'dossiers', loadComponent: () => import('./features/dashboards/apia/apia-dossiers.component').then(m => m.ApiaDossiersComponent) },
+          { path: 'agriculteurs', loadComponent: () => import('./features/dashboards/apia/apia-farmer-lookup.component').then(m => m.ApiaFarmerLookupComponent) },
+          { path: 'consentements', loadComponent: () => import('./features/dashboards/apia/apia-consent-audit.component').then(m => m.ApiaConsentAuditComponent) },
+          { path: 'credit', loadComponent: () => import('./features/dashboards/apia/apia-credit.component').then(m => m.ApiaCreditComponent) },
+          { path: 'projets', loadComponent: () => import('./features/dashboards/apia/apia-projects.component').then(m => m.ApiaProjectsComponent) },
+          { path: 'porteurs', loadComponent: () => import('./features/dashboards/apia/apia-porteurs.component').then(m => m.ApiaPorteursComponent) },
+          { path: 'opportunites', loadComponent: () => import('./features/dashboards/apia/apia-opportunites.component').then(m => m.ApiaOpportunitesComponent) },
+          { path: 'calendrier', loadComponent: () => import('./features/dashboards/apia/apia-calendrier.component').then(m => m.ApiaCalendrierComponent) },
+          { path: 'messages', data: { fullBleed: true }, loadComponent: () => import('./features/dashboards/apia/apia-messages.component').then(m => m.ApiaMessagesComponent) },
+          { path: 'documents', loadComponent: () => import('./features/dashboards/apia/apia-dashboard.component').then(m => m.ApiaDashboardComponent) },
+          { path: 'rapports', loadComponent: () => import('./features/dashboards/apia/apia-dashboard.component').then(m => m.ApiaDashboardComponent) },
+          { path: 'mon-bureau', loadComponent: () => import('./features/dashboards/apia/apia-mon-bureau.component').then(m => m.ApiaMonBureauComponent) },
+          { path: '', redirectTo: 'overview', pathMatch: 'full' }
+        ]
+      },
+      {
+        path: 'crda',
+        canActivate: [roleGuard],
+        data: { roles: ['INSTITUTION', 'ADMIN'] },
+        children: [
+          { path: 'overview', loadComponent: () => import('./features/dashboards/crda/crda-dashboard.component').then(m => m.CrdaDashboardComponent) },
+          { path: 'dossiers', loadComponent: () => import('./features/dashboards/crda/crda-dossiers.component').then(m => m.CrdaDossiersComponent) },
+          { path: 'agriculteurs', loadComponent: () => import('./features/dashboards/crda/crda-farmer-lookup.component').then(m => m.CrdaFarmerLookupComponent) },
+          { path: 'consentements', loadComponent: () => import('./features/dashboards/crda/crda-consent-audit.component').then(m => m.CrdaConsentAuditComponent) },
+          { path: 'carte', loadComponent: () => import('./features/dashboards/crda/crda-territory-map.component').then(m => m.CrdaTerritoryMapComponent) },
+          { path: 'campagnes', loadComponent: () => import('./features/dashboards/crda/crda-campaigns.component').then(m => m.CrdaCampaignsComponent) },
+          { path: 'alertes', loadComponent: () => import('./features/dashboards/crda/crda-dashboard.component').then(m => m.CrdaDashboardComponent) },
+          { path: 'demandes', loadComponent: () => import('./features/dashboards/crda/crda-service-requests.component').then(m => m.CrdaServiceRequestsComponent) },
+          { path: 'subventions', loadComponent: () => import('./features/dashboards/crda/crda-subventions.component').then(m => m.CrdaSubventionsComponent) },
+          { path: 'eau', loadComponent: () => import('./features/dashboards/crda/crda-dashboard.component').then(m => m.CrdaDashboardComponent) },
+          { path: 'agents', loadComponent: () => import('./features/dashboards/crda/crda-dashboard.component').then(m => m.CrdaDashboardComponent) },
+          { path: 'annonces', loadComponent: () => import('./features/dashboards/crda/crda-dashboard.component').then(m => m.CrdaDashboardComponent) },
+          { path: 'messages', loadComponent: () => import('./features/dashboards/crda/crda-dashboard.component').then(m => m.CrdaDashboardComponent) },
+          { path: 'rapports', loadComponent: () => import('./features/dashboards/crda/crda-dashboard.component').then(m => m.CrdaDashboardComponent) },
+          { path: 'mon-bureau', loadComponent: () => import('./features/dashboards/crda/crda-mon-bureau.component').then(m => m.CrdaMonBureauComponent) },
           { path: '', redirectTo: 'overview', pathMatch: 'full' }
         ]
       },
@@ -357,6 +404,32 @@ export const routes: Routes = [
           { path: 'facility',      loadComponent: () => import('./features/dashboards/storage/storage-facility.component').then(m => m.StorageFacilityComponent) },
           { path: 'ledger',        loadComponent: () => import('./features/dashboards/storage/storage-ledger.component').then(m => m.StorageLedgerComponent) },
           { path: '',              redirectTo: 'overview', pathMatch: 'full' }
+        ]
+      },
+      // ─── APIA Institution Dashboard ────────────────────────────────────────
+      {
+        path: 'apia',
+        canActivate: [roleGuard],
+        data: { roles: ['INSTITUTION', 'ADMIN'] },
+        children: [
+          { path: 'overview',    loadComponent: () => import('./features/dashboards/apia/apia-dashboard.component').then(m => m.ApiaDashboardComponent) },
+          { path: 'dossiers',    loadComponent: () => import('./features/dashboards/apia/apia-dossiers.component').then(m => m.ApiaDossiersComponent) },
+          { path: 'agriculteurs',loadComponent: () => import('./features/dashboards/apia/apia-farmer-lookup.component').then(m => m.ApiaFarmerLookupComponent) },
+          { path: 'consentements',loadComponent: () => import('./features/dashboards/apia/apia-consent-audit.component').then(m => m.ApiaConsentAuditComponent) },
+          { path: '',            redirectTo: 'overview', pathMatch: 'full' }
+        ]
+      },
+      // ─── CRDA Institution Dashboard ────────────────────────────────────────
+      {
+        path: 'crda',
+        canActivate: [roleGuard],
+        data: { roles: ['INSTITUTION', 'ADMIN'] },
+        children: [
+          { path: 'overview',    loadComponent: () => import('./features/dashboards/crda/crda-dashboard.component').then(m => m.CrdaDashboardComponent) },
+          { path: 'dossiers',    loadComponent: () => import('./features/dashboards/crda/crda-dossiers.component').then(m => m.CrdaDossiersComponent) },
+          { path: 'agriculteurs',loadComponent: () => import('./features/dashboards/crda/crda-farmer-lookup.component').then(m => m.CrdaFarmerLookupComponent) },
+          { path: 'consentements',loadComponent: () => import('./features/dashboards/crda/crda-consent-audit.component').then(m => m.CrdaConsentAuditComponent) },
+          { path: '',            redirectTo: 'overview', pathMatch: 'full' }
         ]
       }
     ]

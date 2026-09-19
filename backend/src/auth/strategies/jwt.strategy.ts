@@ -6,6 +6,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 
+import { DataSource } from 'typeorm';
+import { InstitutionMember } from '../../institutions/entities/institution-member.entity';
+import { Role } from '../../common/enums/role.enum';
+
 export interface JwtPayload {
   sub: string;    // User UUID
   email: string;
@@ -20,6 +24,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     private configService: ConfigService,
     @InjectRepository(User)
     private userRepo: Repository<User>,
+    private dataSource: DataSource,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -39,6 +44,15 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException('Utilisateur introuvable. Veuillez vous reconnecter.');
     }
 
+    let institutionMember: any = null;
+    if (user.role === Role.INSTITUTION) {
+      const memberRepo = this.dataSource.getRepository(InstitutionMember);
+      institutionMember = await memberRepo.findOne({
+        where: { userId: user.id, isActive: true },
+        relations: ['institution'],
+      });
+    }
+
     return {
       id: payload.sub,
       sub: payload.sub, // Ensure sub is available for controllers using req.user.sub
@@ -46,6 +60,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       phone: payload.phone,
       role: payload.role,
       name: payload.name,
+      governorate: user.governorate,
+      institutionMember,
     };
   }
 }
+

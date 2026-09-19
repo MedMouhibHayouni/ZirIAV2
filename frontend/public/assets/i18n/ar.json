@@ -25,7 +25,8 @@
     "COOP_PRESIDENT": "رئيس جمعية SMSA",
     "B2B_BUYER": "مشترٍ B2B",
     "EQUIP_OWNER": "مالك معدات",
-    "FARMER_AMBASSADOR": "سفير فلاحي"
+    "FARMER_AMBASSADOR": "سفير فلاحي",
+    "INSTITUTION": "ممثل مؤسساتي (وكالة النهوض بالاستثمارات الفلاحية / المندوبية الجهوية)"
   },
   "DASHBOARD": {
     "AMBASSADOR": {

@@ -32,6 +32,8 @@
     min-width: 0;
     height: 100vh;
     overflow: hidden;
+    position: relative;
+    z-index: 1;
     transition: margin-left 0.3s cubic-bezier(0.2, 0, 0, 1);
   }
 

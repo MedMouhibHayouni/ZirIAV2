@@ -4,6 +4,7 @@ import {
   UnauthorizedException,
   BadRequestException,
   NotFoundException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
@@ -31,6 +32,10 @@ export class AuthService {
    * Vérifie l'unicité email/phone avant insertion.
    */
   async register(dto: RegisterDto): Promise<{ access_token: string; refresh_token: string; user: Partial<User> }> {
+    if (dto.role === Role.INSTITUTION) {
+      throw new ForbiddenException('Les comptes institutionnels ne peuvent pas être créés par inscription publique');
+    }
+
     // Normalise: empty strings already transformed to undefined by DTO, but defensive trim + lower-case
     const email = dto.email?.trim().toLowerCase() || undefined;
     const phone = dto.phone?.trim() || undefined;
@@ -130,7 +135,7 @@ export class AuthService {
     console.log(`[AuthService] User ${user.email} plan: ${plan}`);
     const tokens = this.generateTokens(user, plan);
 
-    const responseUser = {
+    const responseUser: any = {
       id: user.id,
       name: user.name,
       email: user.email,
@@ -141,6 +146,37 @@ export class AuthService {
       expert_type: user.expert_type || null,
       equipment_type: user.equipment_type || null,
     };
+
+    // INSTITUTION role → attach institutionMember with institution info
+    if (user.role === Role.INSTITUTION) {
+      const memberRows = await this.dataSource.query(
+        `SELECT im.id, im."userId", im."institutionId", im."officeRole", im."isActive",
+                i.id as inst_id, i.name as inst_name, i.type as inst_type,
+                i.governorate as inst_governorate, i.level as inst_level
+         FROM institution_members im
+         JOIN institutions i ON i.id = im."institutionId"
+         WHERE im."userId" = $1 AND im."isActive" = true
+         LIMIT 1`,
+        [user.id],
+      );
+      if (memberRows.length > 0) {
+        const m = memberRows[0];
+        responseUser.institutionMember = {
+          id: m.id,
+          userId: m.userId,
+          institutionId: m.institutionId,
+          officeRole: m.officeRole,
+          isActive: m.isActive,
+          institution: {
+            id: m.inst_id,
+            name: m.inst_name,
+            type: m.inst_type,
+            governorate: m.inst_governorate,
+            level: m.inst_level,
+          },
+        };
+      }
+    }
 
     return { ...tokens, user: responseUser };
   }
@@ -256,6 +292,37 @@ export class AuthService {
         [userId],
       );
       profile.driver_profile = driverProfile[0] || null;
+    }
+
+    // Rôle INSTITUTION → charger institutionMember + institution
+    if (user.role === Role.INSTITUTION) {
+      const memberRows = await this.dataSource.query(
+        `SELECT im.id, im."userId", im."institutionId", im."officeRole", im."isActive",
+                i.id as inst_id, i.name as inst_name, i.type as inst_type,
+                i.governorate as inst_governorate, i.level as inst_level
+         FROM institution_members im
+         JOIN institutions i ON i.id = im."institutionId"
+         WHERE im."userId" = $1 AND im."isActive" = true
+         LIMIT 1`,
+        [userId],
+      );
+      if (memberRows.length > 0) {
+        const m = memberRows[0];
+        profile.institutionMember = {
+          id: m.id,
+          userId: m.userId,
+          institutionId: m.institutionId,
+          officeRole: m.officeRole,
+          isActive: m.isActive,
+          institution: {
+            id: m.inst_id,
+            name: m.inst_name,
+            type: m.inst_type,
+            governorate: m.inst_governorate,
+            level: m.inst_level,
+          },
+        };
+      }
     }
 
     // Rôle COOP_PRESIDENT → cooperative_id déjà chargé via la relation

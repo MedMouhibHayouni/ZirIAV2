@@ -56,6 +56,16 @@ export class DriversController {
     return this.driversService.cancelTransportRequest(id, req.user.sub);
   }
 
+  @Patch('drivers/requests/:id')
+  @ApiOperation({ summary: 'Modifier une demande de transport (FARMER)' })
+  updateRequest(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: any,
+    @Request() req,
+  ) {
+    return this.driversService.updateTransportRequest(id, req.user.sub, dto);
+  }
+
   @Get('drivers')
   @ApiOperation({ summary: 'Lister les chauffeurs disponibles' })
   @ApiQuery({ name: 'governorate', required: false })

@@ -81,6 +81,9 @@ async function bootstrap() {
     .addTag('Emplois Saisonniers', 'Offres de travail pour les journaliers agricoles')
     .addTag('Détections IA - Maladies', 'Signalement et analyse des maladies des cultures')
     .addTag('Météo', 'Prévisions météorologiques via Open-Meteo')
+    .addTag('Institutions', 'Bureaux APIA et CRDA, agents et rattachements [INSTITUTION, ADMIN]')
+    .addTag('Confidentialité & Consentement', 'Moteur de consentement et registre d\'audit immuable')
+    .addTag('Dossiers Institutionnels', 'Gestion des dossiers de subvention, investissement et crédit [FARMER, INSTITUTION]')
     .build();
 
   const document = SwaggerModule.createDocument(app, swaggerConfig);
